@@ -15,9 +15,7 @@ public partial class ResourceManager : Node {
         CharacterActor = [];
 
         string[] paths = [
-            "res://eq_files/globalogm_chr.s3d",
-            "res://eq_files/globalelm_chr.s3d",
-            "res://eq_files/globalelm_chr2.s3d",
+            "res://eq_files/gequip.s3d",
             "res://eq_files/global_chr.s3d",
         ];
 

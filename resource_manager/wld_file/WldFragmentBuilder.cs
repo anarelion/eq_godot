@@ -27,7 +27,7 @@ namespace EQGodot2.resource_manager.wld_file {
             //{0x2E, () => new LegacyMeshAnimatedVertices()},
             //{0x2F, () => new MeshAnimatedVerticesReference()},
             {0x2D, () => new WldMeshReference()},
-            //{0x2C, () => new LegacyMesh()},
+            {0x2C, () => new WldLegacyMesh()},
 
             // Animation
             {0x10, () => new WldSkeletonHierarchy()},

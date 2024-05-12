@@ -207,7 +207,7 @@ namespace EQGodot2.resource_manager.wld_file {
 
                     foreach (var bone in skeleton.Skeleton) {
                         var meshref = bone.MeshReference;
-                        var mesh = meshref != null ? Meshes[meshref.Mesh.Index] : null;
+                        var mesh = meshref != null && meshref.Mesh != null ? Meshes[meshref.Mesh.Index] : null;
                         var rbone = new ActorSkeletonBone {
                             ResourceName = bone.Name,
                             Index = bone.Index,

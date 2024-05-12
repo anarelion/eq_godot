@@ -15,7 +15,7 @@ namespace EQGodot2.helpers {
             {typeof(WldMaterialList), "_MP"},
             {typeof(WldMaterial), "_MDF"},
             {typeof(WldMesh), "_DMSPRITEDEF"},
-            // {typeof(LegacyMesh), "_DMSPRITEDEF"},
+            {typeof(WldLegacyMesh), "_DMSPRITEDEF"},
             {typeof(WldActorDef), "_ACTORDEF"},
             {typeof(WldSkeletonHierarchy), "_HS_DEF"},
             {typeof(WldTrackDefFragment), "_TRACKDEF"},
