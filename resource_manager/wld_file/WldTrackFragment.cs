@@ -32,6 +32,9 @@ namespace EQGodot2.resource_manager.wld_file {
         public bool InterpolateAllowed {
             get; set;
         }
+        public int Flags {
+            get; set;
+        }
         public int FrameMs {
             get; set;
         }
@@ -59,9 +62,9 @@ namespace EQGodot2.resource_manager.wld_file {
             // Either 4 or 5 - maybe something to look into
             // Bits are set 0, or 2. 0 has the extra field for delay.
             // 2 doesn't have any additional fields.
-            int flags = Reader.ReadInt32();
+            Flags = Reader.ReadInt32();
 
-            BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
+            BitAnalyzer bitAnalyzer = new BitAnalyzer(Flags);
             IsAnimated = bitAnalyzer.IsBitSet(0);
             IsReversed = bitAnalyzer.IsBitSet(1);
             InterpolateAllowed = bitAnalyzer.IsBitSet(2);

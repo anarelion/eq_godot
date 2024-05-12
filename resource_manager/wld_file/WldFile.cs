@@ -39,6 +39,10 @@ namespace EQGodot2.resource_manager.wld_file {
         public Godot.Collections.Dictionary<int, ActorDefinition> ActorDefs {
             get; set;
         }
+        [Export]
+        public Godot.Collections.Dictionary<int, ActorSkeletonPath> ExtraAnimations {
+            get; set;
+        }
 
         [Export]
         public bool IsNewWldFormat;
@@ -70,6 +74,7 @@ namespace EQGodot2.resource_manager.wld_file {
             Materials = [];
             Meshes = [];
             ActorDefs = [];
+            ExtraAnimations = [];
 
             int version = reader.ReadInt32();
 
@@ -111,7 +116,7 @@ namespace EQGodot2.resource_manager.wld_file {
             for (int i = 0; i < fragmentCount; ++i) {
                 uint fragSize = reader.ReadUInt32();
                 int fragType = reader.ReadInt32();
-                if (i % 100 == 0) {
+                if (i % 500 == 0) {
                     GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
                 }
                 var fragmentContents = reader.ReadBytes((int)fragSize);
@@ -144,6 +149,7 @@ namespace EQGodot2.resource_manager.wld_file {
             BuildMaterials();
             BuildMeshes();
             BuildActorDefs();
+            BuildAnimations();
         }
 
         public List<T> GetFragmentsOfType<T>() where T : WldFragment
@@ -181,9 +187,11 @@ namespace EQGodot2.resource_manager.wld_file {
         {
             var actordefs = GetFragmentsOfType<WldActorDef>();
             foreach (var actordef in actordefs) {
+                var name = FragmentNameCleaner.CleanName(actordef, true);
                 ActorDefinition actor = new ActorDefinition {
-                    ResourceName = actordef.Name,
-                    Tag = actordef.Name.Remove(3),
+                    ResourceName = name,
+                    Tag = name,
+                    Flags = actordef.Flags,
                     Bones = [],
                     BonesByName = [],
                     Meshes = [],
@@ -210,22 +218,11 @@ namespace EQGodot2.resource_manager.wld_file {
                             ReferencedMesh = mesh,
                             Parent = bone.Parent != null ? actor.Bones[bone.Parent.Index] : null
                         };
-                        var path = bone.Track;
-                        if (path != null) {
-                            path.ParseTrackData();
-                            var skeletonPath = new ActorSkeletonPath {
-                                ModelName = path.ModelName,
-                                AnimationName = path.AnimationName,
-                                PieceName = path.PieceName,
-                                FrameMs = path.FrameMs,
-                                Translation = [],
-                                Rotation = [],
-                            };
-                            foreach (var frame in path.TrackDefFragment.Frames) {
-                                skeletonPath.Translation.Add(frame.Translation);
-                                skeletonPath.Rotation.Add(frame.Rotation);
-                            }
-                            rbone.BasePosition = skeletonPath;
+                        var track = bone.Track;
+                        if (track != null) {
+                            track.IsProcessed = true;
+                            track.IsPoseAnimation = true;
+                            rbone.BasePosition = ConvertTrack(track);
                         }
 
                         actor.Bones.Add(rbone);
@@ -237,6 +234,34 @@ namespace EQGodot2.resource_manager.wld_file {
                     }
                 }
                 ActorDefs.Add(actordef.Index, actor);
+            }
+        }
+
+        private ActorSkeletonPath ConvertTrack(WldTrackFragment track)
+        {
+            var skeletonPath = new ActorSkeletonPath {
+                Name = track.Name,
+                FrameMs = track.FrameMs,
+                Flags = track.Flags,
+                DefFlags = track.TrackDefFragment.Flags,
+                Translation = [],
+                Rotation = [],
+            };
+            foreach (var frame in track.TrackDefFragment.Frames) {
+                skeletonPath.Translation.Add(frame.Translation);
+                skeletonPath.Rotation.Add(frame.Rotation);
+            }
+            return skeletonPath;
+        }
+
+        public void BuildAnimations()
+        {
+            var animations = GetFragmentsOfType<WldTrackFragment>();
+            foreach (var animation in animations) {
+                if (animation.IsProcessed) {
+                    continue;
+                }
+                ExtraAnimations.Add(animation.Index, ConvertTrack(animation));
             }
         }
     }

@@ -13,6 +13,9 @@ namespace EQGodot2.resource_manager {
         public string Tag;
 
         [Export]
+        public int Flags;
+
+        [Export]
         public Godot.Collections.Array<ActorSkeletonBone> Bones {
             get; set;
         }

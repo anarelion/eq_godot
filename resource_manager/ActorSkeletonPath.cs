@@ -8,11 +8,17 @@ using System.Threading.Tasks;
 namespace EQGodot2.resource_manager {
     public partial class ActorSkeletonPath : Resource {
         [Export]
+        public string Name;
+        [Export]
         public string ModelName;
         [Export]
         public string AnimationName;
         [Export]
         public string PieceName;
+        [Export]
+        public int Flags;
+        [Export]
+        public int DefFlags;
         [Export]
         public int FrameMs {
             get; set;

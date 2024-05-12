@@ -19,6 +19,7 @@ namespace EQGodot2.resource_manager.wld_file {
         }
 
         public bool IsAssigned;
+        public int Flags;
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
@@ -29,14 +30,14 @@ namespace EQGodot2.resource_manager.wld_file {
             Reader = new BinaryReader(new MemoryStream(data));
             Name = stringHash[-Reader.ReadInt32()];
 
-            int flags = Reader.ReadInt32();
+            int Flags = Reader.ReadInt32();
 
             // Flags are always 8 when dealing with object animations
-            if (flags != 8) {
+            if (Flags != 8) {
 
             }
 
-            BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
+            BitAnalyzer bitAnalyzer = new BitAnalyzer(Flags);
 
             bool isS3dTrack2 = bitAnalyzer.IsBitSet(3);
 

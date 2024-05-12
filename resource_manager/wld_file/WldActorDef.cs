@@ -24,6 +24,8 @@ namespace EQGodot2.resource_manager.wld_file {
             get; private set;
         }
 
+        public int Flags;
+
         /// <summary>
         /// Camera reference (optional)
         /// </summary>
@@ -50,9 +52,9 @@ namespace EQGodot2.resource_manager.wld_file {
         {
             base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
-            int flags = Reader.ReadInt32();
+            Flags = Reader.ReadInt32();
 
-            BitAnalyzer ba = new BitAnalyzer(flags);
+            BitAnalyzer ba = new BitAnalyzer(Flags);
 
             bool params1Exist = ba.IsBitSet(0);
             bool params2Exist = ba.IsBitSet(1);
