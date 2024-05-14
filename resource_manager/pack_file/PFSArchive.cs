@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System;
+using System.IO;
 
 namespace EQGodot2.resource_manager.pack_file {
     [GlobalClass]
@@ -40,6 +41,23 @@ namespace EQGodot2.resource_manager.pack_file {
                         try {
                             // GD.Print("Need to process texture: ", pfsFile.Name);
                             var texture = ProcessDDSImage(pfsFile);
+                            if (texture != null) {
+                                Files[i] = texture;
+                                FilesByName[pfsFile.Name] = texture;
+                            }
+                        }
+                        catch (Exception ex) {
+                            GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
+                        }
+                    }
+                }
+            }
+            for (var i = 0; i < Files.Count; i++) {
+                if (Files[i] is PFSFile pfsFile) {
+                    if (pfsFile.Name.EndsWith(".bmp")) {
+                        try {
+                            //GD.Print("Need to process texture: ", pfsFile.Name);
+                            var texture = ProcessBMPImage(pfsFile);
                             if (texture != null) {
                                 Files[i] = texture;
                                 FilesByName[pfsFile.Name] = texture;
@@ -88,6 +106,32 @@ namespace EQGodot2.resource_manager.pack_file {
 
             try {
                 var image = Image.CreateFromData(dds.Width, dds.Height, dds.MipMaps.Length > 1, Image.Format.Rgba8, dds.Data);
+                return ImageTexture.CreateFromImage(image);
+            }
+            catch (Exception ex) {
+                GD.PrintErr("While processing ", pfsFile.Name, " an exception happened ", ex);
+                return null;
+            }
+        }
+
+        private ImageTexture ProcessBMPImage(PFSFile pfsFile)
+        {
+            var bitmap = new System.Drawing.Bitmap(new MemoryStream(pfsFile.FileBytes));
+            var data = new byte[bitmap.Width * bitmap.Height * 4];
+            var offset = data.Length - 4;
+            for (var y = 0; y < bitmap.Height; y++) {
+                for (var x = 0; x < bitmap.Width; x++) {
+                    var color = bitmap.GetPixel(x, y);
+                    data[offset + 0] = color.R;
+                    data[offset + 1] = color.G;
+                    data[offset + 2] = color.B;
+                    data[offset + 3] = color.A;
+                    offset -= 4;
+                }
+            }
+
+            try {
+                var image = Image.CreateFromData(bitmap.Width, bitmap.Height, false, Image.Format.Rgba8, data);
                 return ImageTexture.CreateFromImage(image);
             }
             catch (Exception ex) {
