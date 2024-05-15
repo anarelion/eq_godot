@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 
-namespace EQGodot2.resource_manager.pack_file {
+namespace EQGodot2.resource_manager.pack_file
+{
     [GlobalClass]
-    public partial class PFSArchive : Resource {
+    public partial class PFSArchive : Resource
+    {
         [Export]
         public Godot.Collections.Array<Resource> Files;
 
@@ -22,7 +24,8 @@ namespace EQGodot2.resource_manager.pack_file {
         public Godot.Collections.Dictionary<string, WldFile> WldFiles;
 
         [Export]
-        public bool IsWldArchive {
+        public bool IsWldArchive
+        {
             get; set;
         }
 
@@ -35,44 +38,60 @@ namespace EQGodot2.resource_manager.pack_file {
 
         public void ProcessFiles()
         {
-            for (var i = 0; i < Files.Count; i++) {
-                if (Files[i] is PFSFile pfsFile) {
-                    if (pfsFile.Name.EndsWith(".dds")) {
-                        try {
+            for (var i = 0; i < Files.Count; i++)
+            {
+                if (Files[i] is PFSFile pfsFile)
+                {
+                    if (pfsFile.Name.EndsWith(".dds"))
+                    {
+                        try
+                        {
                             // GD.Print("Need to process texture: ", pfsFile.Name);
                             var texture = ProcessDDSImage(pfsFile);
-                            if (texture != null) {
+                            if (texture != null)
+                            {
                                 Files[i] = texture;
                                 FilesByName[pfsFile.Name] = texture;
                             }
                         }
-                        catch (Exception ex) {
+                        catch (Exception ex)
+                        {
                             GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
                         }
                     }
                 }
             }
-            for (var i = 0; i < Files.Count; i++) {
-                if (Files[i] is PFSFile pfsFile) {
-                    if (pfsFile.Name.EndsWith(".bmp")) {
-                        try {
+            for (var i = 0; i < Files.Count; i++)
+            {
+                if (Files[i] is PFSFile pfsFile)
+                {
+                    if (pfsFile.Name.EndsWith(".bmp"))
+                    {
+                        try
+                        {
                             //GD.Print("Need to process texture: ", pfsFile.Name);
                             var texture = ProcessBMPImage(pfsFile);
-                            if (texture != null) {
+                            if (texture != null)
+                            {
                                 Files[i] = texture;
                                 FilesByName[pfsFile.Name] = texture;
                             }
                         }
-                        catch (Exception ex) {
+                        catch (Exception ex)
+                        {
                             GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
                         }
                     }
                 }
             }
-            for (var i = 0; i < Files.Count; i++) {
-                if (Files[i] is PFSFile pfsFile) {
-                    if (pfsFile.Name.EndsWith(".wld")) {
-                        try {
+            for (var i = 0; i < Files.Count; i++)
+            {
+                if (Files[i] is PFSFile pfsFile)
+                {
+                    if (pfsFile.Name.EndsWith(".wld"))
+                    {
+                        try
+                        {
 
                             IsWldArchive = true;
                             var wld = ProcessWldResource(pfsFile);
@@ -80,7 +99,8 @@ namespace EQGodot2.resource_manager.pack_file {
                             FilesByName[pfsFile.Name] = wld;
                             WldFiles[pfsFile.Name] = wld;
                         }
-                        catch (Exception ex) {
+                        catch (Exception ex)
+                        {
                             GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
                         }
                     }
@@ -93,7 +113,8 @@ namespace EQGodot2.resource_manager.pack_file {
             var dds = Pfim.Dds.Create(pfsFile.FileBytes, new Pfim.PfimConfig());
             var data = dds.Data;
             Debug.Assert(data.Length % 4 == 0);
-            for (var j = 0; j < data.Length / 4; j++) {
+            for (var j = 0; j < data.Length / 4; j++)
+            {
                 var b = dds.Data[j * 4 + 0];
                 var g = dds.Data[j * 4 + 1];
                 var r = dds.Data[j * 4 + 2];
@@ -104,11 +125,13 @@ namespace EQGodot2.resource_manager.pack_file {
                 dds.Data[j * 4 + 3] = a;
             }
 
-            try {
+            try
+            {
                 var image = Image.CreateFromData(dds.Width, dds.Height, dds.MipMaps.Length > 1, Image.Format.Rgba8, dds.Data);
                 return ImageTexture.CreateFromImage(image);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 GD.PrintErr("While processing ", pfsFile.Name, " an exception happened ", ex);
                 return null;
             }
@@ -119,9 +142,12 @@ namespace EQGodot2.resource_manager.pack_file {
             var bitmap = new System.Drawing.Bitmap(new MemoryStream(pfsFile.FileBytes));
             var data = new byte[bitmap.Width * bitmap.Height * 4];
             var offset = data.Length - 4;
-            for (var y = 0; y < bitmap.Height; y++) {
-                for (var x = 0; x < bitmap.Width; x++) {
+            for (var y = 0; y < bitmap.Height; y++)
+            {
+                for (var x = 0; x < bitmap.Width; x++)
+                {
                     var color = bitmap.GetPixel(x, y);
+
                     data[offset + 0] = color.R;
                     data[offset + 1] = color.G;
                     data[offset + 2] = color.B;
@@ -130,11 +156,13 @@ namespace EQGodot2.resource_manager.pack_file {
                 }
             }
 
-            try {
+            try
+            {
                 var image = Image.CreateFromData(bitmap.Width, bitmap.Height, false, Image.Format.Rgba8, data);
                 return ImageTexture.CreateFromImage(image);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 GD.PrintErr("While processing ", pfsFile.Name, " an exception happened ", ex);
                 return null;
             }
