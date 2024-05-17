@@ -51,7 +51,8 @@ public partial class ResourceManager : Node
             var animationName = animation.Name.Substr(0, 3);
             var actorName = animation.Name.Substr(3, 3);
             var boneName = animation.Name.Substring(6).Replace("_track", "");
-            if (boneName == "") {
+            if (boneName == "")
+            {
                 boneName = "root";
             }
 
@@ -71,11 +72,13 @@ public partial class ResourceManager : Node
         AddChild(InstantiateCharacter("dwf"));
     }
 
-    public Node3D InstantiateCharacter(string tagName)
+    public ActorInstance InstantiateCharacter(string tagName)
     {
         var actorDef = CharacterActor[tagName];
-        var node = new Node3D();
-        node.Name = actorDef.ResourceName;
+        var node = new ActorInstance
+        {
+            Name = actorDef.ResourceName
+        };
 
         var skeleton = actorDef.BuildSkeleton();
         // swap Y and Z to get a godot coordinate system
@@ -95,7 +98,7 @@ public partial class ResourceManager : Node
 
         var animationPlayer = new AnimationPlayer
         {
-            Name = tagName
+            Name = tagName + "_anim",
         };
 
         var animationLibrary = new AnimationLibrary();
@@ -109,8 +112,12 @@ public partial class ResourceManager : Node
                 if (!animationDict.ContainsKey(boneAnim.AnimationName))
                 {
                     var a = new Animation();
+                    if (animationTag == "P01")
+                    {
+                        a.LoopMode = Animation.LoopModeEnum.Linear;
+                    }
                     animationDict.Add(boneAnim.AnimationName, a);
-                    animationLibrary.AddAnimation(animationTag, a);
+                    animationLibrary.AddAnimation(boneAnim.AnimationName, a);
                 }
                 var gdAnimation = animationDict[boneAnim.AnimationName];
                 var bonePath = new NodePath($":{boneAnim.PieceName}");
@@ -120,20 +127,18 @@ public partial class ResourceManager : Node
                 var rotIdx = gdAnimation.AddTrack(Animation.TrackType.Rotation3D);
                 gdAnimation.TrackSetPath(rotIdx, bonePath);
                 gdAnimation.TrackSetInterpolationType(rotIdx, Animation.InterpolationType.LinearAngle);
-                for (int frame = 0; frame < boneAnim.Rotation.Count; frame++)
+                for (int frame = 0; frame < boneAnim.Translation.Count; frame++)
                 {
-                    gdAnimation.PositionTrackInsertKey(posIdx, frame * 0.001 * boneAnim.FrameMs, boneAnim.Translation[frame]);
-                    gdAnimation.RotationTrackInsertKey(rotIdx, frame * 0.001 * boneAnim.FrameMs, boneAnim.Rotation[frame]);
+                    gdAnimation.PositionTrackInsertKey(posIdx, frame * 0.001f * boneAnim.FrameMs, boneAnim.Translation[frame]);
+                    gdAnimation.RotationTrackInsertKey(rotIdx, frame * 0.001f * boneAnim.FrameMs, boneAnim.Rotation[frame]);
                 }
+                gdAnimation.Length = Math.Max(gdAnimation.Length, boneAnim.Translation.Count * 0.001f * boneAnim.FrameMs);
             }
-        }
-
-        foreach (var anim in animationDict) {
-            animationLibrary.AddAnimation(anim.Key, anim.Value);
         }
 
         animationPlayer.AddAnimationLibrary(tagName, animationLibrary);
         skeleton.AddChild(animationPlayer);
+        animationPlayer.Play("dwf/P01");
         return node;
     }
 
