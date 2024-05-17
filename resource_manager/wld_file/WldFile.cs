@@ -6,18 +6,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot2.resource_manager.wld_file
+{
     // Latern Extractor class
-    public partial class WldFile : Resource {
+    public partial class WldFile : Resource
+    {
 
         public const int WldFileIdentifier = 0x54503D02;
         public const int WldFormatOldIdentifier = 0x00015500;
         public const int WldFormatNewIdentifier = 0x1000C800;
 
         [Export]
-        public string Name {
+        public string Name
+        {
             get; set;
         }
 
@@ -36,11 +40,13 @@ namespace EQGodot2.resource_manager.wld_file {
         public Godot.Collections.Dictionary<int, ArrayMesh> Meshes;
 
         [Export]
-        public Godot.Collections.Dictionary<int, ActorDefinition> ActorDefs {
+        public Godot.Collections.Dictionary<int, ActorDefinition> ActorDefs
+        {
             get; set;
         }
         [Export]
-        public Godot.Collections.Dictionary<int, ActorSkeletonPath> ExtraAnimations {
+        public Godot.Collections.Dictionary<int, ActorSkeletonPath> ExtraAnimations
+        {
             get; set;
         }
 
@@ -51,7 +57,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public WldFile(PFSFile pfsFile, PFSArchive archive)
         {
-            if (pfsFile == null) {
+            if (pfsFile == null)
+            {
                 GD.PrintErr("Invalid file received, doing nothing");
                 return;
             }
@@ -63,7 +70,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
             int identifier = reader.ReadInt32();
 
-            if (identifier != WldFileIdentifier) {
+            if (identifier != WldFileIdentifier)
+            {
                 GD.PrintErr("Not a valid WLD file!");
                 return;
             }
@@ -78,7 +86,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
             int version = reader.ReadInt32();
 
-            switch (version) {
+            switch (version)
+            {
                 case WldFormatOldIdentifier:
                     break;
                 case WldFormatNewIdentifier:
@@ -108,15 +117,18 @@ namespace EQGodot2.resource_manager.wld_file {
             int index = 0;
             string[] splitHash = decoded.Split('\0');
 
-            foreach (var hashString in splitHash) {
+            foreach (var hashString in splitHash)
+            {
                 Strings[index] = hashString;
                 index += hashString.Length + 1;
             }
 
-            for (int i = 0; i < fragmentCount; ++i) {
+            for (int i = 0; i < fragmentCount; ++i)
+            {
                 uint fragSize = reader.ReadUInt32();
                 int fragType = reader.ReadInt32();
-                if (i % 500 == 0) {
+                if (i % 500 == 0)
+                {
                     GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
                 }
                 var fragmentContents = reader.ReadBytes((int)fragSize);
@@ -125,7 +137,8 @@ namespace EQGodot2.resource_manager.wld_file {
                     ? new WldGeneric()
                     : WldFragmentBuilder.Fragments[fragType]();
 
-                if (newFragment is WldGeneric) {
+                if (newFragment is WldGeneric)
+                {
                     GD.PrintErr($"WldFile {Name}: Unhandled fragment type: {fragType:x}");
                     break;
                 }
@@ -135,11 +148,13 @@ namespace EQGodot2.resource_manager.wld_file {
                 // newFragment.OutputInfo();
 
                 Fragments.Add(newFragment);
-                if (!FragmentTypeDictionary.ContainsKey(newFragment.GetType())) {
+                if (!FragmentTypeDictionary.ContainsKey(newFragment.GetType()))
+                {
                     FragmentTypeDictionary[newFragment.GetType()] = new List<WldFragment>();
                 }
 
-                if (!string.IsNullOrEmpty(newFragment.Name) && !FragmentNameDictionary.ContainsKey(newFragment.Name)) {
+                if (!string.IsNullOrEmpty(newFragment.Name) && !FragmentNameDictionary.ContainsKey(newFragment.Name))
+                {
                     FragmentNameDictionary[newFragment.Name] = newFragment;
                 }
 
@@ -154,7 +169,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public List<T> GetFragmentsOfType<T>() where T : WldFragment
         {
-            if (!FragmentTypeDictionary.ContainsKey(typeof(T))) {
+            if (!FragmentTypeDictionary.ContainsKey(typeof(T)))
+            {
                 return new List<T>();
             }
 
@@ -164,9 +180,11 @@ namespace EQGodot2.resource_manager.wld_file {
         public void BuildMaterials()
         {
             var materials = GetFragmentsOfType<WldMaterial>();
-            foreach (var material in materials) {
+            foreach (var material in materials)
+            {
                 var g = material.ToGodotMaterial(Archive);
-                if (g != null) {
+                if (g != null)
+                {
                     Materials.Add(material.Index, g);
                 }
             }
@@ -175,9 +193,11 @@ namespace EQGodot2.resource_manager.wld_file {
         public void BuildMeshes()
         {
             var meshes = GetFragmentsOfType<WldMesh>();
-            foreach (var mesh in meshes) {
+            foreach (var mesh in meshes)
+            {
                 var g = mesh.ToGodotMesh(this);
-                if (g != null) {
+                if (g != null)
+                {
                     Meshes.Add(mesh.Index, g);
                 }
             }
@@ -186,9 +206,11 @@ namespace EQGodot2.resource_manager.wld_file {
         public void BuildActorDefs()
         {
             var actordefs = GetFragmentsOfType<WldActorDef>();
-            foreach (var actordef in actordefs) {
+            foreach (var actordef in actordefs)
+            {
                 var name = FragmentNameCleaner.CleanName(actordef, true);
-                ActorDefinition actor = new ActorDefinition {
+                ActorDefinition actor = new ActorDefinition
+                {
                     ResourceName = name,
                     Tag = name,
                     Flags = actordef.Flags,
@@ -199,19 +221,27 @@ namespace EQGodot2.resource_manager.wld_file {
                 GD.Print(actor.Tag);
 
                 var skeleton = actordef.SkeletonReference?.SkeletonHierarchy;
-                if (skeleton != null) {
+                if (skeleton != null)
+                {
                     skeleton.BuildSkeletonData(false);
-                    foreach (var mesh in skeleton.Meshes) {
+                    foreach (var mesh in skeleton.Meshes)
+                    {
                         actor.Meshes.Add(mesh.Name, Meshes[mesh.Index]);
                     }
 
-                    foreach (var bone in skeleton.Skeleton) {
+                    foreach (var bone in skeleton.Skeleton)
+                    {
                         var meshref = bone.MeshReference;
                         var mesh = meshref != null && meshref.Mesh != null ? Meshes[meshref.Mesh.Index] : null;
-                        var rbone = new ActorSkeletonBone {
+                        var boneName = bone.Name.Substring(3).ToLower().Replace("_dag", "");
+                        if (boneName == "") {
+                            boneName = "root";
+                        }
+                        var rbone = new ActorSkeletonBone
+                        {
                             ResourceName = bone.Name,
                             Index = bone.Index,
-                            Name = bone.Name,
+                            Name = boneName,
                             FullPath = bone.FullPath,
                             CleanedName = bone.CleanedName,
                             CleanedFullPath = bone.CleanedFullPath,
@@ -219,35 +249,53 @@ namespace EQGodot2.resource_manager.wld_file {
                             Parent = bone.Parent != null ? actor.Bones[bone.Parent.Index] : null
                         };
                         var track = bone.Track;
-                        if (track != null) {
+                        if (track != null)
+                        {
                             track.IsProcessed = true;
                             track.IsPoseAnimation = true;
                             rbone.BasePosition = ConvertTrack(track);
                         }
 
                         actor.Bones.Add(rbone);
-                        if (actor.BonesByName.ContainsKey(rbone.Name)) {
-                            GD.PrintErr("Actor ", actor.Tag, " already has bone ", rbone.Name);
-                        } else {
-                            actor.BonesByName.Add(rbone.Name, rbone);
+                        if (actor.BonesByName.ContainsKey(boneName))
+                        {
+                            actor.BonesByName.Remove(boneName);
                         }
+                        actor.BonesByName.Add(boneName, rbone);
                     }
+                }
+                else
+                {
+                    GD.PrintErr($"Skeleton is null for {actor.Tag}");
                 }
                 ActorDefs.Add(actordef.Index, actor);
             }
         }
 
-        private ActorSkeletonPath ConvertTrack(WldTrackFragment track)
+        public ActorSkeletonPath ConvertTrack(WldTrackFragment track)
         {
-            var skeletonPath = new ActorSkeletonPath {
-                Name = track.Name,
+            string animationName = null;
+            string pieceName = null;
+            if (Regex.IsMatch(track.Name, @"^[A-Z][0-9][0-9]")) {
+                animationName = track.Name.Substr(0,3);
+                pieceName = track.Name.Substring(6).ToLower().Replace("_track", "");
+                if (pieceName == "") {
+                    pieceName = "root";
+                }
+            }
+            var skeletonPath = new ActorSkeletonPath
+            {
+                Name = track.Name.ToLower(),
+                AnimationName = animationName,
+                PieceName = pieceName,
                 FrameMs = track.FrameMs,
                 Flags = track.Flags,
                 DefFlags = track.TrackDefFragment.Flags,
                 Translation = [],
                 Rotation = [],
             };
-            foreach (var frame in track.TrackDefFragment.Frames) {
+            foreach (var frame in track.TrackDefFragment.Frames)
+            {
                 skeletonPath.Translation.Add(frame.Translation);
                 skeletonPath.Rotation.Add(frame.Rotation);
             }
@@ -257,8 +305,10 @@ namespace EQGodot2.resource_manager.wld_file {
         public void BuildAnimations()
         {
             var animations = GetFragmentsOfType<WldTrackFragment>();
-            foreach (var animation in animations) {
-                if (animation.IsProcessed) {
+            foreach (var animation in animations)
+            {
+                if (animation.IsProcessed)
+                {
                     continue;
                 }
                 ExtraAnimations.Add(animation.Index, ConvertTrack(animation));

@@ -32,8 +32,10 @@ namespace EQGodot2.resource_manager {
 
         public Skeleton3D BuildSkeleton()
         {
-            var skeleton = new Skeleton3D();
-            skeleton.Name = Tag;
+            var skeleton = new Skeleton3D
+            {
+                Name = Tag
+            };
             foreach (var bone in Bones) {
                 skeleton.AddBone(bone.Name);
                 if (bone.Parent != null) {
