@@ -15,6 +15,10 @@ run/main_scene="res://base_scene.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+DebugCam="*res://addons/debug_camera/scripts/DebugCamAutoload.gd"
+
 [dotnet]
 
 project/assembly_name="EQGodot2"
@@ -25,7 +29,7 @@ import/use_multiple_threads=false
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/pack_files/plugin.cfg")
+enabled=PackedStringArray("res://addons/debug_camera/plugin.cfg", "res://addons/pack_files/plugin.cfg")
 
 [filesystem]
 
