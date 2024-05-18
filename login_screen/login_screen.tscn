@@ -105,7 +105,7 @@ size_flags_vertical = 4
 text = "Exit
 "
 
-[connection signal="text_changed" from="ColorRect/MarginContainer/VBoxContainer/UsernameLineEdit" to="." method="_on_username_changed"]
-[connection signal="text_changed" from="ColorRect/MarginContainer/VBoxContainer/PasswordLineEdit" to="." method="_on_password_changed"]
-[connection signal="pressed" from="ColorRect/MarginContainer/VBoxContainer/LoginMContainer/LoginButton" to="." method="_on_login_button_pressed"]
-[connection signal="pressed" from="ColorRect/MarginContainer/VBoxContainer/ExitMContainer/ExitButton" to="." method="_on_exit_button_pressed"]
+[connection signal="text_changed" from="ColorRect/MarginContainer/VBoxContainer/UsernameLineEdit" to="." method="OnLoginChanged"]
+[connection signal="text_changed" from="ColorRect/MarginContainer/VBoxContainer/PasswordLineEdit" to="." method="OnPasswordChanged"]
+[connection signal="pressed" from="ColorRect/MarginContainer/VBoxContainer/LoginMContainer/LoginButton" to="." method="OnLoginButtonPressed"]
+[connection signal="pressed" from="ColorRect/MarginContainer/VBoxContainer/ExitMContainer/ExitButton" to="." method="OnExitButtonPressed"]

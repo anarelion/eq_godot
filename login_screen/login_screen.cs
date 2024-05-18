@@ -6,24 +6,26 @@ public partial class login_screen : Control
     private string Username;
     private string Password;
 
-    public void _OnLoginButtonPressed()
+    private void OnLoginButtonPressed()
     {
         GD.Print("Login");
     }
 
-    public void _OnExitButtonPressed()
+    private void OnExitButtonPressed()
     {
         GD.Print("Exit");
     }
 
-    public void _OnLoginChanged(string newValue)
+    private void OnLoginChanged(string newValue)
     {
         Username = newValue;
+        GD.Print($"Username {Username} changed");
     }
     
-    public void _OnPasswordChanged(string newValue)
+    private void OnPasswordChanged(string newValue)
     {
         Password = newValue;
+        GD.Print($"Password {Password} changed");
     }
 
 }

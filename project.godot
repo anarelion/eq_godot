@@ -11,13 +11,19 @@ config_version=5
 [application]
 
 config/name="EQGodot2"
-run/main_scene="res://base_scene.tscn"
+run/main_scene="res://login_screen/login_screen.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
+run/max_fps=60
+boot_splash/bg_color=Color(0.259183, 0.347112, 0.167039, 1)
 config/icon="res://icon.svg"
 
 [autoload]
 
 DebugCam="*res://addons/debug_camera/scripts/DebugCamAutoload.gd"
+
+[display]
+
+window/size/mode=2
 
 [dotnet]
 
