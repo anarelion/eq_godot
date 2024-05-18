@@ -55,9 +55,7 @@ public partial class ResourceManager : Node
             {
                 boneName = "root";
             }
-
-            // GD.Print($"{animationName} - {actorName} - {boneName}");
-
+            
             if (CharacterActor.ContainsKey(actorName))
             {
                 var actor = CharacterActor[actorName];
