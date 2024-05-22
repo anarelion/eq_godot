@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://dtnn2tjnfjhur"]
+[gd_scene load_steps=8 format=3 uid="uid://dtnn2tjnfjhur"]
 
 [ext_resource type="Script" path="res://login_screen/login_screen.cs" id="1_ywp1l"]
 
@@ -17,6 +17,12 @@ font = SubResource("SystemFont_q15l1")
 font_size = 32
 font_color = Color(0.629787, 0.627953, 0, 1)
 
+[sub_resource type="SystemFont" id="SystemFont_u1fyb"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_78qre"]
+font = SubResource("SystemFont_u1fyb")
+font_size = 24
+
 [node name="LoginScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -26,7 +32,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ywp1l")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,7 +41,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.18945, 0.286158, 0.388274, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="ColorRect"]
+[node name="Margins" type="MarginContainer" parent="Background"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,11 +51,11 @@ grow_vertical = 2
 theme_override_constants/margin_left = 180
 theme_override_constants/margin_right = 180
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ColorRect/MarginContainer"]
+[node name="VBox" type="VBoxContainer" parent="Background/Margins"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="LoginScreenLabel" type="Label" parent="Background/Margins/VBox"]
 layout_mode = 2
 text = "Login Screen
 "
@@ -57,55 +63,52 @@ label_settings = SubResource("LabelSettings_3w1ld")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="UsernameLabel" type="Label" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="UsernameLabel" type="Label" parent="Background/Margins/VBox"]
 layout_mode = 2
 text = "Username"
 label_settings = SubResource("LabelSettings_aasuy")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="UsernameLineEdit" type="LineEdit" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="UsernameLineEdit" type="LineEdit" parent="Background/Margins/VBox"]
 custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
+text = "default"
 max_length = 64
 
-[node name="PasswordLabel" type="Label" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="PasswordLabel" type="Label" parent="Background/Margins/VBox"]
 layout_mode = 2
 text = "Password"
 label_settings = SubResource("LabelSettings_aasuy")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PasswordLineEdit" type="LineEdit" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="PasswordLineEdit" type="LineEdit" parent="Background/Margins/VBox"]
 custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
+text = "default"
 max_length = 64
 secret = true
 
-[node name="LoginMContainer" type="MarginContainer" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="LoginMContainer" type="MarginContainer" parent="Background/Margins/VBox"]
 layout_mode = 2
 theme_override_constants/margin_top = 32
+theme_override_constants/margin_bottom = 32
 
-[node name="LoginButton" type="Button" parent="ColorRect/MarginContainer/VBoxContainer/LoginMContainer"]
+[node name="LoginButton" type="Button" parent="Background/Margins/VBox/LoginMContainer"]
 custom_minimum_size = Vector2(80, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 text = "Login"
 
-[node name="ExitMContainer" type="MarginContainer" parent="ColorRect/MarginContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="Background/Margins/VBox"]
+custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
-theme_override_constants/margin_top = 32
+label_settings = SubResource("LabelSettings_78qre")
+horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="ExitButton" type="Button" parent="ColorRect/MarginContainer/VBoxContainer/ExitMContainer"]
-custom_minimum_size = Vector2(80, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-text = "Exit
-"
-
-[connection signal="text_changed" from="ColorRect/MarginContainer/VBoxContainer/UsernameLineEdit" to="." method="OnLoginChanged"]
-[connection signal="text_changed" from="ColorRect/MarginContainer/VBoxContainer/PasswordLineEdit" to="." method="OnPasswordChanged"]
-[connection signal="pressed" from="ColorRect/MarginContainer/VBoxContainer/LoginMContainer/LoginButton" to="." method="OnLoginButtonPressed"]
-[connection signal="pressed" from="ColorRect/MarginContainer/VBoxContainer/ExitMContainer/ExitButton" to="." method="OnExitButtonPressed"]
+[connection signal="text_changed" from="Background/Margins/VBox/UsernameLineEdit" to="." method="OnLoginChanged"]
+[connection signal="text_changed" from="Background/Margins/VBox/PasswordLineEdit" to="." method="OnPasswordChanged"]
+[connection signal="pressed" from="Background/Margins/VBox/LoginMContainer/LoginButton" to="." method="OnLoginButtonPressed"]
