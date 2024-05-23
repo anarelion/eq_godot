@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using EQGodot2.network_manager.network_session;
+using EQGodot2.network_manager.packets;
 using Godot;
 
 namespace EQGodot2.network_manager.login_server
@@ -38,12 +39,11 @@ namespace EQGodot2.network_manager.login_server
         private void OnPacketReceived(byte[] packet)
         {
             GD.Print($" APP Layer got {packet.HexEncode()}");
-            var stream = new MemoryStream(packet);
-            var reader = new BinaryReader(stream);
-            var opcode = reader.ReadUInt16();
+            var reader = new PacketReader(packet);
+            var opcode = reader.ReadUShort();
             var decoded = opcode switch
             {
-                0x0017 => new SCHandshakeReply(reader),
+                0x1700 => new SCHandshakeReply(reader),
                 _ => throw new NotImplementedException(),
             };
             ProcessPacket(decoded);

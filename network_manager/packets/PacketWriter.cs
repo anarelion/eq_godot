@@ -26,27 +26,35 @@ namespace EQGodot2.network_manager.packets
 
         public void WriteShort(short value)
         {
-            Writer.Write(value);
+            WriteByte((byte)(value >> 8));
+            WriteByte((byte)value);
         }
 
         public void WriteUShort(ushort value)
         {
-            Writer.Write(value);
+            WriteByte((byte)(value >> 8));
+            WriteByte((byte)value);
         }
 
         public void WriteInt(int value)
         {
-            Writer.Write(value);
+            WriteByte((byte)(value >> 24));
+            WriteByte((byte)(value >> 16));
+            WriteByte((byte)(value >> 8));
+            WriteByte((byte)value);
         }
 
         public void WriteUInt(uint value)
         {
-            Writer.Write(value);
+            WriteByte((byte)(value >> 24));
+            WriteByte((byte)(value >> 16));
+            WriteByte((byte)(value >> 8));
+            WriteByte((byte)value);
         }
 
         public void WriteBytes(byte[] value)
         {
             Writer.Write(value);
-        }        
+        }
     }
 }

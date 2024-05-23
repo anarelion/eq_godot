@@ -8,7 +8,7 @@ namespace EQGodot2.network_manager.network_session
     // Latern Extractor class
     public abstract class AppPacket
     {
-        public BinaryReader Reader;
+        public PacketReader Reader;
 
         protected PacketWriter Writer;
 
@@ -16,7 +16,7 @@ namespace EQGodot2.network_manager.network_session
             Writer = new PacketWriter();
         }
 
-        public AppPacket(BinaryReader reader) {
+        public AppPacket(PacketReader reader) {
             Reader = reader;
             Read();
         }

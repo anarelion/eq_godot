@@ -19,7 +19,7 @@ namespace EQGodot2.network_manager.login_server
 
         public override ushort Opcode()
         {
-            return 0x0002;
+            return 0x0200;
         }
 
         public override void Write()

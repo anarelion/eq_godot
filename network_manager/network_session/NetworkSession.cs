@@ -38,7 +38,7 @@ namespace EQGodot2.network_manager.network_session
             var result = base.ConnectToHost(host, port);
             GD.Print($"Connected to {host}:{port} => {result}");
             var writer = new PacketWriter();
-            writer.WriteShort(0x100);
+            writer.WriteShort(0x01);
             writer.WriteUInt(ProtocolVersion);
             writer.WriteUInt(ConnectCode);
             writer.WriteUInt(MaxPacketSize);
@@ -56,50 +56,48 @@ namespace EQGodot2.network_manager.network_session
             ProcessPacket(reader, true);
         }
 
-        private void ProcessPacket(BinaryReader reader, bool processCrc)
+        private void ProcessPacket(PacketReader reader, bool processCrc)
         {
-            var opcode = reader.ReadUInt16();
+            var opcode = reader.ReadUShort();
             switch (opcode)
             {
-                case 0x0200: processCrc = false; break;
-                case 0x0600: processCrc = false; break;
+                case 0x02: processCrc = false; break;
+                case 0x06: processCrc = false; break;
             }
 
             if (processCrc)
             {
-                reader.BaseStream.Position = 0;
-                int size = (int)reader.BaseStream.Length;
+                reader.Reset();
+                int size = (int)reader.Remaining();
                 var contents = reader.ReadBytes(size - 2);
-                ushort crc = (ushort)((ushort)(reader.ReadByte() << 8) | reader.ReadByte());
+                ushort crc = reader.ReadUShort();
                 var calculated = CRC.CalculateCRC16(contents, EncodeKey);
                 if (calculated != crc)
                 {
                     GD.PrintErr(" CRC Invalid");
                     return;
                 }
-                var stream = new MemoryStream(contents);
-                reader = new BinaryReader(stream);
-                opcode = reader.ReadUInt16();
+                reader = new PacketReader(contents);
+                opcode = reader.ReadUShort();
             }
 
             switch (opcode)
             {
-                case 0x0200: ConnectionEstablished(reader); processCrc = false; break;
-                case 0x0300: ProcessCombined(reader); break;
-                case 0x0600: ProcessKeepAlive(reader); processCrc = false; break;
-                case 0x0900: ProcessAppPacket(reader); break;
-                case 0x1500: ProcessAck(reader); break;
+                case 0x02: ConnectionEstablished(reader); processCrc = false; break;
+                case 0x03: ProcessCombined(reader); break;
+                case 0x06: ProcessKeepAlive(reader); processCrc = false; break;
+                case 0x09: ProcessAppPacket(reader); break;
+                case 0x15: ProcessAck(reader); break;
                 default: GD.PrintErr($"Opcode {opcode:X04} not implemented"); throw new NotImplementedException();
             }
 
         }
 
-        private BinaryReader GetPacketReader()
+        private PacketReader GetPacketReader()
         {
             var packet = GetPacket();
             GD.Print(" <== ", packet.HexEncode());
-            var stream = new MemoryStream(packet);
-            return new BinaryReader(stream);
+            return new PacketReader(packet);
         }
 
         private void SendPacket(PacketWriter writer)
@@ -112,7 +110,7 @@ namespace EQGodot2.network_manager.network_session
         public void SendAppPacket(AppPacket packet)
         {
             var writer = new PacketWriter();
-            writer.WriteShort(0x900);
+            writer.WriteShort(0x09);
             writer.WriteByte((byte)(SequenceOut >> 8));
             writer.WriteByte((byte)SequenceOut);
             var data = packet.ToBytes();
@@ -124,15 +122,15 @@ namespace EQGodot2.network_manager.network_session
             SequenceOut++;
         }
 
-        private void ConnectionEstablished(BinaryReader reader)
+        private void ConnectionEstablished(PacketReader reader)
         {
-            var connectCode = reader.ReadUInt32();
+            var connectCode = reader.ReadUInt();
             if (connectCode != ConnectCode)
             {
                 GD.PrintErr($"Connection code does not match");
                 return;
             }
-            var encode = reader.ReadUInt32();
+            var encode = reader.ReadUInt();
             EncodeKey = [
                         (byte) (encode >> 24),
                         (byte) (encode >> 16),
@@ -142,7 +140,7 @@ namespace EQGodot2.network_manager.network_session
             CRCBytes = reader.ReadByte();
             FilterMode = reader.ReadByte();
             EncodePass2 = reader.ReadByte();
-            MaxPacketSize = reader.ReadUInt32();
+            MaxPacketSize = reader.ReadUInt();
             EmitSignal(SignalName.SessionEstablished);
         }
 
@@ -151,53 +149,51 @@ namespace EQGodot2.network_manager.network_session
             if (CRCBytes == 2)
             {
                 var crc = CRC.CalculateCRC16(writer.ToBytes(), EncodeKey);
-                writer.WriteByte((byte)(crc >> 8));
-                writer.WriteByte((byte)crc);
+                writer.WriteUShort(crc);
             }
         }
 
-        private void ProcessKeepAlive(BinaryReader reader)
+        private void ProcessKeepAlive(PacketReader reader)
         {
             var writer = new PacketWriter();
-            writer.WriteUShort(0x600);
-            writer.WriteUShort(reader.ReadUInt16());
+            writer.WriteUShort(0x6);
+            writer.WriteUShort(reader.ReadUShort());
             SendPacket(writer);
         }
 
-        private void ProcessCombined(BinaryReader reader)
+        private void ProcessCombined(PacketReader reader)
         {
-            while (reader.BaseStream.Position < reader.BaseStream.Length - 2)
+            while (reader.Remaining() <= 2)
             {
                 var size = reader.ReadByte();
                 var packet = reader.ReadBytes(size);
-                var stream = new MemoryStream(packet);
-                var subreader = new BinaryReader(stream);
+                var subreader = new PacketReader(packet);
                 ProcessPacket(subreader, false);
             }
         }
 
-        private void ProcessAck(BinaryReader reader)
+        private void ProcessAck(PacketReader reader)
         {
-            var sequence = reader.ReadUInt16();
+            var sequence = reader.ReadUShort();
             if (SentPackets[sequence] != null)
             {
                 SentPackets[sequence] = null;
             }
         }
 
-        private void ProcessAppPacket(BinaryReader reader)
+        private void ProcessAppPacket(PacketReader reader)
         {
-            var sequence = reader.ReadUInt16();
-            var packet = reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position));
-            GD.Print($"{sequence:X04} {SequenceIn:X04} - {reader.BaseStream.Position}/{reader.BaseStream.Length} ");
+            var sequence = reader.ReadUShort();
+            var packet = reader.ReadBytes((int)reader.Remaining());
+            GD.Print($"{sequence:X04} {SequenceIn:X04} - {reader.Stream.Position}/{reader.Stream.Length} ");
             if (sequence == SequenceIn)
             {
                 var writer = new PacketWriter();
-                writer.WriteUShort(0x1500);
+                writer.WriteUShort(0x15);
                 writer.WriteUShort(sequence);
                 AppendCRC(writer);
                 SendPacket(writer);
-
+                SequenceIn++;
                 EmitSignal(SignalName.PacketReceived, packet);
             }
         }
