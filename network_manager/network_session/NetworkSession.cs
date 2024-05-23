@@ -113,7 +113,8 @@ namespace EQGodot2.network_manager.network_session
         {
             var writer = new PacketWriter();
             writer.WriteShort(0x900);
-            writer.WriteUShort(SequenceOut);
+            writer.WriteByte((byte)(SequenceOut >> 8));
+            writer.WriteByte((byte)SequenceOut);
             var data = packet.ToBytes();
             SentPackets[SequenceOut] = data;
             GD.Print(" APP ", data.HexEncode());

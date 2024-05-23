@@ -52,6 +52,7 @@ namespace EQGodot2.network_manager.login_server
         private void ProcessPacket(SCHandshakeReply packet)
         {
             GD.Print($"Message: {packet.Message}");
+            Network.SendAppPacket(new CSPlayerLogin(Username, Password));
         }
     }
 }
