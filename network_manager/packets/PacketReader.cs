@@ -50,9 +50,9 @@ namespace EQGodot2.network_manager.packets
             return (uint)(ReadByte() << 24 | ReadByte() << 16 | ReadByte() << 8 | ReadByte());
         }
 
-        public byte[] ReadBytes(int amount)
+        public byte[] ReadBytes(long amount)
         {
-            return Reader.ReadBytes(amount);
+            return Reader.ReadBytes((int)amount);
         }
 
         public string ReadString()

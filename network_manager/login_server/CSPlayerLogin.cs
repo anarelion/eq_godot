@@ -6,16 +6,10 @@ using EQGodot2.network_manager.packets;
 
 namespace EQGodot2.network_manager.login_server
 {
-    public class CSPlayerLogin : AppPacket
+    public class CSPlayerLogin(string username, string password) : AppPacket
     {
-        private string Username;
-        private string Password;
-
-        public CSPlayerLogin(string username, string password)
-        {
-            Username = username;
-            Password = password;
-        }
+        private readonly string Username = username;
+        private readonly string Password = password;
 
         public override ushort Opcode()
         {

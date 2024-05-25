@@ -21,10 +21,6 @@ config/icon="res://icon.svg"
 
 DebugCam="*res://addons/debug_camera/scripts/DebugCamAutoload.gd"
 
-[display]
-
-window/size/mode=2
-
 [dotnet]
 
 project/assembly_name="EQGodot2"

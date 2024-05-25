@@ -5,13 +5,11 @@ using EQGodot2.network_manager.packets;
 
 namespace EQGodot2.network_manager.login_server
 {
-    public class SCHandshakeReply(PacketReader reader) : AppPacket(reader)
+    public class SCSetGameFeatures(PacketReader reader) : AppPacket(reader)
     {
-        public string Message;
-
         public override ushort Opcode()
         {
-            return 0x1700;
+            return 0x3100;
         }
 
         public override void Write()
@@ -21,13 +19,7 @@ namespace EQGodot2.network_manager.login_server
 
         public override void Read()
         {
-            Reader.ReadUShort();
-            Reader.ReadUShort();
-            Reader.ReadUShort();
-            Reader.ReadUInt();
-            Reader.ReadUInt();
-            Reader.ReadByte();
-            Message = Reader.ReadString();
+            // TODO: not sure if we care about this packet
         }
 
     }

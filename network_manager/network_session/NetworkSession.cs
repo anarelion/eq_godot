@@ -3,6 +3,7 @@ using Godot;
 using System;
 using System.Formats.Asn1;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Xml.XPath;
@@ -25,6 +26,9 @@ namespace EQGodot2.network_manager.network_session
         private ushort LastAckSent = 0;
         private byte[][] SentPackets = new byte[0x10000][];
         private byte[][] FuturePackets = new byte[0x10000][];
+        private byte[] FragmentContents;
+        private uint FragmentLength;
+        private uint FragmentOffset;
 
         [Signal]
         public delegate void SessionEstablishedEventHandler();
@@ -56,16 +60,17 @@ namespace EQGodot2.network_manager.network_session
             ProcessPacket(reader, true);
         }
 
-        private void ProcessPacket(PacketReader reader, bool processCrc)
+        private void ProcessPacket(PacketReader reader, bool topLevel)
         {
             var opcode = reader.ReadUShort();
             switch (opcode)
             {
-                case 0x02: processCrc = false; break;
-                case 0x06: processCrc = false; break;
+                case 0x02: topLevel = false; break;
+                case 0x06: topLevel = false; break;
             }
 
-            if (processCrc)
+            // we only process CRC if the packet is top level/not combined
+            if (topLevel)
             {
                 reader.Reset();
                 int size = (int)reader.Remaining();
@@ -83,10 +88,11 @@ namespace EQGodot2.network_manager.network_session
 
             switch (opcode)
             {
-                case 0x02: ConnectionEstablished(reader); processCrc = false; break;
+                case 0x02: ConnectionEstablished(reader); break;
                 case 0x03: ProcessCombined(reader); break;
-                case 0x06: ProcessKeepAlive(reader); processCrc = false; break;
+                case 0x06: ProcessKeepAlive(reader); break;
                 case 0x09: ProcessAppPacket(reader); break;
+                case 0x0D: ProcessFragment(reader); break;
                 case 0x15: ProcessAck(reader); break;
                 default: GD.PrintErr($"Opcode {opcode:X04} not implemented"); throw new NotImplementedException();
             }
@@ -96,14 +102,14 @@ namespace EQGodot2.network_manager.network_session
         private PacketReader GetPacketReader()
         {
             var packet = GetPacket();
-            GD.Print(" <== ", packet.HexEncode());
+            // GD.Print(" <== ", packet.HexEncode());
             return new PacketReader(packet);
         }
 
         private void SendPacket(PacketWriter writer)
         {
             var send = writer.ToBytes();
-            GD.Print(" ==> ", send.HexEncode());
+            // GD.Print(" ==> ", send.HexEncode());
             PutPacket(send);
         }
 
@@ -115,11 +121,20 @@ namespace EQGodot2.network_manager.network_session
             writer.WriteByte((byte)SequenceOut);
             var data = packet.ToBytes();
             SentPackets[SequenceOut] = data;
-            GD.Print(" APP ", data.HexEncode());
+            // GD.Print(" APP OUT ", data.HexEncode());
             writer.WriteBytes(data);
             AppendCRC(writer);
             SendPacket(writer);
             SequenceOut++;
+        }
+
+        private void SendAck(ushort sequence)
+        {
+            var writer = new PacketWriter();
+            writer.WriteUShort(0x15);
+            writer.WriteUShort(sequence);
+            AppendCRC(writer);
+            SendPacket(writer);
         }
 
         private void ConnectionEstablished(PacketReader reader)
@@ -163,7 +178,7 @@ namespace EQGodot2.network_manager.network_session
 
         private void ProcessCombined(PacketReader reader)
         {
-            while (reader.Remaining() <= 2)
+            while (reader.Remaining() > 2)
             {
                 var size = reader.ReadByte();
                 var packet = reader.ReadBytes(size);
@@ -185,18 +200,43 @@ namespace EQGodot2.network_manager.network_session
         {
             var sequence = reader.ReadUShort();
             var packet = reader.ReadBytes((int)reader.Remaining());
-            GD.Print($"{sequence:X04} {SequenceIn:X04} - {reader.Stream.Position}/{reader.Stream.Length} ");
+            // GD.Print(" APP IN  ", packet.HexEncode());
             if (sequence == SequenceIn)
             {
-                var writer = new PacketWriter();
-                writer.WriteUShort(0x15);
-                writer.WriteUShort(sequence);
-                AppendCRC(writer);
-                SendPacket(writer);
+                SendAck(sequence);
                 SequenceIn++;
                 EmitSignal(SignalName.PacketReceived, packet);
             }
         }
-    }
 
+        private void ProcessFragment(PacketReader reader)
+        {
+            var sequence = reader.ReadUShort();
+            if (sequence == SequenceIn)
+            {
+                SendAck(sequence);
+                SequenceIn++;
+            }
+            else
+            {
+                return;
+            }
+
+            if (FragmentContents == null)
+            {
+                FragmentLength = reader.ReadUInt();
+                FragmentContents = new byte[FragmentLength];
+                FragmentOffset = 0;
+            }
+            var newFragment = reader.ReadBytes((int)reader.Remaining());
+            Array.Copy(newFragment, 0, FragmentContents, FragmentOffset, newFragment.Length);
+            FragmentOffset += (uint)newFragment.Length;
+            if (FragmentOffset >= FragmentLength)
+            {
+                // GD.Print(" APP IN  ", FragmentContents.HexEncode());
+                EmitSignal(SignalName.PacketReceived, FragmentContents);
+                FragmentContents = null;
+            }
+        }
+    }
 }

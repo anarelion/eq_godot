@@ -38,21 +38,38 @@ namespace EQGodot2.network_manager.login_server
 
         private void OnPacketReceived(byte[] packet)
         {
-            GD.Print($" APP Layer got {packet.HexEncode()}");
+            GD.Print($" LOG IN  {packet.HexEncode()}");
             var reader = new PacketReader(packet);
             var opcode = reader.ReadUShort();
-            var decoded = opcode switch
+            switch (opcode)
             {
-                0x1700 => new SCHandshakeReply(reader),
-                _ => throw new NotImplementedException(),
+                case 0x1700: ProcessPacket(new SCHandshakeReply(reader)); break;
+                case 0x1800: ProcessPacket(new SCPlayerLoginReply(reader)); break;
+                case 0x3100: ProcessPacket(new SCSetGameFeatures(reader)); break;
+                default:
+                    GD.Print($" LOG IN  UNK {packet.HexEncode()}");
+                    throw new NotImplementedException();
             };
-            ProcessPacket(decoded);
         }
 
         private void ProcessPacket(SCHandshakeReply packet)
         {
             GD.Print($"Message: {packet.Message}");
             Network.SendAppPacket(new CSPlayerLogin(Username, Password));
+        }
+
+        private void ProcessPacket(SCSetGameFeatures packet)
+        {
+            // TODO: not sure if we care about this packet as it contains the expansions data
+        }
+
+        private void ProcessPacket(SCPlayerLoginReply packet)
+        {
+            if (packet.EQLSStr == 101)
+            {
+                EmitSignal(SignalName.MessageUpdate, "Logged in, retrieving server list");
+                Network.SendAppPacket(new CSGetServerList());
+            }
         }
     }
 }
