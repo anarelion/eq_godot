@@ -1,19 +1,26 @@
 
 using System;
 using EQGodot2.network_manager.network_session;
+using Godot;
 
 namespace EQGodot2.network_manager.login_server
 {
-    public class CSGetServerList : AppPacket
+    public class CSJoinServer(uint serverId) : AppPacket
     {
+        private readonly uint ServerId = serverId;
+
         public override ushort Opcode()
         {
-            return 0x0400;
+            return 0x0d00;
         }
 
         public override void Write()
         {
-            Writer.WriteIntBE(0x04);
+            GD.Print($"Joining server {ServerId}");
+            Writer.WriteShortLE(5);
+            Writer.WriteIntBE(0);
+            Writer.WriteIntBE(0);
+            Writer.WriteUIntLE(ServerId);
         }
 
         public override void Read()

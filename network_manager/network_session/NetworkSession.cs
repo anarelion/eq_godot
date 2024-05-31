@@ -13,6 +13,7 @@ namespace EQGodot2.network_manager.network_session
 
     public partial class NetworkSession : PacketPeerUdp
     {
+        private bool Disconnected = true;
         private uint ConnectCode;
         private byte[] EncodeKey;
         private byte CRCBytes;
@@ -41,11 +42,12 @@ namespace EQGodot2.network_manager.network_session
             ConnectCode = (uint)GlobalVariables.Rand.Next();
             var result = base.ConnectToHost(host, port);
             GD.Print($"Connected to {host}:{port} => {result}");
+            Disconnected = false;
             var writer = new PacketWriter();
-            writer.WriteShort(0x01);
-            writer.WriteUInt(ProtocolVersion);
-            writer.WriteUInt(ConnectCode);
-            writer.WriteUInt(MaxPacketSize);
+            writer.WriteShortBE(0x01);
+            writer.WriteUIntBE(ProtocolVersion);
+            writer.WriteUIntBE(ConnectCode);
+            writer.WriteUIntBE(MaxPacketSize);
             SendPacket(writer);
             return result;
         }
@@ -60,9 +62,20 @@ namespace EQGodot2.network_manager.network_session
             ProcessPacket(reader, true);
         }
 
+        public void Disconnect()
+        {
+            var writer = new PacketWriter();
+            writer.WriteShortBE(0x05);  // Opcode
+            writer.WriteShortBE(0x05);  // Unknown
+            AppendCRC(writer);
+            SendPacket(writer);
+            Close();
+            Disconnected = true;
+        }
+
         private void ProcessPacket(PacketReader reader, bool topLevel)
         {
-            var opcode = reader.ReadUShort();
+            var opcode = reader.ReadUShortBE();
             switch (opcode)
             {
                 case 0x02: topLevel = false; break;
@@ -75,7 +88,7 @@ namespace EQGodot2.network_manager.network_session
                 reader.Reset();
                 int size = (int)reader.Remaining();
                 var contents = reader.ReadBytes(size - 2);
-                ushort crc = reader.ReadUShort();
+                ushort crc = reader.ReadUShortBE();
                 var calculated = CRC.CalculateCRC16(contents, EncodeKey);
                 if (calculated != crc)
                 {
@@ -83,7 +96,7 @@ namespace EQGodot2.network_manager.network_session
                     return;
                 }
                 reader = new PacketReader(contents);
-                opcode = reader.ReadUShort();
+                opcode = reader.ReadUShortBE();
             }
 
             switch (opcode)
@@ -116,7 +129,7 @@ namespace EQGodot2.network_manager.network_session
         public void SendAppPacket(AppPacket packet)
         {
             var writer = new PacketWriter();
-            writer.WriteShort(0x09);
+            writer.WriteShortBE(0x09);
             writer.WriteByte((byte)(SequenceOut >> 8));
             writer.WriteByte((byte)SequenceOut);
             var data = packet.ToBytes();
@@ -131,8 +144,8 @@ namespace EQGodot2.network_manager.network_session
         private void SendAck(ushort sequence)
         {
             var writer = new PacketWriter();
-            writer.WriteUShort(0x15);
-            writer.WriteUShort(sequence);
+            writer.WriteUShortBE(0x15);
+            writer.WriteUShortBE(sequence);
             AppendCRC(writer);
             SendPacket(writer);
         }
@@ -164,15 +177,15 @@ namespace EQGodot2.network_manager.network_session
             if (CRCBytes == 2)
             {
                 var crc = CRC.CalculateCRC16(writer.ToBytes(), EncodeKey);
-                writer.WriteUShort(crc);
+                writer.WriteUShortBE(crc);
             }
         }
 
         private void ProcessKeepAlive(PacketReader reader)
         {
             var writer = new PacketWriter();
-            writer.WriteUShort(0x6);
-            writer.WriteUShort(reader.ReadUShort());
+            writer.WriteUShortBE(0x6);
+            writer.WriteUShortBE(reader.ReadUShortBE());
             SendPacket(writer);
         }
 
@@ -189,7 +202,7 @@ namespace EQGodot2.network_manager.network_session
 
         private void ProcessAck(PacketReader reader)
         {
-            var sequence = reader.ReadUShort();
+            var sequence = reader.ReadUShortBE();
             if (SentPackets[sequence] != null)
             {
                 SentPackets[sequence] = null;
@@ -198,7 +211,7 @@ namespace EQGodot2.network_manager.network_session
 
         private void ProcessAppPacket(PacketReader reader)
         {
-            var sequence = reader.ReadUShort();
+            var sequence = reader.ReadUShortBE();
             var packet = reader.ReadBytes((int)reader.Remaining());
             // GD.Print(" APP IN  ", packet.HexEncode());
             if (sequence == SequenceIn)
@@ -211,7 +224,7 @@ namespace EQGodot2.network_manager.network_session
 
         private void ProcessFragment(PacketReader reader)
         {
-            var sequence = reader.ReadUShort();
+            var sequence = reader.ReadUShortBE();
             if (sequence == SequenceIn)
             {
                 SendAck(sequence);

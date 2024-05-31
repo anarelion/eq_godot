@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://login_server/server_selection.cs" id="1_6d3l7"]
 
 [sub_resource type="SystemFont" id="SystemFont_hwdax"]
+subpixel_positioning = 0
 
 [sub_resource type="LabelSettings" id="LabelSettings_ueabb"]
 font = SubResource("SystemFont_hwdax")
@@ -10,6 +11,7 @@ font_size = 50
 font_color = Color(0.62928, 0.73946, 0.892795, 1)
 
 [sub_resource type="SystemFont" id="SystemFont_u1fyb"]
+subpixel_positioning = 0
 
 [sub_resource type="LabelSettings" id="LabelSettings_c865q"]
 font = SubResource("SystemFont_u1fyb")

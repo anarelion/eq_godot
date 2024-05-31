@@ -13,10 +13,10 @@ namespace EQGodot2.network_manager.login_server
 
         public override void Write()
         {
-            Writer.WriteInt(0x0200);
-            Writer.WriteShort(0);
-            Writer.WriteInt(0);
-            Writer.WriteShort(0x0B00);
+            Writer.WriteIntBE(0x0200);
+            Writer.WriteShortBE(0);
+            Writer.WriteIntBE(0);
+            Writer.WriteShortBE(0x0B00);
         }
 
         public override void Read()

@@ -18,11 +18,11 @@ namespace EQGodot2.network_manager.login_server
 
         public override void Write()
         {
-            Writer.WriteShort(0);
-            Writer.WriteShort(0);
-            Writer.WriteShort(0);
-            Writer.WriteShort(0);
-            Writer.WriteShort(0);
+            Writer.WriteShortBE(0);
+            Writer.WriteShortBE(0);
+            Writer.WriteShortBE(0);
+            Writer.WriteShortBE(0);
+            Writer.WriteShortBE(0);
             Writer.WriteBytes(Encrypt());
         }
 

@@ -30,17 +30,22 @@ namespace EQGodot2.network_manager.packets
             return Reader.ReadByte();
         }
 
-        public short ReadShort()
+        public short ReadShortBE()
         {
             return (short)(ReadByte() << 8 | ReadByte());
         }
 
-        public ushort ReadUShort()
+        public ushort ReadUShortBE()
         {
             return (ushort)(ReadByte() << 8 | ReadByte());
         }
 
-        public int ReadInt()
+        public ushort ReadUShortLE()
+        {
+            return (ushort)(ReadByte() | ReadByte() << 8);
+        }
+
+        public int ReadIntBE()
         {
             return ReadByte() << 24 | ReadByte() << 16 | ReadByte() << 8 | ReadByte();
         }

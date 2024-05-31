@@ -28,14 +28,14 @@ namespace EQGodot2.network_manager.login_server
         {
             Reader.ReadUIntBE();
             Reader.ReadUIntBE();
-            Reader.ReadUShort();
+            Reader.ReadUShortBE();
             var contents = Reader.ReadBytes(Reader.Remaining());
             var empty = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
             var des = new DESCrypto(empty, empty);
             var subReader = new PacketReader(des.Decrypt(contents));
             Message = subReader.ReadByte();
             EQLSStr = subReader.ReadByte();
-            subReader.ReadUShort();
+            subReader.ReadUShortBE();
             subReader.ReadUIntLE();
             LSID = subReader.ReadUIntLE();
             KeyComponents = subReader.ReadBytes(10);

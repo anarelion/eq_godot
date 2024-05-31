@@ -12,8 +12,8 @@ namespace EQGodot2.login_screen
 
         private void OnLoginButtonPressed()
         {
-            var username = ((LineEdit)GetNode("Background/Margins/VBox/UsernameLineEdit")).Text;
-            var password = ((LineEdit)GetNode("Background/Margins/VBox/PasswordLineEdit")).Text;
+            var username = GetNode<LineEdit>("Background/Margins/VBox/UsernameLineEdit").Text;
+            var password = GetNode<LineEdit>("Background/Margins/VBox/PasswordLineEdit").Text;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 return;
@@ -21,11 +21,11 @@ namespace EQGodot2.login_screen
 
             var session = new LoginSession(username, password);
             session.MessageUpdate += OnMessageUpdate;
-            GetParent().AddChild(session);
+            GetTree().Root.AddChild(session);
         }
 
         private void OnMessageUpdate(string message) {
-            ((Label)GetNode("Background/Margins/VBox/StatusLabel")).Text = message;
+            GetNode<Label>("Background/Margins/VBox/StatusLabel").Text = message;
         }
     }
 }

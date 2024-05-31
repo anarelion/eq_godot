@@ -21,9 +21,9 @@ namespace EQGodot2.network_manager.login_server
 
         public override void Read()
         {
-            Reader.ReadUShort();
-            Reader.ReadUShort();
-            Reader.ReadUShort();
+            Reader.ReadUShortBE();
+            Reader.ReadUShortBE();
+            Reader.ReadUShortBE();
             Reader.ReadUIntLE();
             Reader.ReadUIntLE();
             Reader.ReadByte();

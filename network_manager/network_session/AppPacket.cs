@@ -25,7 +25,7 @@ namespace EQGodot2.network_manager.network_session
             if (Writer == null) {
                 throw new NotImplementedException();
             }
-            Writer.WriteUShort(Opcode());
+            Writer.WriteUShortBE(Opcode());
             Write();
             var result = Writer.ToBytes();
             Writer = new PacketWriter();
