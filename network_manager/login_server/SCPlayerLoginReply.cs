@@ -26,8 +26,8 @@ namespace EQGodot2.network_manager.login_server
 
         public override void Read()
         {
-            Reader.ReadUInt();
-            Reader.ReadUInt();
+            Reader.ReadUIntBE();
+            Reader.ReadUIntBE();
             Reader.ReadUShort();
             var contents = Reader.ReadBytes(Reader.Remaining());
             var empty = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -36,10 +36,10 @@ namespace EQGodot2.network_manager.login_server
             Message = subReader.ReadByte();
             EQLSStr = subReader.ReadByte();
             subReader.ReadUShort();
-            subReader.ReadUInt();
-            LSID = subReader.ReadUInt();
+            subReader.ReadUIntLE();
+            LSID = subReader.ReadUIntLE();
             KeyComponents = subReader.ReadBytes(10);
-            FailedAttempts = subReader.ReadUInt();
+            FailedAttempts = subReader.ReadUIntLE();
             GD.Print($"Logged in: {Message} {EQLSStr} {LSID} {KeyComponents.HexEncode()} {FailedAttempts}");
         }
 

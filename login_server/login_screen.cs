@@ -9,6 +9,7 @@ namespace EQGodot2.login_screen
 
     public partial class login_screen : Control
     {
+
         private void OnLoginButtonPressed()
         {
             var username = ((LineEdit)GetNode("Background/Margins/VBox/UsernameLineEdit")).Text;
@@ -18,20 +19,13 @@ namespace EQGodot2.login_screen
                 return;
             }
 
-            if (GlobalVariables.LoginServerSession == null)
-            {
-                GlobalVariables.LoginServerSession = new LoginSession(username, password);
-                GlobalVariables.LoginServerSession.MessageUpdate += OnMessageUpdate;
-            }
+            var session = new LoginSession(username, password);
+            session.MessageUpdate += OnMessageUpdate;
+            GetParent().AddChild(session);
         }
 
         private void OnMessageUpdate(string message) {
             ((Label)GetNode("Background/Margins/VBox/StatusLabel")).Text = message;
-        }
-
-        public override void _Process(double delta)
-        {
-            GlobalVariables.LoginServerSession?._Process(delta);
         }
     }
 }

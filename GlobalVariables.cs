@@ -6,7 +6,7 @@ namespace EQGodot2.network_manager.network_session
 
     public static class GlobalVariables
     {
-        public static LoginSession LoginServerSession;
+        // public static LoginSession LoginServerSession;
 
         public static Random Rand = new Random();
     }

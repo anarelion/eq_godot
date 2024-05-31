@@ -45,9 +45,14 @@ namespace EQGodot2.network_manager.packets
             return ReadByte() << 24 | ReadByte() << 16 | ReadByte() << 8 | ReadByte();
         }
 
-        public uint ReadUInt()
+        public uint ReadUIntBE()
         {
             return (uint)(ReadByte() << 24 | ReadByte() << 16 | ReadByte() << 8 | ReadByte());
+        }
+
+        public uint ReadUIntLE()
+        {
+            return (uint)(ReadByte() | ReadByte() << 8 | ReadByte() << 16 | ReadByte() << 24);
         }
 
         public byte[] ReadBytes(long amount)
@@ -57,7 +62,13 @@ namespace EQGodot2.network_manager.packets
 
         public string ReadString()
         {
-            return Reader.ReadString();
+            string s = "";
+            byte c;
+            while ((c = Reader.ReadByte()) != 0)
+            {
+                s += (char)c;
+            }
+            return s;
         }
     }
 }

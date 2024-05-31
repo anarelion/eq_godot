@@ -24,8 +24,8 @@ namespace EQGodot2.network_manager.login_server
             Reader.ReadUShort();
             Reader.ReadUShort();
             Reader.ReadUShort();
-            Reader.ReadUInt();
-            Reader.ReadUInt();
+            Reader.ReadUIntLE();
+            Reader.ReadUIntLE();
             Reader.ReadByte();
             Message = Reader.ReadString();
         }

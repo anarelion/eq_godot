@@ -45,6 +45,7 @@ namespace EQGodot2.network_manager.login_server
             {
                 case 0x1700: ProcessPacket(new SCHandshakeReply(reader)); break;
                 case 0x1800: ProcessPacket(new SCPlayerLoginReply(reader)); break;
+                case 0x1900: ProcessPacket(new SCGetServerListReply(reader)); break;
                 case 0x3100: ProcessPacket(new SCSetGameFeatures(reader)); break;
                 default:
                     GD.Print($" LOG IN  UNK {packet.HexEncode()}");
@@ -70,6 +71,20 @@ namespace EQGodot2.network_manager.login_server
                 EmitSignal(SignalName.MessageUpdate, "Logged in, retrieving server list");
                 Network.SendAppPacket(new CSGetServerList());
             }
+            else
+            {
+                EmitSignal(SignalName.MessageUpdate, "There was an error while logging in");
+            }
+        }
+
+        private void ProcessPacket(SCGetServerListReply packet)
+        {
+            PackedScene serverSelection = ResourceLoader.Load<PackedScene>("res://login_server/server_selection.tscn");
+            QueueFree();
+            server_selection newScene = serverSelection.Instantiate() as server_selection;
+            newScene.LoadServers(packet);
+
+            GetTree().Root.AddChild(newScene);
         }
     }
 }

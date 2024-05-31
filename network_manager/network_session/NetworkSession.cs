@@ -139,13 +139,13 @@ namespace EQGodot2.network_manager.network_session
 
         private void ConnectionEstablished(PacketReader reader)
         {
-            var connectCode = reader.ReadUInt();
+            var connectCode = reader.ReadUIntBE();
             if (connectCode != ConnectCode)
             {
                 GD.PrintErr($"Connection code does not match");
                 return;
             }
-            var encode = reader.ReadUInt();
+            var encode = reader.ReadUIntBE();
             EncodeKey = [
                         (byte) (encode >> 24),
                         (byte) (encode >> 16),
@@ -155,7 +155,7 @@ namespace EQGodot2.network_manager.network_session
             CRCBytes = reader.ReadByte();
             FilterMode = reader.ReadByte();
             EncodePass2 = reader.ReadByte();
-            MaxPacketSize = reader.ReadUInt();
+            MaxPacketSize = reader.ReadUIntBE();
             EmitSignal(SignalName.SessionEstablished);
         }
 
@@ -224,7 +224,7 @@ namespace EQGodot2.network_manager.network_session
 
             if (FragmentContents == null)
             {
-                FragmentLength = reader.ReadUInt();
+                FragmentLength = reader.ReadUIntBE();
                 FragmentContents = new byte[FragmentLength];
                 FragmentOffset = 0;
             }
