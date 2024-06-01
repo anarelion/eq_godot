@@ -6,18 +6,22 @@ using System.Collections.Generic;
 public partial class server_selection : Control
 {
     private int SelectedServer;
-    private SCGetServerListReply Packet;
+    private EQServerDescription[] Servers;
     private Dictionary<int, int> ListToPacketMap;
 
-    public void LoadServers(SCGetServerListReply packet)
+    [Signal]
+    public delegate void ServerJoinStartEventHandler(EQServerDescription server);
+
+    public void LoadServers(EQServerDescription[] servers)
     {
-        Packet = packet;
         ListToPacketMap = [];
         var list = GetNode<ItemList>("%ServerList");
         list.ItemSelected += OnServerSelected;
-        for (int i = 0; i < packet.LongName.Length; i++)
+        Servers = servers;
+        for (int i = 0; i < Servers.Length; i++)
         {
-            var index = list.AddItem($"{packet.Address[i]} - {packet.LongName[i]} - {packet.Players[i]}");
+            var server = Servers[i];
+            var index = list.AddItem($"{server.Address} - {server.LongName} - {server.Players}");
             ListToPacketMap[index] = i;
         }
     }
@@ -25,11 +29,10 @@ public partial class server_selection : Control
     private void OnServerSelected(long index)
     {
         SelectedServer = ListToPacketMap[(int)index];
-        GD.Print($"Selected server {Packet.Address[SelectedServer]}");
     }
 
     private void OnServerAccepted()
     {
-        GetNode<LoginSession>("/root/LoginSession").JoinServer(SelectedServer, Packet);
+        EmitSignal(SignalName.ServerJoinStart, Servers[SelectedServer]);
     }
 }

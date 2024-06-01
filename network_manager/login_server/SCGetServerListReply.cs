@@ -9,14 +9,7 @@ namespace EQGodot2.network_manager.login_server
     public class SCGetServerListReply(PacketReader reader) : AppPacket(reader)
     {
         public uint Count;
-        public string[] Address;
-        public uint[] ServerType;
-        public uint[] Id;
-        public string[] LongName;
-        public string[] Language;
-        public string[] Region;
-        public uint[] Status;
-        public uint[] Players;
+        public EQServerDescription[] Servers;
 
         public override ushort Opcode()
         {
@@ -36,25 +29,20 @@ namespace EQGodot2.network_manager.login_server
             Reader.ReadUIntLE();
             Count = Reader.ReadUIntLE();
             GD.Print($"Processing {Count} servers");
-            Address = new string[Count];
-            LongName = new string[Count];
-            Language = new string[Count];
-            Region = new string[Count];
-            ServerType = new uint[Count];
-            Id = new uint[Count];
-            Status = new uint[Count];
-            Players = new uint[Count];
+            Servers = new EQServerDescription[Count];
             for (uint i = 0; i < Count; i++)
             {
-                Address[i] = Reader.ReadString();
-                ServerType[i] = Reader.ReadUIntLE();
-                Id[i] = Reader.ReadUIntLE();
-                LongName[i] = Reader.ReadString();
-                Language[i] = Reader.ReadString();
-                Region[i] = Reader.ReadString();
-                Status[i] = Reader.ReadUIntLE();
-                Players[i] = Reader.ReadUIntLE();
-                GD.Print($"{Id[i]} {Address[i]} - {LongName[i]} - {Players[i]}");
+                Servers[i] = new EQServerDescription
+                {
+                    Address = Reader.ReadString(),
+                    ServerType = Reader.ReadUIntLE(),
+                    Id = Reader.ReadUIntLE(),
+                    LongName = Reader.ReadString(),
+                    Language = Reader.ReadString(),
+                    Region = Reader.ReadString(),
+                    Status = Reader.ReadUIntLE(),
+                    Players = Reader.ReadUIntLE()
+                };
             }
         }
     }

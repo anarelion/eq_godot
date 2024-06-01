@@ -40,7 +40,6 @@ namespace EQGodot2.network_manager.login_server
             LSID = subReader.ReadUIntLE();
             KeyComponents = subReader.ReadBytes(10);
             FailedAttempts = subReader.ReadUIntLE();
-            GD.Print($"Logged in: {Message} {EQLSStr} {LSID} {KeyComponents.HexEncode()} {FailedAttempts}");
         }
 
     }

@@ -4,11 +4,12 @@ using Godot;
 using System;
 using System.IO;
 
-namespace EQGodot2.login_screen
+namespace EQGodot2.login_server
 {
-
     public partial class login_screen : Control
     {
+        [Signal]
+        public delegate void DoLoginEventHandler(string username, string password);
 
         private void OnLoginButtonPressed()
         {
@@ -18,13 +19,11 @@ namespace EQGodot2.login_screen
             {
                 return;
             }
-
-            var session = new LoginSession(username, password);
-            session.MessageUpdate += OnMessageUpdate;
-            GetTree().Root.AddChild(session);
+            EmitSignal(SignalName.DoLogin, username, password);
         }
 
-        private void OnMessageUpdate(string message) {
+        public void OnMessageUpdate(string message)
+        {
             GetNode<Label>("Background/Margins/VBox/StatusLabel").Text = message;
         }
     }

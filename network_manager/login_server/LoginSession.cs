@@ -15,6 +15,15 @@ namespace EQGodot2.network_manager.login_server
         [Signal]
         public delegate void MessageUpdateEventHandler(string message);
 
+        [Signal]
+        public delegate void LoggedInEventHandler(uint LSID, byte[] KeyComponents);
+
+        [Signal]
+        public delegate void ServerListReceivedEventHandler(EQServerDescription[] servers);
+
+        [Signal]
+        public delegate void ServerJoinAcceptedEventHandler();
+
         public LoginSession(string username, string password)
         {
             Username = username;
@@ -30,6 +39,11 @@ namespace EQGodot2.network_manager.login_server
             Network.Process();
         }
 
+        public void JoinServer(EQServerDescription server)
+        {
+            Network.SendAppPacket(new CSJoinServer(server.Id));
+        }
+
         private void OnConnectionEstablished()
         {
             EmitSignal(SignalName.MessageUpdate, "Established connection, logging in");
@@ -39,7 +53,6 @@ namespace EQGodot2.network_manager.login_server
 
         private void OnPacketReceived(byte[] packet)
         {
-            GD.Print($" LOG IN  {packet.HexEncode()}");
             var reader = new PacketReader(packet);
             var opcode = reader.ReadUShortLE();
             switch (opcode)
@@ -70,6 +83,7 @@ namespace EQGodot2.network_manager.login_server
         {
             if (packet.EQLSStr == 101)
             {
+                EmitSignal(SignalName.LoggedIn, packet.LSID, packet.KeyComponents);
                 EmitSignal(SignalName.MessageUpdate, "Logged in, retrieving server list");
                 Network.SendAppPacket(new CSGetServerList());
             }
@@ -81,21 +95,12 @@ namespace EQGodot2.network_manager.login_server
 
         private void ProcessPacket(SCGetServerListReply packet)
         {
-            GetNode<Control>("/root/LoginScreen").QueueFree();
-            PackedScene serverSelection = ResourceLoader.Load<PackedScene>("res://login_server/server_selection.tscn");
-            server_selection newScene = serverSelection.Instantiate() as server_selection;
-            newScene.LoadServers(packet);
-            GetTree().Root.AddChild(newScene);
-        }
-
-        public void JoinServer(int id, SCGetServerListReply packet)
-        {
-            Network.SendAppPacket(new CSJoinServer(packet.Id[id]));
+            EmitSignal(SignalName.ServerListReceived, packet.Servers);
         }
 
         private void ProcessPacket(SCJoinServerReply packet)
         {
-            GD.Print($"Accepted on server {packet.ServerId} isApproved {packet.IsApproved} message {packet.EQLSStr} account {packet.AccountId}");
+            EmitSignal(SignalName.ServerJoinAccepted);
             Network.Disconnect();
         }
     }
