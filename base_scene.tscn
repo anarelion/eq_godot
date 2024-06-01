@@ -1,12 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://bav1ji3y2p1d4"]
+[gd_scene load_steps=2 format=3 uid="uid://bav1ji3y2p1d4"]
 
-[ext_resource type="Script" path="res://resource_manager/ResourceManager.cs" id="1_4mgvs"]
 [ext_resource type="Script" path="res://addons/debug_camera/scripts/DebugCamera3D.gd" id="2_jnlh8"]
 
 [node name="BaseScene" type="Node3D"]
-
-[node name="ResourceManager" type="Node" parent="."]
-script = ExtResource("1_4mgvs")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-0.15124, 0.0667683, 0.98624, -0.0132674, 0.997489, -0.0695645, -0.988408, -0.0236057, -0.149974, 6.50196, 1.5563, 0.451755)

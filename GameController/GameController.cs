@@ -13,6 +13,9 @@ namespace EQGodot2.GameController
         private uint PlayerLSID;
         private byte[] PlayerKey;
 
+        public ResourceManager Resources;
+
+
         public override void _Ready()
         {
             var packed = ResourceLoader.Load<PackedScene>("res://login_server/login_screen.tscn");
@@ -61,7 +64,14 @@ namespace EQGodot2.GameController
         private void OnServerJoinAccepted()
         {
             ActiveScene.QueueFree();
-            ActiveScene = null;
+
+            Resources = (ResourceManager)ResourceLoader.Load<CSharpScript>("res://resource_manager/ResourceManager.cs").New();
+            AddChild(Resources);
+
+            PackedScene serverSelection = ResourceLoader.Load<PackedScene>("res://base_scene.tscn");
+            ActiveScene = serverSelection.Instantiate<Node3D>();
+            AddChild(ActiveScene);
+            
             GD.Print($"Accepted on server {ActiveServer.LongName}, proceeding to join world server");
         }
 
