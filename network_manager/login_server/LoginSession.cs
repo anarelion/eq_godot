@@ -30,7 +30,7 @@ namespace EQGodot2.network_manager.login_server
             Password = password;
             Network = new NetworkSession();
             Network.SessionEstablished += OnConnectionEstablished;
-            Network.ConnectToHost("127.0.0.1", 5999);
+            Network.ConnectToHost("100.89.24.52", 5999);
             Name = "LoginSession";
         }
 

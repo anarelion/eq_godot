@@ -20,6 +20,7 @@ public partial class ResourceManager : Node
         string[] paths = [
             "res://eq_files/gequip.s3d",
             "res://eq_files/global_chr.s3d",
+            "res://eq_files/airplane_chr.s3d",
         ];
 
         foreach (var path in paths)
@@ -55,7 +56,7 @@ public partial class ResourceManager : Node
             {
                 boneName = "root";
             }
-            
+
             if (CharacterActor.ContainsKey(actorName))
             {
                 var actor = CharacterActor[actorName];
@@ -67,7 +68,7 @@ public partial class ResourceManager : Node
             }
         }
 
-        AddChild(InstantiateCharacter("dwf"));
+        AddChild(InstantiateCharacter("avi"));
     }
 
     public ActorInstance InstantiateCharacter(string tagName)

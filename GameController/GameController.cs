@@ -1,6 +1,7 @@
 using System;
 using EQGodot2.login_server;
 using EQGodot2.network_manager.login_server;
+using EQGodot2.network_manager.world_server;
 using Godot;
 
 namespace EQGodot2.GameController
@@ -9,6 +10,7 @@ namespace EQGodot2.GameController
     {
         private Node ActiveScene;
         private LoginSession NetworkLoginSession;
+        private WorldSession NetworkWorldSession;
         private EQServerDescription ActiveServer;
         private uint PlayerLSID;
         private byte[] PlayerKey;
@@ -71,8 +73,11 @@ namespace EQGodot2.GameController
             PackedScene serverSelection = ResourceLoader.Load<PackedScene>("res://base_scene.tscn");
             ActiveScene = serverSelection.Instantiate<Node3D>();
             AddChild(ActiveScene);
-            
+
             GD.Print($"Accepted on server {ActiveServer.LongName}, proceeding to join world server");
+
+            NetworkWorldSession = new WorldSession(PlayerLSID, PlayerKey, ActiveServer);
+            AddChild(NetworkWorldSession);
         }
 
     }

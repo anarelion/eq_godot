@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="EQGodot2"
+config/name="EQGodot"
 run/main_scene="res://GameController/GameController.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 run/max_fps=60
