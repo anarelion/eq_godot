@@ -9,11 +9,6 @@ namespace EQGodot2.network_manager.login_server
     {
         public string Message;
 
-        public override ushort Opcode()
-        {
-            return 0x1700;
-        }
-
         public override void Write()
         {
             throw new NotImplementedException();

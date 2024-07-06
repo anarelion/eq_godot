@@ -35,6 +35,13 @@ namespace EQGodot2.network_manager.packets
             WriteByte((byte)value);
             WriteByte((byte)(value >> 8));
         }
+
+        public void WriteUShortLE(ushort value)
+        {
+            WriteByte((byte)value);
+            WriteByte((byte)(value >> 8));
+        }
+        
         public void WriteUShortBE(ushort value)
         {
             WriteByte((byte)(value >> 8));
@@ -63,6 +70,15 @@ namespace EQGodot2.network_manager.packets
             WriteByte((byte)(value >> 8));
             WriteByte((byte)(value >> 16));
             WriteByte((byte)(value >> 24));
+        }
+
+        public void WriteString(string value)
+        {
+            foreach (char c in value)
+            {
+                WriteByte((byte)c);
+            }
+            WriteByte(0);
         }
 
         public void WriteBytes(byte[] value)

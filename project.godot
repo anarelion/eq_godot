@@ -23,7 +23,7 @@ DebugCam="*res://addons/debug_camera/scripts/DebugCamAutoload.gd"
 
 [dotnet]
 
-project/assembly_name="EQGodot2"
+project/assembly_name="EQGodot"
 
 [editor]
 

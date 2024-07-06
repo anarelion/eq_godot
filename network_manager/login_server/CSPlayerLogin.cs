@@ -11,11 +11,6 @@ namespace EQGodot2.network_manager.login_server
         private readonly string Username = username;
         private readonly string Password = password;
 
-        public override ushort Opcode()
-        {
-            return 0x0200;
-        }
-
         public override void Write()
         {
             Writer.WriteShortBE(0);

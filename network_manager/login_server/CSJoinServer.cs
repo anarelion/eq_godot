@@ -9,11 +9,6 @@ namespace EQGodot2.network_manager.login_server
     {
         private readonly uint ServerId = serverId;
 
-        public override ushort Opcode()
-        {
-            return 0x0d00;
-        }
-
         public override void Write()
         {
             GD.Print($"Joining server {ServerId}");

@@ -5,27 +5,29 @@ using EQGodot2.network_manager.packets;
 
 namespace EQGodot2.network_manager.network_session
 {
-    // Latern Extractor class
     public abstract class AppPacket
     {
         public PacketReader Reader;
 
         protected PacketWriter Writer;
 
-        public AppPacket() {
+        public AppPacket()
+        {
             Writer = new PacketWriter();
         }
 
-        public AppPacket(PacketReader reader) {
+        public AppPacket(PacketReader reader)
+        {
             Reader = reader;
             Read();
         }
 
-        public byte[] ToBytes() {
-            if (Writer == null) {
+        public byte[] ToBytes()
+        {
+            if (Writer == null)
+            {
                 throw new NotImplementedException();
             }
-            Writer.WriteUShortBE(Opcode());
             Write();
             var result = Writer.ToBytes();
             Writer = new PacketWriter();
@@ -34,7 +36,5 @@ namespace EQGodot2.network_manager.network_session
 
         public abstract void Write();
         public abstract void Read();
-        public abstract ushort Opcode();
-
     }
 }

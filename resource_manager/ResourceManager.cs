@@ -137,7 +137,7 @@ public partial class ResourceManager : Node
 
         animationPlayer.AddAnimationLibrary(tagName, animationLibrary);
         skeleton.AddChild(animationPlayer);
-        animationPlayer.Play("dwf/P01");
+        animationPlayer.Play($"{tagName}/P01");
         return node;
     }
 

@@ -2,11 +2,15 @@
 using System;
 using EQGodot2.network_manager.network_session;
 using EQGodot2.network_manager.packets;
+using Godot;
 
-namespace EQGodot2.network_manager.login_server
+namespace EQGodot2.network_manager.world_server
 {
-    public class SCSetGameFeatures(PacketReader reader) : AppPacket(reader)
+    public class SCLogServer(PacketReader reader) : AppPacket(reader)
     {
+        private uint GuildCount;
+        public string[] GuildNames;
+
         public override void Write()
         {
             throw new NotImplementedException();
@@ -14,7 +18,7 @@ namespace EQGodot2.network_manager.login_server
 
         public override void Read()
         {
-            // TODO: not sure if we care about this packet
+            GD.Print("SCLogserver");
         }
 
     }

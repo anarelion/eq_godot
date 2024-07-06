@@ -126,16 +126,15 @@ namespace EQGodot2.network_manager.network_session
             PutPacket(send);
         }
 
-        public void SendAppPacket(AppPacket packet)
+        public void SendAppPacket(AppPacket packet, OpcodeManager opcode)
         {
             var writer = new PacketWriter();
             writer.WriteShortBE(0x09);
             writer.WriteByte((byte)(SequenceOut >> 8));
             writer.WriteByte((byte)SequenceOut);
-            var data = packet.ToBytes();
+            var data = opcode.Encode(writer, packet);
             SentPackets[SequenceOut] = data;
             // GD.Print(" APP OUT ", data.HexEncode());
-            writer.WriteBytes(data);
             AppendCRC(writer);
             SendPacket(writer);
             SequenceOut++;

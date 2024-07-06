@@ -1,19 +1,15 @@
 
 using System;
+using System.Reflection.Emit;
 using EQGodot2.network_manager.network_session;
 
 namespace EQGodot2.network_manager.login_server
 {
     public class CSGetServerList : AppPacket
     {
-        public override ushort Opcode()
-        {
-            return 0x0400;
-        }
-
         public override void Write()
         {
-            Writer.WriteIntBE(0x04);
+            Writer.WriteUIntLE(0x04000000);
         }
 
         public override void Read()

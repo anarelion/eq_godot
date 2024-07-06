@@ -8,7 +8,8 @@ namespace EQGodot2.network_manager.login_server
 {
     public partial class LoginSession : Node
     {
-        NetworkSession Network;
+        private NetworkSession Network;
+        private OpcodeManager OpcodeManager;
         string Username;
         string Password;
 
@@ -28,6 +29,16 @@ namespace EQGodot2.network_manager.login_server
         {
             Username = username;
             Password = password;
+            OpcodeManager = new OpcodeManager();
+            OpcodeManager.Register<CSGetServerList>(0x04);
+            OpcodeManager.Register<CSHandshake>(0x01);
+            OpcodeManager.Register<CSJoinServer>(0x0D);
+            OpcodeManager.Register<CSPlayerLogin>(0x02);
+            OpcodeManager.Register<SCGetServerListReply>(0x19);
+            OpcodeManager.Register<SCHandshakeReply>(0x17);
+            OpcodeManager.Register<SCJoinServerReply>(0x22);
+            OpcodeManager.Register<SCPlayerLoginReply>(0x18);
+            OpcodeManager.Register<SCSetGameFeatures>(0x31);
             Network = new NetworkSession();
             Network.SessionEstablished += OnConnectionEstablished;
             Network.ConnectToHost("100.89.24.52", 5999);
@@ -41,67 +52,70 @@ namespace EQGodot2.network_manager.login_server
 
         public void JoinServer(EQServerDescription server)
         {
-            Network.SendAppPacket(new CSJoinServer(server.Id));
+            Network.SendAppPacket(new CSJoinServer(server.Id), OpcodeManager);
         }
 
         private void OnConnectionEstablished()
         {
             EmitSignal(SignalName.MessageUpdate, "Established connection, logging in");
             Network.PacketReceived += OnPacketReceived;
-            Network.SendAppPacket(new CSHandshake());
+            Network.SendAppPacket(new CSHandshake(), OpcodeManager);
         }
 
         private void OnPacketReceived(byte[] packet)
         {
             var reader = new PacketReader(packet);
-            var opcode = reader.ReadUShortLE();
-            switch (opcode)
+            var decoded = OpcodeManager.Decode(reader);
+            _ = decoded switch
             {
-                case 0x17: ProcessPacket(new SCHandshakeReply(reader)); break;
-                case 0x18: ProcessPacket(new SCPlayerLoginReply(reader)); break;
-                case 0x19: ProcessPacket(new SCGetServerListReply(reader)); break;
-                case 0x22: ProcessPacket(new SCJoinServerReply(reader)); break;
-                case 0x31: ProcessPacket(new SCSetGameFeatures(reader)); break;
-                default:
-                    GD.Print($" LOG IN  UNK {packet.HexEncode()}");
-                    throw new NotImplementedException();
+                SCHandshakeReply p => ProcessPacket(p),
+                SCSetGameFeatures p => ProcessPacket(p),
+                SCPlayerLoginReply p => ProcessPacket(p),
+                SCGetServerListReply p => ProcessPacket(p),
+                SCJoinServerReply p => ProcessPacket(p),
+                _ => throw new NotImplementedException(),
             };
         }
 
-        private void ProcessPacket(SCHandshakeReply packet)
+        private bool ProcessPacket(SCHandshakeReply packet)
         {
             GD.Print($"Message: {packet.Message}");
-            Network.SendAppPacket(new CSPlayerLogin(Username, Password));
+            Network.SendAppPacket(new CSPlayerLogin(Username, Password), OpcodeManager);
+            return true;
         }
 
-        private void ProcessPacket(SCSetGameFeatures packet)
+        private bool ProcessPacket(SCSetGameFeatures packet)
         {
             // TODO: not sure if we care about this packet as it contains the expansions data
+            return true;
         }
 
-        private void ProcessPacket(SCPlayerLoginReply packet)
+        private bool ProcessPacket(SCPlayerLoginReply packet)
         {
             if (packet.EQLSStr == 101)
             {
                 EmitSignal(SignalName.LoggedIn, packet.LSID, packet.KeyComponents);
                 EmitSignal(SignalName.MessageUpdate, "Logged in, retrieving server list");
-                Network.SendAppPacket(new CSGetServerList());
+                Network.SendAppPacket(new CSGetServerList(), OpcodeManager);
             }
             else
             {
                 EmitSignal(SignalName.MessageUpdate, "There was an error while logging in");
             }
+            return true;
         }
 
-        private void ProcessPacket(SCGetServerListReply packet)
+        private bool ProcessPacket(SCGetServerListReply packet)
         {
             EmitSignal(SignalName.ServerListReceived, packet.Servers);
+            return true;
         }
 
-        private void ProcessPacket(SCJoinServerReply packet)
+        private bool ProcessPacket(SCJoinServerReply packet)
         {
             EmitSignal(SignalName.ServerJoinAccepted);
             Network.Disconnect();
+            return true;
         }
     }
 }

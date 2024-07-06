@@ -11,10 +11,6 @@ namespace EQGodot2.network_manager.login_server
         public byte IsApproved;
         public ushort EQLSStr;
         public ushort ServerId;
-        public override ushort Opcode()
-        {
-            return 0x22;
-        }
 
         public override void Write()
         {
