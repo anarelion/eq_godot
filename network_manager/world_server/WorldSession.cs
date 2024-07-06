@@ -22,6 +22,10 @@ namespace EQGodot2.network_manager.world_server
             OpcodeManager.Register<CSWorldAuth>(0x7a09);
             OpcodeManager.Register<SCGuildList>(0x507a);
             OpcodeManager.Register<SCLogServer>(0x7ceb);
+            OpcodeManager.Register<SCApproveWorld>(0x7499);
+            OpcodeManager.Register<SCEnterWorld>(0x578f);
+            OpcodeManager.Register<SCPostEnterWorld>(0x6259);
+
             Network = new NetworkSession();
             Network.SessionEstablished += OnConnectionEstablished;
             Network.ConnectToHost(server.Address, 9000);
@@ -47,19 +51,41 @@ namespace EQGodot2.network_manager.world_server
             {
                 SCGuildList p => ProcessPacket(p),
                 SCLogServer p => ProcessPacket(p),
+                SCApproveWorld p => ProcessPacket(p),
+                SCEnterWorld p => ProcessPacket(p),
+                SCPostEnterWorld p => ProcessPacket(p),
+
                 _ => throw new NotImplementedException(),
             };
         }
 
         private bool ProcessPacket(SCGuildList packet)
         {
-            GD.Print($"Guild List {packet.GuildNames.Length}");
+            GD.Print($"SCGuildList count={packet.GuildNames.Length}");
             return true;
         }
 
         private bool ProcessPacket(SCLogServer packet)
         {
-            GD.Print("LogServer");
+            GD.Print("SCLogServer");
+            return true;
+        }
+
+        private bool ProcessPacket(SCApproveWorld packet)
+        {
+            GD.Print("SCApproveWorld");
+            return true;
+        }
+
+        private bool ProcessPacket(SCEnterWorld packet)
+        {
+            GD.Print("SCEnterWorld");
+            return true;
+        }
+
+        private bool ProcessPacket(SCPostEnterWorld packet)
+        {
+            GD.Print("SCPostEnterWorld");
             return true;
         }
     }

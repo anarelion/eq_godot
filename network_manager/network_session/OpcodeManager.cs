@@ -31,6 +31,9 @@ namespace EQGodot2.network_manager.network_session
         public AppPacket Decode(PacketReader reader)
         {
             var opcode = reader.ReadUShortLE();
+            if (!OpcodeToClass.ContainsKey(opcode)) {
+                GD.PrintErr($"Unknown opcode received {opcode:X}");
+            }
             var type = OpcodeToClass[opcode];
             return (AppPacket)Activator.CreateInstance(type, new object[] { reader });
         }

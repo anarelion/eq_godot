@@ -20,7 +20,6 @@ namespace EQGodot2.network_manager.world_server
             GD.Print($"Logging in {DbId} and key {key.HexEncode()}");
             Writer.WriteString($"{DbId}");
             Writer.WriteBytes(key);
-            GD.Print($"{Writer.ToBytes().HexEncode()}");
             while (Writer.ToBytes().Length < 464)
             {
                 Writer.WriteByte(0);

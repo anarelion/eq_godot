@@ -6,7 +6,7 @@ using Godot;
 
 namespace EQGodot2.network_manager.world_server
 {
-    public class SCLogServer(PacketReader reader) : AppPacket(reader)
+    public class SCApproveWorld(PacketReader reader) : AppPacket(reader)
     {
         public override void Write()
         {
@@ -17,6 +17,5 @@ namespace EQGodot2.network_manager.world_server
         {
             
         }
-
     }
 }
