@@ -42,7 +42,7 @@ namespace EQGodot2.network_manager.network_session
             ushort opcode = ClassToOpcode[packet.GetType()];
             writer.WriteUShortLE(opcode);
             writer.WriteBytes(packet.ToBytes());
-            GD.Print($"Sending {writer.ToBytes().Length} {writer.ToBytes().HexEncode()}");
+            // GD.Print($"Sending {writer.ToBytes().Length} {writer.ToBytes().HexEncode()}");
             return writer.ToBytes();
         }
     }

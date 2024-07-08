@@ -15,7 +15,7 @@ namespace EQGodot2.network_manager.world_server
 
         public override void Read()
         {
-            
+            GD.Print($"SCPostEnterWorld {Reader.ReadBytes(Reader.Remaining()).HexEncode()}");
         }
     }
 }

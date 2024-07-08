@@ -6,7 +6,7 @@ using Godot;
 
 namespace EQGodot2.network_manager.world_server
 {
-    public class SCApproveWorld(PacketReader reader) : AppPacket(reader)
+    public class SCExpansionInfo(PacketReader reader) : AppPacket(reader)
     {
         public override void Write()
         {
@@ -15,7 +15,7 @@ namespace EQGodot2.network_manager.world_server
 
         public override void Read()
         {
-            GD.Print($"SCApproveWorld {Reader.ReadBytes(Reader.Remaining()).HexEncode()}");
+            GD.Print($"SCExpansionInfo {Reader.ReadBytes(Reader.Remaining()).HexEncode()}");
         }
     }
 }

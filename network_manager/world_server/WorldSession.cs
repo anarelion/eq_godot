@@ -25,6 +25,9 @@ namespace EQGodot2.network_manager.world_server
             OpcodeManager.Register<SCApproveWorld>(0x7499);
             OpcodeManager.Register<SCEnterWorld>(0x578f);
             OpcodeManager.Register<SCPostEnterWorld>(0x6259);
+            OpcodeManager.Register<SCExpansionInfo>(0x590d);
+            OpcodeManager.Register<SCSetMaxCharacters>(0x5475);
+            OpcodeManager.Register<SCSetMembership>(0x7acc);
 
             Network = new NetworkSession();
             Network.SessionEstablished += OnConnectionEstablished;
@@ -54,6 +57,9 @@ namespace EQGodot2.network_manager.world_server
                 SCApproveWorld p => ProcessPacket(p),
                 SCEnterWorld p => ProcessPacket(p),
                 SCPostEnterWorld p => ProcessPacket(p),
+                SCExpansionInfo p => ProcessPacket(p),
+                SCSetMaxCharacters p => ProcessPacket(p),
+                SCSetMembership p => ProcessPacket(p),
 
                 _ => throw new NotImplementedException(),
             };
@@ -67,26 +73,45 @@ namespace EQGodot2.network_manager.world_server
 
         private bool ProcessPacket(SCLogServer packet)
         {
-            GD.Print("SCLogServer");
+            GD.Print("SCLogServer process");
             return true;
         }
 
         private bool ProcessPacket(SCApproveWorld packet)
         {
-            GD.Print("SCApproveWorld");
+            GD.Print("SCApproveWorld process");
             return true;
         }
 
         private bool ProcessPacket(SCEnterWorld packet)
         {
-            GD.Print("SCEnterWorld");
+            GD.Print("SCEnterWorld process");
             return true;
         }
 
         private bool ProcessPacket(SCPostEnterWorld packet)
         {
-            GD.Print("SCPostEnterWorld");
+            GD.Print("SCPostEnterWorld process");
             return true;
         }
+
+        private bool ProcessPacket(SCExpansionInfo packet)
+        {
+            GD.Print("SCExpansionInfo process");
+            return true;
+        }
+
+        private bool ProcessPacket(SCSetMaxCharacters packet)
+        {
+            GD.Print("SCSetMaxCharacters process");
+            return true;
+        }
+
+        private bool ProcessPacket(SCSetMembership packet)
+        {
+            GD.Print("SCSetMembership process");
+            return true;
+        }
+        
     }
 }
