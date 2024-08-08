@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.pack_file {
-    public partial class PFSFile : Resource {
+namespace EQGodot.resource_manager.pack_file
+{
+    public partial class PFSFile : Resource
+    {
         public PFSFile(uint crc, uint size, uint offset, byte[] fileBytes)
         {
             Crc = crc;
@@ -19,19 +21,24 @@ namespace EQGodot2.resource_manager.pack_file {
         {
         }
 
-        public uint Crc {
+        public uint Crc
+        {
             get;
         }
-        public uint Size {
+        public uint Size
+        {
             get;
         }
-        public uint Offset {
+        public uint Offset
+        {
             get;
         }
-        public byte[] FileBytes {
+        public byte[] FileBytes
+        {
             get;
         }
-        public string Name {
+        public string Name
+        {
             get; set;
         }
 

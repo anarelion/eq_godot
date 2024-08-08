@@ -1,5 +1,5 @@
-﻿using EQGodot2.helpers;
-using EQGodot2.resource_manager.wld_file.data_types;
+﻿using EQGodot.helpers;
+using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -7,56 +7,61 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    public class WldSkeletonHierarchy : WldFragment {
-        public List<WldMesh> Meshes {
+    public class WldSkeletonHierarchy : WldFragment
+    {
+        public List<WldMesh> Meshes
+        {
             get; private set;
         }
 
         //public List<LegacyMesh> AlternateMeshes {
         //    get; private set;
         //}
-        public List<SkeletonBone> Skeleton {
+        public List<SkeletonBone> Skeleton
+        {
             get; set;
         }
 
         //private PolyhedronReference _fragment18Reference;
 
-        public string ModelBase {
+        public string ModelBase
+        {
             get; set;
         }
-        public bool IsAssigned {
+        public bool IsAssigned
+        {
             get; set;
         }
-        private Dictionary<string, SkeletonBone> SkeletonPieceDictionary {
+        private Dictionary<string, SkeletonBone> SkeletonPieceDictionary
+        {
             get; set;
         }
 
-        public Dictionary<string, data_types.Animation> Animations = new Dictionary<string, data_types.Animation>();
+        public Dictionary<string, data_types.Animation> Animations = [];
 
-        public Dictionary<int, string> BoneMappingClean = new Dictionary<int, string>();
-        public Dictionary<int, string> BoneMapping = new Dictionary<int, string>();
+        public Dictionary<int, string> BoneMappingClean = [];
+        public Dictionary<int, string> BoneMapping = [];
 
         public float BoundingRadius;
 
-        public List<Mesh> SecondaryMeshes = new List<Mesh>();
+        public List<Mesh> SecondaryMeshes = [];
         //public List<LegacyMesh> SecondaryAlternateMeshes = new List<LegacyMesh>();
 
         private bool _hasBuiltData;
 
-        public override void Initialize(int index, int size, byte[] data,
-            List<WldFragment> fragments,
-            Godot.Collections.Dictionary<int, string> stringHash, bool isNewWldFormat)
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
+            base.Initialize(index, size, data, wld);
 
-            Skeleton = new List<SkeletonBone>();
-            Meshes = new List<WldMesh>();
+            Skeleton = [];
+            Meshes = [];
             //AlternateMeshes = new List<LegacyMesh>();
-            SkeletonPieceDictionary = new Dictionary<string, SkeletonBone>();
+            SkeletonPieceDictionary = [];
 
-            Name = stringHash[-Reader.ReadInt32()];
+            Name = wld.GetName(Reader.ReadInt32());
             ModelBase = FragmentNameCleaner.CleanName(this, true);
 
             // Always 2 when used in main zone, and object files.
@@ -83,23 +88,21 @@ namespace EQGodot2.resource_manager.wld_file {
 
             // Three sequential DWORDs
             // This will never be hit for object animations.
-            if (hasUnknownParams) {
+            if (hasUnknownParams)
+            {
                 Reader.BaseStream.Position += 3 * sizeof(int);
             }
 
             // This is the sphere radius checked against the frustum to cull this object
-            if (hasBoundingRadius) {
+            if (hasBoundingRadius)
+            {
                 BoundingRadius = Reader.ReadSingle();
             }
 
-            for (int i = 0; i < boneCount; ++i) {
-                // An index into the string has to get this bone's name
-                int boneNameIndex = Reader.ReadInt32();
-                string boneName = string.Empty;
+            for (int i = 0; i < boneCount; ++i)
+            {
 
-                if (stringHash.ContainsKey(-boneNameIndex)) {
-                    boneName = stringHash[-boneNameIndex];
-                }
+                string boneName = wld.GetName(Reader.ReadInt32());
 
                 // Always 0 for object bones
                 // Confirmed
@@ -107,73 +110,70 @@ namespace EQGodot2.resource_manager.wld_file {
 
                 // Reference to a bone track
                 // Confirmed - is never a bad reference
-                int trackReferenceIndex = Reader.ReadInt32() - 1;
-
-                WldTrackFragment track = fragments[trackReferenceIndex] as WldTrackFragment;
+                WldTrackFragment track = wld.GetFragment(Reader.ReadInt32()) as WldTrackFragment;
                 AddPoseTrack(track, boneName);
 
-                var pieceNew = new SkeletonBone {
+                var pieceNew = new SkeletonBone
+                {
                     Index = i,
                     Track = track,
                     Name = boneName
                 };
 
                 pieceNew.Track.IsPoseAnimation = true;
-                pieceNew.AnimationTracks = new Dictionary<string, WldTrackFragment>();
+                pieceNew.AnimationTracks = [];
 
                 BoneMappingClean[i] = data_types.Animation.CleanBoneAndStripBase(boneName, ModelBase);
                 BoneMapping[i] = boneName;
 
-                if (pieceNew.Track == null) {
+                if (pieceNew.Track == null)
+                {
                     GD.PrintErr("Unable to link track reference!");
                 }
 
-                int meshReferenceIndex = Reader.ReadInt32() - 1;
+                string meshName = wld.GetName(Reader.ReadInt32());
+                pieceNew.MeshReference = wld.GetFragmentByName(meshName) as WldMeshReference;
 
-                if (meshReferenceIndex < 0) {
-                    string name = stringHash[-meshReferenceIndex - 1];
-                } else if (meshReferenceIndex != 0) {
-                    pieceNew.MeshReference = fragments[meshReferenceIndex] as WldMeshReference;
+                //if (pieceNew.MeshReference == null) {
+                //    pieceNew.ParticleCloud = fragments[meshReferenceIndex] as ParticleCloud;
+                //}
 
-                    //if (pieceNew.MeshReference == null) {
-                    //    pieceNew.ParticleCloud = fragments[meshReferenceIndex] as ParticleCloud;
-                    //}
-
-                    if (pieceNew.Name == "root") {
-                        pieceNew.Name = FragmentNameCleaner.CleanName(pieceNew.MeshReference.Mesh);
-                    }
+                if (pieceNew.Name == "root")
+                {
+                    pieceNew.Name = FragmentNameCleaner.CleanName(pieceNew.MeshReference.Mesh);
                 }
 
                 int childCount = Reader.ReadInt32();
 
-                pieceNew.Children = new List<int>();
+                pieceNew.Children = [];
 
-                for (int j = 0; j < childCount; ++j) {
-                    int childIndex = Reader.ReadInt32();
-                    pieceNew.Children.Add(childIndex);
+                for (int j = 0; j < childCount; ++j)
+                {
+                    pieceNew.Children.Add(Reader.ReadInt32());
                 }
 
                 Skeleton.Add(pieceNew);
 
-                if (pieceNew.Name != "") {
-                    if (!SkeletonPieceDictionary.ContainsKey(pieceNew.Name)) {
-                        SkeletonPieceDictionary.Add(pieceNew.Name, pieceNew);
-                    }
+                if (pieceNew.Name != "")
+                {
+                    SkeletonPieceDictionary.TryAdd(pieceNew.Name, pieceNew);
                 }
             }
 
             // Read in mesh references
             // All meshes will have vertex bone assignments
-            if (hasMeshReferences) {
+            if (hasMeshReferences)
+            {
                 int size2 = Reader.ReadInt32();
 
-                for (int i = 0; i < size2; ++i) {
-                    int meshRefIndex = Reader.ReadInt32() - 1;
+                for (int i = 0; i < size2; ++i)
+                {
+                    WldMeshReference meshRef = wld.GetFragment(Reader.ReadInt32()) as WldMeshReference;
 
-                    WldMeshReference meshRef = fragments[meshRefIndex] as WldMeshReference;
-
-                    if (meshRef?.Mesh != null) {
-                        if (Meshes.All(x => x.Name != meshRef.Mesh.Name)) {
+                    if (meshRef?.Mesh != null)
+                    {
+                        if (Meshes.All(x => x.Name != meshRef.Mesh.Name))
+                        {
                             Meshes.Add(meshRef.Mesh);
                             meshRef.Mesh.IsHandled = true;
                         }
@@ -186,11 +186,12 @@ namespace EQGodot2.resource_manager.wld_file {
                     //}
                 }
 
-                Meshes = Meshes.OrderBy(x => x.Name).ToList();
+                Meshes = [.. Meshes.OrderBy(x => x.Name)];
 
-                List<int> unknown = new List<int>();
+                List<int> unknown = [];
 
-                for (int i = 0; i < size2; ++i) {
+                for (int i = 0; i < size2; ++i)
+                {
                     unknown.Add(Reader.ReadInt32());
                 }
             }
@@ -198,7 +199,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public void BuildSkeletonData(bool stripModelBase)
         {
-            if (_hasBuiltData) {
+            if (_hasBuiltData)
+            {
                 return;
             }
 
@@ -207,16 +209,10 @@ namespace EQGodot2.resource_manager.wld_file {
             _hasBuiltData = true;
         }
 
-        public override void OutputInfo()
-        {
-            base.OutputInfo();
-            GD.Print("-----");
-            GD.Print("0x10: Skeleton pieces: " + Skeleton.Count);
-        }
-
         private void AddPoseTrack(WldTrackFragment track, string pieceName)
         {
-            if (!Animations.ContainsKey("pos")) {
+            if (!Animations.ContainsKey("pos"))
+            {
                 Animations["pos"] = new data_types.Animation();
             }
 
@@ -235,44 +231,54 @@ namespace EQGodot2.resource_manager.wld_file {
 
             string cleanedName = FragmentNameCleaner.CleanName(track, true);
 
-            if (isDefault) {
+            if (isDefault)
+            {
                 animationName = "pos";
                 modelName = ModelBase;
                 cleanedName = cleanedName.Replace(ModelBase, String.Empty);
                 pieceName = cleanedName == string.Empty ? "root" : cleanedName;
-            } else {
-                if (cleanedName.Length <= 3) {
+            }
+            else
+            {
+                if (cleanedName.Length <= 3)
+                {
                     return;
                 }
 
                 animationName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
 
-                if (cleanedName.Length < 3) {
+                if (cleanedName.Length < 3)
+                {
                     return;
                 }
 
                 modelName = ModelBase;
                 pieceName = boneName;
 
-                if (pieceName == string.Empty) {
+                if (pieceName == string.Empty)
+                {
                     pieceName = "root";
                 }
             }
 
             track.SetTrackData(modelName, animationName, pieceName);
 
-            if (Animations.ContainsKey(track.AnimationName)) {
-                if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase) {
+            if (Animations.ContainsKey(track.AnimationName))
+            {
+                if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase)
+                {
                     Animations.Remove(animationName);
                 }
 
-                if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase) {
+                if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase)
+                {
                     return;
                 }
             }
 
-            if (!Animations.ContainsKey(track.AnimationName)) {
+            if (!Animations.ContainsKey(track.AnimationName))
+            {
                 Animations[track.AnimationName] = new data_types.Animation();
             }
 
@@ -290,20 +296,25 @@ namespace EQGodot2.resource_manager.wld_file {
 
             string cleanedName = FragmentNameCleaner.CleanName(track, true);
 
-            if (isDefault) {
+            if (isDefault)
+            {
                 animationName = "pos";
                 modelName = ModelBase;
                 cleanedName = cleanedName.Replace(ModelBase, String.Empty);
                 pieceName = cleanedName == string.Empty ? "root" : cleanedName;
-            } else {
-                if (cleanedName.Length <= 3) {
+            }
+            else
+            {
+                if (cleanedName.Length <= 3)
+                {
                     return;
                 }
 
                 animationName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
 
-                if (cleanedName.Length < 3) {
+                if (cleanedName.Length < 3)
+                {
                     return;
                 }
 
@@ -311,24 +322,29 @@ namespace EQGodot2.resource_manager.wld_file {
                 cleanedName = cleanedName.Remove(0, 3);
                 pieceName = cleanedName;
 
-                if (pieceName == string.Empty) {
+                if (pieceName == string.Empty)
+                {
                     pieceName = "root";
                 }
             }
 
             track.SetTrackData(modelName, animationName, pieceName);
 
-            if (Animations.ContainsKey(track.AnimationName)) {
-                if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase) {
+            if (Animations.ContainsKey(track.AnimationName))
+            {
+                if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase)
+                {
                     Animations.Remove(animationName);
                 }
 
-                if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase) {
+                if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase)
+                {
                     return;
                 }
             }
 
-            if (!Animations.ContainsKey(track.AnimationName)) {
+            if (!Animations.ContainsKey(track.AnimationName))
+            {
                 Animations[track.AnimationName] = new data_types.Animation();
             }
 
@@ -347,7 +363,8 @@ namespace EQGodot2.resource_manager.wld_file {
             bone.CleanedName = CleanBoneName(bone.Name, stripModelBase);
             BoneMappingClean[index] = bone.CleanedName;
 
-            if (bone.Name != string.Empty) {
+            if (bone.Name != string.Empty)
+            {
                 runningIndex += bone.Index + "/";
             }
 
@@ -357,14 +374,16 @@ namespace EQGodot2.resource_manager.wld_file {
             bone.FullPath = runningName;
             bone.CleanedFullPath = runningNameCleaned;
 
-            if (bone.Children.Count == 0) {
+            if (bone.Children.Count == 0)
+            {
                 return;
             }
 
             runningName += "/";
             runningNameCleaned += "/";
 
-            foreach (var childNode in bone.Children) {
+            foreach (var childNode in bone.Children)
+            {
                 BuildSkeletonTreeData(childNode, treeNodes, bone, runningName, runningNameCleaned, runningIndex,
                     stripModelBase);
             }
@@ -374,7 +393,8 @@ namespace EQGodot2.resource_manager.wld_file {
         {
             nodeName = nodeName.Replace("_DAG", "");
             nodeName = nodeName.ToLower();
-            if (stripModelBase) {
+            if (stripModelBase)
+            {
                 nodeName = nodeName.Replace(ModelBase, string.Empty);
             }
 
@@ -385,11 +405,13 @@ namespace EQGodot2.resource_manager.wld_file {
         public void AddAdditionalMesh(WldMesh mesh)
         {
             if (Meshes.Any(x => x.Name == mesh.Name)
-                /* || SecondaryMeshes.Any(x => x.Name == mesh.Name) */) {
+                /* || SecondaryMeshes.Any(x => x.Name == mesh.Name) */)
+            {
                 return;
             }
 
-            if (mesh.MobPieces.Count == 0) {
+            if (mesh.MobPieces.Count == 0)
+            {
                 return;
             }
 
@@ -416,14 +438,17 @@ namespace EQGodot2.resource_manager.wld_file {
         {
             string track = trackName.Substring(3);
 
-            if (trackName == ModelBase) {
+            if (trackName == ModelBase)
+            {
                 boneName = ModelBase;
                 return true;
             }
 
-            foreach (var bone in Skeleton) {
+            foreach (var bone in Skeleton)
+            {
                 string cleanBoneName = bone.Name.Replace("_DAG", string.Empty).ToLower();
-                if (cleanBoneName == track) {
+                if (cleanBoneName == track)
+                {
                     boneName = bone.Name.ToLower();
                     return true;
                 }
@@ -435,11 +460,13 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public Transform3D GetBoneMatrix(int boneIndex, string animName, int frame)
         {
-            if (!Animations.ContainsKey(animName)) {
+            if (!Animations.ContainsKey(animName))
+            {
                 return Transform3D.Identity;
             }
 
-            if (frame < 0 || frame >= Animations[animName].FrameCount) {
+            if (frame < 0 || frame >= Animations[animName].FrameCount)
+            {
                 return Transform3D.Identity;
             }
 
@@ -447,8 +474,10 @@ namespace EQGodot2.resource_manager.wld_file {
 
             Transform3D boneMatrix = Transform3D.Identity;
 
-            while (currentBone != null) {
-                if (!Animations[animName].TracksCleanedStripped.ContainsKey(currentBone.CleanedName)) {
+            while (currentBone != null)
+            {
+                if (!Animations[animName].TracksCleanedStripped.ContainsKey(currentBone.CleanedName))
+                {
                     break;
                 }
 
@@ -468,7 +497,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
                 boneMatrix = modelTransform * boneMatrix;
 
-                if (currentBone != null) {
+                if (currentBone != null)
+                {
                     boneIndex = currentBone.Index;
                 }
             }
@@ -478,12 +508,14 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public void RenameNodeBase(string newBase)
         {
-            foreach (var node in Skeleton) {
+            foreach (var node in Skeleton)
+            {
                 node.Name = node.Name.Replace(ModelBase.ToUpper(), newBase.ToUpper());
             }
 
             var newNameMapping = new Dictionary<int, string>();
-            foreach (var node in BoneMapping) {
+            foreach (var node in BoneMapping)
+            {
                 newNameMapping[node.Key] = node.Value.Replace(ModelBase.ToUpper(), newBase.ToUpper());
             }
 

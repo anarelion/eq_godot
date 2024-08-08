@@ -1,4 +1,4 @@
-﻿using EQGodot2.helpers;
+﻿using EQGodot.helpers;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -6,36 +6,46 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    public class WldTrackFragment : WldFragment {
+    public class WldTrackFragment : WldFragment
+    {
         /// <summary>
         /// Reference to a skeleton piece
         /// </summary>
-        public WldTrackDefFragment TrackDefFragment {
+        public WldTrackDefFragment TrackDefFragment
+        {
             get; set;
         }
 
-        public bool IsPoseAnimation {
+        public bool IsPoseAnimation
+        {
             get; set;
         }
-        public bool IsProcessed {
+        public bool IsProcessed
+        {
             get; set;
         }
 
-        public bool IsAnimated {
+        public bool IsAnimated
+        {
             get; set;
         }
-        public bool IsReversed {
+        public bool IsReversed
+        {
             get; set;
         }
-        public bool InterpolateAllowed {
+        public bool InterpolateAllowed
+        {
             get; set;
         }
-        public int Flags {
+        public int Flags
+        {
             get; set;
         }
-        public int FrameMs {
+        public int FrameMs
+        {
             get; set;
         }
 
@@ -45,17 +55,14 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public bool IsNameParsed;
 
-        public override void Initialize(int index, int size, byte[] data,
-            List<WldFragment> fragments,
-            Godot.Collections.Dictionary<int, string> stringHash, bool isNewWldFormat)
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
-            Name = stringHash[-Reader.ReadInt32()];
+            base.Initialize(index, size, data, wld);
+            Name = wld.GetName(Reader.ReadInt32());
+            TrackDefFragment = wld.GetFragment(Reader.ReadInt32()) as WldTrackDefFragment;
 
-            int reference = Reader.ReadInt32();
-            TrackDefFragment = fragments[reference - 1] as WldTrackDefFragment;
-
-            if (TrackDefFragment == null) {
+            if (TrackDefFragment == null)
+            {
                 GD.PrintErr("Bad track def reference'");
             }
 
@@ -71,18 +78,9 @@ namespace EQGodot2.resource_manager.wld_file {
 
             FrameMs = IsAnimated ? Reader.ReadInt32() : 0;
 
-            if (Reader.BaseStream.Position != Reader.BaseStream.Length) {
+            if (Reader.BaseStream.Position != Reader.BaseStream.Length)
+            {
 
-            }
-        }
-
-        public override void OutputInfo()
-        {
-            base.OutputInfo();
-
-            if (TrackDefFragment != null) {
-                GD.Print("-----");
-                GD.Print("0x13: Skeleton piece reference: " + TrackDefFragment.Index + 1);
             }
         }
 
@@ -106,8 +104,10 @@ namespace EQGodot2.resource_manager.wld_file {
         {
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
 
-            if (cleanedName.Length < 6) {
-                if (cleanedName.Length == 3) {
+            if (cleanedName.Length < 6)
+            {
+                if (cleanedName.Length == 3)
+                {
                     ModelName = cleanedName;
                     IsNameParsed = true;
                     return;
@@ -118,7 +118,8 @@ namespace EQGodot2.resource_manager.wld_file {
             }
 
             // Equipment edge case
-            if (cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3)) {
+            if (cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3))
+            {
                 AnimationName = cleanedName.Substring(0, 3);
                 ModelName = cleanedName.Substring(Math.Min(7, cleanedName.Length));
                 PieceName = "root";
@@ -141,7 +142,8 @@ namespace EQGodot2.resource_manager.wld_file {
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
 
             // Equipment edge case
-            if (cleanedName == skeletonHierarchy.ModelBase && cleanedName.Length > 6 || cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3)) {
+            if (cleanedName == skeletonHierarchy.ModelBase && cleanedName.Length > 6 || cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3))
+            {
                 AnimationName = cleanedName.Substring(0, 3);
                 ModelName = cleanedName.Substring(7);
                 PieceName = "root";

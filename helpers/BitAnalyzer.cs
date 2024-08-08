@@ -2,9 +2,11 @@ using Godot;
 using System;
 using System.Collections;
 
-namespace EQGodot2.helpers {
+namespace EQGodot.helpers
+{
     // Latern Extractor class
-    public class BitAnalyzer {
+    public class BitAnalyzer
+    {
         /// <summary>
         /// The bit array, created when class is created
         /// </summary>

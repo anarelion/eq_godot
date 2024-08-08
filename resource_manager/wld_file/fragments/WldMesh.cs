@@ -1,4 +1,4 @@
-﻿using EQGodot2.resource_manager.wld_file.data_types;
+﻿using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using Godot.NativeInterop;
 using System;
@@ -8,31 +8,37 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class adapted for Godot
-    public class WldMesh : WldFragment {
-        public Vector3 Center {
+    public class WldMesh : WldFragment
+    {
+        public Vector3 Center
+        {
             get; private set;
         }
 
         /// <summary>
         /// The maximum distance between the center and any vertex - bounding radius
         /// </summary>
-        public float MaxDistance {
+        public float MaxDistance
+        {
             get; private set;
         }
 
         /// <summary>
         /// The minimum vertex positions in the model - used for bounding box
         /// </summary>
-        public Vector3 MinPosition {
+        public Vector3 MinPosition
+        {
             get; private set;
         }
 
         /// <summary>
         /// The maximum vertex positions in the model - used for bounding box
         /// </summary>
-        public Vector3 MaxPosition {
+        public Vector3 MaxPosition
+        {
             get; private set;
         }
 
@@ -41,39 +47,45 @@ namespace EQGodot2.resource_manager.wld_file {
         /// In zone meshes, it's always the same one
         /// In object meshes, it can be unique
         /// </summary>
-        public WldMaterialList MaterialList {
+        public WldMaterialList MaterialList
+        {
             get; private set;
         }
 
         /// <summary>
         /// The vertices of the mesh
         /// </summary>
-        public Vector3[] Vertices {
+        public Vector3[] Vertices
+        {
             get; set;
         }
 
         /// <summary>
         /// The normals of the mesh
         /// </summary>
-        public Vector3[] Normals {
+        public Vector3[] Normals
+        {
             get; private set;
         }
 
         /// <summary>
         /// The polygon indices of the mesh
         /// </summary>
-        public List<Polygon> Indices {
+        public List<Polygon> Indices
+        {
             get; private set;
         }
 
-        public Color[] Colors {
+        public Color[] Colors
+        {
             get; set;
         }
 
         /// <summary>
         /// The UV texture coordinates of the vertex
         /// </summary>
-        public Vector2[] TextureUvCoordinates {
+        public Vector2[] TextureUvCoordinates
+        {
             get; private set;
         }
 
@@ -81,7 +93,8 @@ namespace EQGodot2.resource_manager.wld_file {
         /// The mesh render groups
         /// Defines which texture index corresponds with groups of vertices
         /// </summary>
-        public List<RenderGroup> MaterialGroups {
+        public List<RenderGroup> MaterialGroups
+        {
             get; private set;
         }
 
@@ -96,7 +109,8 @@ namespace EQGodot2.resource_manager.wld_file {
         /// Set to true if there are non solid polygons in the mesh
         /// This means we export collision separately (e.g. trees, fire)
         /// </summary>
-        public bool ExportSeparateCollision {
+        public bool ExportSeparateCollision
+        {
             get; private set;
         }
 
@@ -107,21 +121,20 @@ namespace EQGodot2.resource_manager.wld_file {
         /// <summary>
         /// The render components of a mob skeleton
         /// </summary>
-        public List<MobVertexPiece> MobPieces {
+        public List<MobVertexPiece> MobPieces
+        {
             get; private set;
         }
 
-        public override void Initialize(int index, int size, byte[] data,
-            List<WldFragment> fragments,
-            Godot.Collections.Dictionary<int, string> stringHash, bool isNewWldFormat)
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
-            Name = stringHash[-Reader.ReadInt32()];
+            base.Initialize(index, size, data, wld);
+            Name = wld.GetName(Reader.ReadInt32());
 
             // Zone: 0x00018003, Objects: 0x00014003
             int flags = Reader.ReadInt32();
 
-            MaterialList = fragments[Reader.ReadInt32() - 1] as WldMaterialList;
+            MaterialList = wld.GetFragment(Reader.ReadInt32()) as WldMaterialList;
             int meshAnimation = Reader.ReadInt32();
 
             // Vertex animation only
@@ -142,8 +155,9 @@ namespace EQGodot2.resource_manager.wld_file {
             int unknownDword3 = Reader.ReadInt32();
 
             // Seems to be related to lighting models? (torches, etc.)
-            if (unknownDword1 != 0 || unknownDword2 != 0 || unknownDword3 != 0) {
-
+            if (unknownDword1 != 0 || unknownDword2 != 0 || unknownDword3 != 0)
+            {
+                GD.PrintErr($"WldMesh: unknown1 {unknownDword1} unknown2 {unknownDword2} unknown3 {unknownDword3}");
             }
 
             MaxDistance = Reader.ReadSingle();
@@ -158,7 +172,7 @@ namespace EQGodot2.resource_manager.wld_file {
             short vertexPieceCount = Reader.ReadInt16();
             short polygonTextureCount = Reader.ReadInt16();
             short vertexTextureCount = Reader.ReadInt16();
-            short size9 = Reader.ReadInt16();
+            short meshOpCount = Reader.ReadInt16();
             float scale = 1.0f / (1 << Reader.ReadInt16());
 
             Vertices = new Vector3[vertexCount];
@@ -166,29 +180,36 @@ namespace EQGodot2.resource_manager.wld_file {
             Colors = new Color[colorsCount];
             TextureUvCoordinates = new Vector2[textureCoordinateCount];
 
-            for (int i = 0; i < vertexCount; ++i) {
+            for (int i = 0; i < vertexCount; ++i)
+            {
                 float x = Reader.ReadInt16() * scale;
                 float y = Reader.ReadInt16() * scale;
                 float z = Reader.ReadInt16() * scale;
                 Vertices[i] = new Vector3(x, y, z);
             }
 
-            for (int i = 0; i < textureCoordinateCount; ++i) {
-                if (isNewWldFormat) {
-                    TextureUvCoordinates[i]  = new Vector2(Reader.ReadSingle(), Reader.ReadSingle());
-                } else {
+            for (int i = 0; i < textureCoordinateCount; ++i)
+            {
+                if (wld.IsNewWldFormat)
+                {
+                    TextureUvCoordinates[i] = new Vector2(Reader.ReadSingle(), Reader.ReadSingle());
+                }
+                else
+                {
                     TextureUvCoordinates[i] = new Vector2(Reader.ReadInt16() / 256.0f, Reader.ReadInt16() / 256.0f);
                 }
             }
 
-            for (int i = 0; i < normalsCount; ++i) {
+            for (int i = 0; i < normalsCount; ++i)
+            {
                 float x = Reader.ReadSByte() / 128.0f;
                 float y = Reader.ReadSByte() / 128.0f;
                 float z = Reader.ReadSByte() / 128.0f;
                 Normals[i] = new Vector3(x, y, z);
             }
 
-            for (int i = 0; i < colorsCount; ++i) {
+            for (int i = 0; i < colorsCount; ++i)
+            {
                 var colorBytes = BitConverter.GetBytes(Reader.ReadInt32());
                 int b = colorBytes[0];
                 int g = colorBytes[1];
@@ -198,16 +219,19 @@ namespace EQGodot2.resource_manager.wld_file {
                 Colors[i] = new Color(r, g, b, a);
             }
 
-            Indices = new List<Polygon>();
+            Indices = [];
 
-            for (int i = 0; i < polygonCount; ++i) {
-                bool isSolid = (Reader.ReadInt16() == 0);
+            for (int i = 0; i < polygonCount; ++i)
+            {
+                bool isSolid = Reader.ReadInt16() == 0;
 
-                if (!isSolid) {
+                if (!isSolid)
+                {
                     ExportSeparateCollision = true;
                 }
 
-                Indices.Add(new Polygon() {
+                Indices.Add(new Polygon()
+                {
                     IsSolid = isSolid,
                     Vertex1 = Reader.ReadInt16(),
                     Vertex2 = Reader.ReadInt16(),
@@ -215,13 +239,15 @@ namespace EQGodot2.resource_manager.wld_file {
                 });
             }
 
-            MobPieces = new List<MobVertexPiece>();
+            MobPieces = [];
             int mobStart = 0;
 
-            for (int i = 0; i < vertexPieceCount; ++i) {
+            for (int i = 0; i < vertexPieceCount; ++i)
+            {
                 int count = Reader.ReadInt16();
                 int index1 = Reader.ReadInt16();
-                var mobVertexPiece = new MobVertexPiece {
+                var mobVertexPiece = new MobVertexPiece
+                {
                     Count = count,
                     Start = mobStart,
                     Bone = index1
@@ -232,66 +258,55 @@ namespace EQGodot2.resource_manager.wld_file {
                 MobPieces.Add(mobVertexPiece);
             }
 
-            MaterialGroups = new List<RenderGroup>();
+            MaterialGroups = [];
 
-            StartTextureIndex = Int32.MaxValue;
+            StartTextureIndex = int.MaxValue;
             var startPolygon = 0;
 
-            for (int i = 0; i < polygonTextureCount; ++i) {
-                var group = new RenderGroup();
-                group.StartPolygon = startPolygon;
-                group.PolygonCount = Reader.ReadUInt16();
-                group.MaterialIndex = Reader.ReadUInt16();
+            for (int i = 0; i < polygonTextureCount; ++i)
+            {
+                var group = new RenderGroup
+                {
+                    StartPolygon = startPolygon,
+                    PolygonCount = Reader.ReadUInt16(),
+                    MaterialIndex = Reader.ReadUInt16()
+                };
                 MaterialGroups.Add(group);
 
                 startPolygon += group.PolygonCount;
 
-                if (group.MaterialIndex < StartTextureIndex) {
+                if (group.MaterialIndex < StartTextureIndex)
+                {
                     StartTextureIndex = group.MaterialIndex;
                 }
             }
 
-            for (int i = 0; i < vertexTextureCount; ++i) {
+            for (int i = 0; i < vertexTextureCount; ++i)
+            {
                 Reader.BaseStream.Position += 4;
             }
 
-            for (int i = 0; i < size9; ++i) {
+            for (int i = 0; i < meshOpCount; ++i)
+            {
                 Reader.BaseStream.Position += 12;
             }
 
             // In some rare cases, the number of uvs does not match the number of vertices
-            if (Vertices.Length != TextureUvCoordinates.Length) {
+            if (Vertices.Length != TextureUvCoordinates.Length)
+            {
                 int difference = Vertices.Length - TextureUvCoordinates.Length;
 
-                for (int i = 0; i < difference; ++i) {
+                for (int i = 0; i < difference; ++i)
+                {
                     TextureUvCoordinates[TextureUvCoordinates.Length + i] = new Vector2(0.0f, 0.0f);
                 }
             }
         }
 
-        public override void OutputInfo()
-        {
-            base.OutputInfo();
-            GD.Print("-----");
-            GD.Print("Mesh: Center: " + Center);
-            GD.Print("Mesh: Max distance: " + MaxDistance);
-            GD.Print("Mesh: Min position: " + MinPosition);
-            GD.Print("Mesh: Max position: " + MaxDistance);
-            GD.Print("Mesh: Texture list reference: " + MaterialList.Index);
-            GD.Print("Mesh: Vertex count: " + Vertices.Length);
-            GD.Print("Mesh: Polygon count: " + Indices.Count);
-            GD.Print("Mesh: Texture coordinate count: " + TextureUvCoordinates.Length);
-            GD.Print("Mesh: Render group count: " + MaterialGroups.Count);
-            GD.Print("Mesh: Export separate collision: " + ExportSeparateCollision);
-
-            //if (AnimatedVerticesReference != null) {
-            //    GD.Print("Mesh: Animated mesh vertices reference: " + AnimatedVerticesReference.Index);
-            //}
-        }
-
         public void ClearCollision()
         {
-            foreach (var poly in Indices) {
+            foreach (var poly in Indices)
+            {
                 poly.IsSolid = false;
             }
 
@@ -309,7 +324,8 @@ namespace EQGodot2.resource_manager.wld_file {
             //GD.Print("normals ", Normals.Count);
             arrays[(int)Mesh.ArrayType.Normal] = Normals;
 
-            if (Colors.Length > 0) {
+            if (Colors.Length > 0)
+            {
                 //GD.Print("colors ", Colors.Count);
                 arrays[(int)Mesh.ArrayType.Color] = Colors;
             }
@@ -321,10 +337,13 @@ namespace EQGodot2.resource_manager.wld_file {
             var weights = new float[Vertices.Length * 4];
 
             //GD.Print("bones ", MobPieces.Count);
-            if (MobPieces.Count > 0) {
-                for (int i = 0; i < MobPieces.Count; i++) {
+            if (MobPieces.Count > 0)
+            {
+                for (int i = 0; i < MobPieces.Count; i++)
+                {
                     var piece = MobPieces[i];
-                    for (int j = 0; j < piece.Count; j++) {
+                    for (int j = 0; j < piece.Count; j++)
+                    {
                         var startIndex = piece.Start + j;
                         bones[startIndex * 4 + 0] = MobPieces[i].Bone;
                         bones[startIndex * 4 + 1] = 0;
@@ -341,10 +360,12 @@ namespace EQGodot2.resource_manager.wld_file {
             }
 
             var mesh = new ArrayMesh();
-            for (int j = 0; j < MaterialGroups.Count; j++) {
+            for (int j = 0; j < MaterialGroups.Count; j++)
+            {
                 var group = MaterialGroups[j];
                 var indices = new int[group.PolygonCount * 3];
-                for (int i = 0; i < group.PolygonCount; i++) {
+                for (int i = 0; i < group.PolygonCount; i++)
+                {
                     indices[i * 3 + 0] = Indices[group.StartPolygon + i].Vertex1;
                     indices[i * 3 + 1] = Indices[group.StartPolygon + i].Vertex2;
                     indices[i * 3 + 2] = Indices[group.StartPolygon + i].Vertex3;
@@ -354,6 +375,7 @@ namespace EQGodot2.resource_manager.wld_file {
                 mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
                 mesh.SurfaceSetMaterial(j, wld.Materials[MaterialList.Materials[group.MaterialIndex].Index]);
             }
+            mesh.ResourceName = Name;
             return mesh;
         }
     }

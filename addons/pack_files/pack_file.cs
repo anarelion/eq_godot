@@ -7,11 +7,12 @@ using Ionic.Zlib;
 using System.Collections.Generic;
 using static System.Net.WebRequestMethods;
 using System.Drawing.Printing;
-using EQGodot2.resource_manager.pack_file;
+using EQGodot.resource_manager.pack_file;
 
 #if TOOLS
 [Tool]
-public partial class pack_file : EditorPlugin {
+public partial class pack_file : EditorPlugin
+{
     private PFSArchiveImport Import;
 
     public override void _EnterTree()
@@ -24,7 +25,8 @@ public partial class pack_file : EditorPlugin {
     public override void _ExitTree()
     {
         GD.Print("Exiting tree!");
-        if (Import != null) {
+        if (Import != null)
+        {
             RemoveImportPlugin(Import);
             Import = null;
         }
@@ -32,7 +34,8 @@ public partial class pack_file : EditorPlugin {
 }
 
 
-public partial class PFSArchiveImport : EditorImportPlugin {
+public partial class PFSArchiveImport : EditorImportPlugin
+{
 
     public override string _GetImporterName()
     {
@@ -81,15 +84,17 @@ public partial class PFSArchiveImport : EditorImportPlugin {
 
     public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetImportOptions(string path, int presetIndex)
     {
-        return new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        return [];
     }
 
     public override Error _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array<string> platformVariants, Godot.Collections.Array<string> genFiles)
     {
-        try {
+        try
+        {
 
             using var file = Godot.FileAccess.Open(sourceFile, Godot.FileAccess.ModeFlags.Read);
-            if (file.GetError() != Error.Ok) {
+            if (file.GetError() != Error.Ok)
+            {
                 GD.PrintErr("Failed to open: ", sourceFile);
                 return Error.Failed;
             }
@@ -108,12 +113,14 @@ public partial class PFSArchiveImport : EditorImportPlugin {
 
             var files = new List<PFSFile>();
 
-            for (int i = 0; i < fileCount; i++) {
+            for (int i = 0; i < fileCount; i++)
+            {
                 var crc = file.Get32();
                 var offset = file.Get32();
                 var size = file.Get32();
 
-                if (offset > fileLength) {
+                if (offset > fileLength)
+                {
                     GD.PrintErr("PfsArchive: Corrupted PFS length detected!");
                     return Error.Failed;
                 }
@@ -124,11 +131,13 @@ public partial class PFSArchiveImport : EditorImportPlugin {
                 var fileBytes = new byte[size];
                 uint uncompressedTotal = 0;
 
-                while (uncompressedTotal != size) {
+                while (uncompressedTotal != size)
+                {
                     uint compressedSize = file.Get32();
                     uint uncompressedSize = file.Get32();
 
-                    if (compressedSize >= fileLength) {
+                    if (compressedSize >= fileLength)
+                    {
                         GD.PrintErr("PfsArchive: Corrupted file length detected! ", compressedSize, " >= ", fileLength);
                         return Error.Failed;
                     }
@@ -136,7 +145,8 @@ public partial class PFSArchiveImport : EditorImportPlugin {
                     byte[] compressedBytes = file.GetBuffer(compressedSize);
                     byte[] uncompressedBytes;
 
-                    if (!InflateBlock(compressedBytes, (int)uncompressedSize, out uncompressedBytes)) {
+                    if (!InflateBlock(compressedBytes, (int)uncompressedSize, out uncompressedBytes))
+                    {
                         GD.PrintErr("PfsArchive: Error occured inflating data");
                         return Error.Failed;
                     }
@@ -145,12 +155,14 @@ public partial class PFSArchiveImport : EditorImportPlugin {
                     uncompressedTotal += uncompressedSize;
                 }
 
-                if (crc == 0x61580AC9 || (crc == 0xFFFFFFFFU && fileNames.Count == 0)) {
+                if (crc == 0x61580AC9 || (crc == 0xFFFFFFFFU && fileNames.Count == 0))
+                {
                     var dictionaryStream = new MemoryStream(fileBytes);
                     var dictionary = new BinaryReader(dictionaryStream);
                     uint filenameCount = dictionary.ReadUInt32();
 
-                    for (uint j = 0; j < filenameCount; ++j) {
+                    for (uint j = 0; j < filenameCount; ++j)
+                    {
                         uint fileNameLength = dictionary.ReadUInt32();
                         var filename = new string(dictionary.ReadChars((int)fileNameLength));
                         fileNames.Add(filename.Substring(0, filename.Length - 1));
@@ -167,15 +179,19 @@ public partial class PFSArchiveImport : EditorImportPlugin {
             files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
             var archive = new PFSArchive();
-            foreach (PFSFile x in files) {
+            foreach (PFSFile x in files)
+            {
                 archive.Files.Add(x);
             }
 
-            for (int i = 0; i < files.Count; ++i) {
-                switch (version) {
+            for (int i = 0; i < files.Count; ++i)
+            {
+                switch (version)
+                {
                     case 0x10000:
                         // PFS version 1 files do not appear to contain the filenames
-                        if (files[i] is PFSFile pfsFile) {
+                        if (files[i] is PFSFile pfsFile)
+                        {
                             pfsFile.Name = $"{pfsFile.Crc:X8}.bin";
                         }
                         break;
@@ -183,7 +199,8 @@ public partial class PFSArchiveImport : EditorImportPlugin {
                         files[i].Name = fileNames[i];
                         archive.FilesByName[fileNames[i]] = files[i];
 
-                        if (fileNames[i].EndsWith(".wld")) {
+                        if (fileNames[i].EndsWith(".wld"))
+                        {
                             archive.IsWldArchive = true;
                         }
                         break;
@@ -210,7 +227,8 @@ public partial class PFSArchiveImport : EditorImportPlugin {
     {
         var output = new byte[inflatedSize];
 
-        using (var memoryStream = new MemoryStream()) {
+        using (var memoryStream = new MemoryStream())
+        {
             var zlibCodec = new ZlibCodec();
             zlibCodec.InitializeInflate(true);
 
@@ -219,16 +237,20 @@ public partial class PFSArchiveImport : EditorImportPlugin {
             zlibCodec.NextIn = 0;
             zlibCodec.OutputBuffer = output;
 
-            foreach (FlushType f in new[] { FlushType.None, FlushType.Finish }) {
+            foreach (FlushType f in new[] { FlushType.None, FlushType.Finish })
+            {
                 int bytesToWrite;
 
-                do {
+                do
+                {
                     zlibCodec.AvailableBytesOut = inflatedSize;
                     zlibCodec.NextOut = 0;
-                    try {
+                    try
+                    {
                         zlibCodec.Inflate(f);
                     }
-                    catch (Exception e) {
+                    catch (Exception e)
+                    {
                         inflatedBytes = null;
                         GD.PrintErr("PfsArchive: Exception caught while inflating bytes: " + e);
                         return false;

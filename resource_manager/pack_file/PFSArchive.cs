@@ -1,4 +1,4 @@
-using EQGodot2.resource_manager.wld_file;
+using EQGodot.resource_manager.wld_file;
 using Godot;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 
-namespace EQGodot2.resource_manager.pack_file
+namespace EQGodot.resource_manager.pack_file
 {
     [GlobalClass]
     public partial class PFSArchive : Resource
@@ -31,9 +31,9 @@ namespace EQGodot2.resource_manager.pack_file
 
         public PFSArchive()
         {
-            Files = new Godot.Collections.Array<Resource>();
-            FilesByName = new Godot.Collections.Dictionary<string, Resource>();
-            WldFiles = new Godot.Collections.Dictionary<string, WldFile>();
+            Files = [];
+            FilesByName = [];
+            WldFiles = [];
         }
 
         public void ProcessFiles()
@@ -42,7 +42,7 @@ namespace EQGodot2.resource_manager.pack_file
             {
                 if (Files[i] is PFSFile pfsFile)
                 {
-                    if (pfsFile.Name.EndsWith(".dds"))
+                    if (pfsFile.Name.EndsWith(".dds") || (pfsFile.FileBytes[0] == 'D' && pfsFile.FileBytes[1] == 'D' && pfsFile.FileBytes[2] == 'S'))
                     {
                         try
                         {
@@ -128,6 +128,7 @@ namespace EQGodot2.resource_manager.pack_file
             try
             {
                 var image = Image.CreateFromData(dds.Width, dds.Height, dds.MipMaps.Length > 1, Image.Format.Rgba8, dds.Data);
+                image.FlipY();
                 return ImageTexture.CreateFromImage(image);
             }
             catch (Exception ex)
@@ -139,6 +140,7 @@ namespace EQGodot2.resource_manager.pack_file
 
         private ImageTexture ProcessBMPImage(PFSFile pfsFile)
         {
+            // GD.Print(pfsFile.FileBytes.HexEncode());
             var bitmap = new System.Drawing.Bitmap(new MemoryStream(pfsFile.FileBytes));
             var data = new byte[bitmap.Width * bitmap.Height * 4];
             var offset = data.Length - 4;

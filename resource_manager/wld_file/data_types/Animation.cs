@@ -4,28 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file.data_types {
+namespace EQGodot.resource_manager.wld_file.data_types
+{
     // Latern Extractor class
-    public class Animation {
+    public class Animation
+    {
         public string AnimModelBase;
         public Dictionary<string, WldTrackFragment> Tracks;
         public Dictionary<string, WldTrackFragment> TracksCleaned;
         public Dictionary<string, WldTrackFragment> TracksCleanedStripped;
         public int FrameCount;
-        public int AnimationTimeMs {
+        public int AnimationTimeMs
+        {
             get; set;
         }
 
         public Animation()
         {
-            Tracks = new Dictionary<string, WldTrackFragment>();
-            TracksCleaned = new Dictionary<string, WldTrackFragment>();
-            TracksCleanedStripped = new Dictionary<string, WldTrackFragment>();
+            Tracks = [];
+            TracksCleaned = [];
+            TracksCleanedStripped = [];
         }
 
         public static string CleanBoneName(string boneName)
         {
-            if (string.IsNullOrEmpty(boneName)) {
+            if (string.IsNullOrEmpty(boneName))
+            {
                 return boneName;
             }
 
@@ -37,7 +41,8 @@ namespace EQGodot2.resource_manager.wld_file.data_types {
         {
             var cleanedName = CleanBoneNameDag(boneName);
 
-            if (cleanedName.StartsWith(modelBase)) {
+            if (cleanedName.StartsWith(modelBase))
+            {
                 cleanedName = cleanedName.Substring(modelBase.Length);
             }
 
@@ -46,7 +51,8 @@ namespace EQGodot2.resource_manager.wld_file.data_types {
 
         public static string CleanBoneNameDag(string boneName)
         {
-            if (string.IsNullOrEmpty(boneName)) {
+            if (string.IsNullOrEmpty(boneName))
+            {
                 return boneName;
             }
 
@@ -57,7 +63,8 @@ namespace EQGodot2.resource_manager.wld_file.data_types {
         {
             // Prevent overwriting tracks
             // Drachnid edge case
-            if (Tracks.ContainsKey(pieceName)) {
+            if (Tracks.ContainsKey(pieceName))
+            {
                 return;
             }
 
@@ -66,17 +73,20 @@ namespace EQGodot2.resource_manager.wld_file.data_types {
             TracksCleanedStripped[cleanStrippedName] = track;
 
             if (string.IsNullOrEmpty(AnimModelBase) &&
-                !string.IsNullOrEmpty(track.ModelName)) {
+                !string.IsNullOrEmpty(track.ModelName))
+            {
                 AnimModelBase = track.ModelName;
             }
 
-            if (track.TrackDefFragment.Frames.Count > FrameCount) {
+            if (track.TrackDefFragment.Frames.Count > FrameCount)
+            {
                 FrameCount = track.TrackDefFragment.Frames.Count;
             }
 
             int totalTime = track.TrackDefFragment.Frames.Count * track.FrameMs;
 
-            if (totalTime > AnimationTimeMs) {
+            if (totalTime > AnimationTimeMs)
+            {
                 AnimationTimeMs = totalTime;
             }
         }

@@ -1,8 +1,8 @@
 using Godot;
 using System;
-using EQGodot2.resource_manager.pack_file;
-using EQGodot2.resource_manager;
-using EQGodot2.helpers;
+using EQGodot.resource_manager.pack_file;
+using EQGodot.resource_manager;
+using EQGodot.helpers;
 
 [GlobalClass]
 public partial class ResourceManager : Node

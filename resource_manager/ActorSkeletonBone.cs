@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EQGodot2.resource_manager.wld_file;
-using EQGodot2.resource_manager.wld_file.data_types;
+using EQGodot.resource_manager.wld_file;
+using EQGodot.resource_manager.wld_file.data_types;
 
-namespace EQGodot2.resource_manager {
-    public partial class ActorSkeletonBone : Resource {
+namespace EQGodot.resource_manager
+{
+    public partial class ActorSkeletonBone : Resource
+    {
         [Export]
         public int Index;
         [Export]
@@ -26,7 +28,8 @@ namespace EQGodot2.resource_manager {
         [Export]
         public ActorSkeletonPath BasePosition;
         [Export]
-        public Godot.Collections.Dictionary<string, ActorSkeletonPath> AnimationTracks {
+        public Godot.Collections.Dictionary<string, ActorSkeletonPath> AnimationTracks
+        {
             get; set;
         }
 

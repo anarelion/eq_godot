@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file.data_types {
+namespace EQGodot.resource_manager.wld_file.data_types
+{
     // Latern Extractor class
-    public enum ShaderType {
+    public enum ShaderType
+    {
         Diffuse = 0,
         Transparent25 = 1,
         Transparent50 = 2,

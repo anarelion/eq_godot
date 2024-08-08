@@ -3,29 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EQGodot2.helpers;
-using EQGodot2.resource_manager.pack_file;
-using EQGodot2.resource_manager.wld_file.data_types;
+using EQGodot.helpers;
+using EQGodot.resource_manager.pack_file;
+using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    public class WldMaterial : WldFragment {
-        public WldBitmapInfoReference BitmapInfoReference {
+    public class WldMaterial : WldFragment
+    {
+        public WldBitmapInfoReference BitmapInfoReference
+        {
             get; private set;
         }
 
         /// <summary>
         /// The shader type that this material uses when rendering
         /// </summary>
-        public ShaderType ShaderType {
+        public ShaderType ShaderType
+        {
             get; set;
         }
 
-        public float Brightness {
+        public float Brightness
+        {
             get; set;
         }
-        public float ScaledAmbient {
+        public float ScaledAmbient
+        {
             get; set;
         }
 
@@ -33,16 +39,15 @@ namespace EQGodot2.resource_manager.wld_file {
         /// If a material has not been handled, we still need to find the corresponding material list
         /// Used for alternate character skins
         /// </summary>
-        public bool IsHandled {
+        public bool IsHandled
+        {
             get; set;
         }
 
-        public override void Initialize(int index, int size, byte[] data,
-            List<WldFragment> fragments,
-            Godot.Collections.Dictionary<int, string> stringHash, bool isNewWldFormat)
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
-            Name = stringHash[-Reader.ReadInt32()];
+            base.Initialize(index, size, data, wld);
+            Name = wld.GetName(Reader.ReadInt32());
             int flags = Reader.ReadInt32();
             int parameters = Reader.ReadInt32();
 
@@ -55,17 +60,13 @@ namespace EQGodot2.resource_manager.wld_file {
 
             Brightness = Reader.ReadSingle();
             ScaledAmbient = Reader.ReadSingle();
-
-            int fragmentReference = Reader.ReadInt32();
-
-            if (fragmentReference != 0) {
-                BitmapInfoReference = fragments[fragmentReference - 1] as WldBitmapInfoReference;
-            }
+            BitmapInfoReference = wld.GetFragment(Reader.ReadInt32()) as WldBitmapInfoReference;
 
             // Thanks to PixelBound for figuring this out
             MaterialType materialType = (MaterialType)(parameters & ~0x80000000);
 
-            switch (materialType) {
+            switch (materialType)
+            {
                 case MaterialType.Boundary:
                     ShaderType = ShaderType.Boundary;
                     break;
@@ -119,26 +120,17 @@ namespace EQGodot2.resource_manager.wld_file {
             }
         }
 
-        public override void OutputInfo()
-        {
-            base.OutputInfo();
-            GD.Print("-----");
-            GD.Print("Material: Shader type: " + ShaderType);
-
-            if (ShaderType != ShaderType.Invisible && BitmapInfoReference != null) {
-                GD.Print("Material: Reference: " + (BitmapInfoReference.Index + 1));
-            }
-        }
-
         public List<string> GetAllBitmapNames()
         {
             var bitmapNames = new List<string>();
 
-            if (BitmapInfoReference == null) {
+            if (BitmapInfoReference == null)
+            {
                 return bitmapNames;
             }
 
-            foreach (WldBitmapName bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames) {
+            foreach (WldBitmapName bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
+            {
                 string filename = bitmapName.Filename;
                 bitmapNames.Add(filename);
             }
@@ -149,13 +141,37 @@ namespace EQGodot2.resource_manager.wld_file {
         public Material ToGodotMaterial(PFSArchive archive)
         {
             var names = GetAllBitmapNames();
-            if (names.Count > 1) {
-                GD.PrintErr("TODO: need to create an animated texture ", Name);
-                return null;
+            if (names.Count > 1)
+            {
+                var animated = new AnimatedTexture
+                {
+                    Frames = names.Count
+                };
+
+                for (int i = 0; i < names.Count; i++)
+                {
+                    var image = archive.FilesByName[names[i]] as ImageTexture;
+                    animated.SetFrameTexture(i, image);
+                    animated.SetFrameDuration(i, BitmapInfoReference.BitmapInfo.AnimationDelayMs / 1000.0f);
+                }
+                var animresult = new StandardMaterial3D
+                {
+                    AlbedoTexture = animated
+                };
+                return animresult;
             }
-            var texture = archive.FilesByName[names[0]] as ImageTexture;
+
             var result = new StandardMaterial3D();
-            result.AlbedoTexture = texture;
+
+            if (names.Count == 1)
+            {
+                var texture = archive.FilesByName[names[0]] as ImageTexture;
+                result.AlbedoTexture = texture;
+            }
+            else
+            {
+                GD.PrintErr($"Material: {Name} doesn't have a texture");
+            }
             return result;
         }
     }

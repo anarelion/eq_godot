@@ -12,7 +12,7 @@ config_version=5
 
 config/name="EQGodot"
 run/main_scene="res://GameController/GameController.tscn"
-config/features=PackedStringArray("4.2", "C#", "Forward Plus")
+config/features=PackedStringArray("4.3", "C#", "Forward Plus")
 run/max_fps=60
 boot_splash/bg_color=Color(0.259183, 0.347112, 0.167039, 1)
 config/icon="res://icon.svg"

@@ -1,5 +1,6 @@
-﻿using EQGodot2.helpers;
-using EQGodot2.resource_manager.pack_file;
+﻿using EQGodot.resource_manager.wld_file;
+using EQGodot.helpers;
+using EQGodot.resource_manager.pack_file;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file
+namespace EQGodot.resource_manager.wld_file
 {
     // Latern Extractor class
     public partial class WldFile : Resource
@@ -77,6 +78,7 @@ namespace EQGodot2.resource_manager.wld_file
             }
 
             Fragments = [];
+            Fragments.Add(new WldGeneric());
             FragmentTypeDictionary = [];
             FragmentNameDictionary = [];
             Materials = [];
@@ -107,13 +109,13 @@ namespace EQGodot2.resource_manager.wld_file
             //GD.Print("fragmentCount: ", fragmentCount);
             //GD.Print("bspRegionCount: ", bspRegionCount);
             //GD.Print("maxObjectBytes: ", maxObjectBytes);
-            //GD.Print("stringHashSize: ", stringHashSize);
-            //GD.Print("stringCount: ", stringCount);
+            GD.Print("stringHashSize: ", stringHashSize);
+            GD.Print("stringCount: ", stringCount);
 
             var strings = reader.ReadBytes((int)stringHashSize);
             var decoded = WldStringDecoder.Decode(strings);
 
-            Strings = new Godot.Collections.Dictionary<int, string>();
+            Strings = [];
             int index = 0;
             string[] splitHash = decoded.Split('\0');
 
@@ -127,15 +129,15 @@ namespace EQGodot2.resource_manager.wld_file
             {
                 uint fragSize = reader.ReadUInt32();
                 int fragType = reader.ReadInt32();
-                if (i % 500 == 0)
+                if (i % 1000 == 0)
                 {
                     GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
                 }
                 var fragmentContents = reader.ReadBytes((int)fragSize);
 
-                var newFragment = !WldFragmentBuilder.Fragments.ContainsKey(fragType)
+                var newFragment = !WldFragmentBuilder.Fragments.TryGetValue(fragType, out Func<WldFragment> value)
                     ? new WldGeneric()
-                    : WldFragmentBuilder.Fragments[fragType]();
+                    : value();
 
                 if (newFragment is WldGeneric)
                 {
@@ -143,14 +145,12 @@ namespace EQGodot2.resource_manager.wld_file
                     break;
                 }
 
-                newFragment.Initialize(i, (int)fragSize, fragmentContents, Fragments, Strings,
-                    IsNewWldFormat);
-                // newFragment.OutputInfo();
+                newFragment.Initialize(i, (int)fragSize, fragmentContents, this);
 
                 Fragments.Add(newFragment);
                 if (!FragmentTypeDictionary.ContainsKey(newFragment.GetType()))
                 {
-                    FragmentTypeDictionary[newFragment.GetType()] = new List<WldFragment>();
+                    FragmentTypeDictionary[newFragment.GetType()] = [];
                 }
 
                 if (!string.IsNullOrEmpty(newFragment.Name) && !FragmentNameDictionary.ContainsKey(newFragment.Name))
@@ -171,10 +171,45 @@ namespace EQGodot2.resource_manager.wld_file
         {
             if (!FragmentTypeDictionary.ContainsKey(typeof(T)))
             {
-                return new List<T>();
+                return [];
             }
 
             return FragmentTypeDictionary[typeof(T)].Cast<T>().ToList();
+        }
+
+        public string GetName(int reference)
+        {
+            if (reference < 0)
+            {
+                if (!Strings.ContainsKey(-reference))
+                {
+                    GD.PrintErr($"String not found at {-reference}");
+                }
+                return Strings[-reference];
+            }
+            else if (reference == 0)
+            {
+                return string.Empty;
+            }
+            return Fragments[reference].Name;
+        }
+
+        public WldFragment GetFragmentByName(String name)
+        {
+            return FragmentNameDictionary.TryGetValue(name, out WldFragment fragment) ? fragment : null;
+        }
+
+        public WldFragment GetFragment(int reference)
+        {
+            if (reference < 0)
+            {
+                return FragmentNameDictionary[Strings[-reference]];
+            }
+            else if (reference == 0)
+            {
+                return null;
+            }
+            return Fragments[reference];
         }
 
         public void BuildMaterials()
@@ -234,7 +269,8 @@ namespace EQGodot2.resource_manager.wld_file
                         var meshref = bone.MeshReference;
                         var mesh = meshref != null && meshref.Mesh != null ? Meshes[meshref.Mesh.Index] : null;
                         var boneName = bone.Name.Substring(3).ToLower().Replace("_dag", "");
-                        if (boneName == "") {
+                        if (boneName == "")
+                        {
                             boneName = "root";
                         }
                         var rbone = new ActorSkeletonBone
@@ -276,10 +312,12 @@ namespace EQGodot2.resource_manager.wld_file
         {
             string animationName = null;
             string pieceName = null;
-            if (Regex.IsMatch(track.Name, @"^[A-Z][0-9][0-9]")) {
-                animationName = track.Name.Substr(0,3);
+            if (Regex.IsMatch(track.Name, @"^[A-Z][0-9][0-9]"))
+            {
+                animationName = track.Name.Substr(0, 3);
                 pieceName = track.Name.Substring(6).ToLower().Replace("_track", "");
-                if (pieceName == "") {
+                if (pieceName == "")
+                {
                     pieceName = "root";
                 }
             }
@@ -314,5 +352,7 @@ namespace EQGodot2.resource_manager.wld_file
                 ExtraAnimations.Add(animation.Index, ConvertTrack(animation));
             }
         }
+
+
     }
 }

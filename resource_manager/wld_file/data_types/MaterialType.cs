@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.helpers {
+namespace EQGodot.helpers
+{
     // Latern Extractor class
-    public enum MaterialType {
+    public enum MaterialType
+    {
         // Used for boundaries that are not rendered. TextInfoReference can be null or have reference.
         Boundary = 0x0,
         // Standard diffuse shader

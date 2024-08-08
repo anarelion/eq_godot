@@ -1,11 +1,13 @@
-﻿using EQGodot2.helpers;
-using EQGodot2.resource_manager.wld_file.data_types;
+﻿using EQGodot.helpers;
+using EQGodot.resource_manager.wld_file.data_types;
 using System;
 using System.Collections.Generic;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    public class WldLegacyMesh : WldFragment {
+    public class WldLegacyMesh : WldFragment
+    {
         //public vec3 Center {
         //    get; private set;
         //}
@@ -15,10 +17,11 @@ namespace EQGodot2.resource_manager.wld_file {
         //public List<Polygon> Polygons = new List<Polygon>();
         //public List<ivec2> VertexTex = new List<ivec2>();
         //public List<Color> Colors = new List<Color>();
-        public List<RenderGroup> RenderGroups = new List<RenderGroup>();
+        public List<RenderGroup> RenderGroups = [];
         public WldMaterialList MaterialList;
         //public PolyhedronReference PolyhedronReference;
-        public Dictionary<int, MobVertexPiece> MobPieces {
+        public Dictionary<int, MobVertexPiece> MobPieces
+        {
             get; private set;
         }
         ///// <summary>
@@ -32,16 +35,15 @@ namespace EQGodot2.resource_manager.wld_file {
         /// Set to true if there are non solid polygons in the mesh
         /// This means we export collision separately (e.g. trees, fire)
         /// </summary>
-        public bool ExportSeparateCollision {
+        public bool ExportSeparateCollision
+        {
             get; private set;
         }
 
-        public override void Initialize(int index, int size, byte[] data, List<WldFragment> fragments, 
-            Godot.Collections.Dictionary<int, string> stringHash,
-            bool isNewWldFormat)
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
-            Name = stringHash[-Reader.ReadInt32()];
+            base.Initialize(index, size, data, wld);
+            Name = wld.GetName(Reader.ReadInt32());
 
             // TODO: investigate flags further
             // looks like some flags will zero and 1.0 fields if they are missing.
@@ -55,7 +57,7 @@ namespace EQGodot2.resource_manager.wld_file {
             // 0x4000 (bit14) shown in ghidra as 0x40 bounding box?
             // 0x8000 (bit15) shown in ghidra as 0x80
             int flags = Reader.ReadInt32();
-            BitAnalyzer ba = new BitAnalyzer(flags);
+            BitAnalyzer ba = new(flags);
 
             int vertexCount = Reader.ReadInt32();
             int texCoordCount = Reader.ReadInt32();
@@ -65,7 +67,7 @@ namespace EQGodot2.resource_manager.wld_file {
             int size6 = Reader.ReadInt16();
             int fragment1Maybe = Reader.ReadInt16();
             int vertexPieceCount = Reader.ReadInt32(); // -1
-            MaterialList = fragments[Reader.ReadInt32() - 1] as WldMaterialList;
+            MaterialList = wld.GetFragment(Reader.ReadInt32()) as WldMaterialList;
             //int meshAnimation = Reader.ReadInt32();
 
             //// Vertex animation only

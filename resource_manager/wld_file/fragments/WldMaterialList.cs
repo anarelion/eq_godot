@@ -1,5 +1,5 @@
-﻿using EQGodot2.helpers;
-using EQGodot2.resource_manager.wld_file.data_types;
+﻿using EQGodot.helpers;
+using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -7,49 +7,54 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    public class WldMaterialList : WldFragment {
-        public List<WldMaterial> Materials {
+    public class WldMaterialList : WldFragment
+    {
+        public List<WldMaterial> Materials
+        {
             get; private set;
         }
 
         /// <summary>
         /// A mapping of slot names to alternate skins
         /// </summary>
-        public Dictionary<string, Dictionary<int, WldMaterial>> Slots {
+        public Dictionary<string, Dictionary<int, WldMaterial>> Slots
+        {
             get; private set;
         }
 
         /// <summary>
         /// The number of alternate skins
         /// </summary>
-        public int VariantCount {
-            get; set;
-        }
-
-        public List<WldMaterial> AdditionalMaterials {
-            get; set;
-        }
-
-        public override void Initialize(int index, int size, byte[] data,
-            List<WldFragment> fragments,
-            Godot.Collections.Dictionary<int, string> stringHash, bool isNewWldFormat)
+        public int VariantCount
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
-            Name = stringHash[-Reader.ReadInt32()];
+            get; set;
+        }
 
-            Materials = new List<WldMaterial>();
+        public List<WldMaterial> AdditionalMaterials
+        {
+            get; set;
+        }
+
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
+        {
+            base.Initialize(index, size, data, wld);
+            Name = wld.GetName(Reader.ReadInt32());
+
+            Materials = [];
 
             int flags = Reader.ReadInt32();
             int materialCount = Reader.ReadInt32();
 
-            for (int i = 0; i < materialCount; ++i) {
-                int reference = Reader.ReadInt32() - 1;
-                WldMaterial material = fragments[reference] as WldMaterial;
+            for (int i = 0; i < materialCount; ++i)
+            {
+                WldMaterial material = wld.GetFragment(Reader.ReadInt32()) as WldMaterial;
 
-                if (material == null) {
-                    GD.PrintErr("Unable to get material reference for fragment id: " + reference);
+                if (material == null)
+                {
+                    GD.PrintErr("Unable to get material reference for fragment id");
                     continue;
                 }
 
@@ -62,13 +67,15 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public void BuildSlotMapping()
         {
-            Slots = new Dictionary<string, Dictionary<int, WldMaterial>>();
+            Slots = [];
 
-            if (Materials == null || Materials.Count == 0) {
+            if (Materials == null || Materials.Count == 0)
+            {
                 return;
             }
 
-            foreach (var material in Materials) {
+            foreach (var material in Materials)
+            {
                 string character = string.Empty;
                 string skinId = string.Empty;
                 string partName = string.Empty;
@@ -76,35 +83,17 @@ namespace EQGodot2.resource_manager.wld_file {
                 ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName);
 
                 string key = character + "_" + partName;
-                Slots[key] = new Dictionary<int, WldMaterial>();
+                Slots[key] = [];
             }
 
-            AdditionalMaterials = new List<WldMaterial>();
-        }
-
-        public override void OutputInfo()
-        {
-            base.OutputInfo();
-            GD.Print("-----");
-            GD.Print("0x30: Material count: " + Materials.Count);
-
-            string references = string.Empty;
-
-            for (var i = 0; i < Materials.Count; i++) {
-                if (i != 0) {
-                    references += ", ";
-                }
-
-                references += (Materials[i].Index + 1);
-            }
-
-            GD.Print("0x30: References: " + references);
+            AdditionalMaterials = [];
         }
 
         private static void ParseCharacterSkin(string materialName, out string character, out string skinId,
             out string partName)
         {
-            if (materialName.Length != 9) {
+            if (materialName.Length != 9)
+            {
                 character = string.Empty;
                 skinId = string.Empty;
                 partName = string.Empty;
@@ -118,7 +107,8 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public static string GetMaterialPrefix(ShaderType shaderType)
         {
-            switch (shaderType) {
+            switch (shaderType)
+            {
                 case ShaderType.Diffuse:
                     return "d_";
                 case ShaderType.Invisible:
@@ -157,14 +147,16 @@ namespace EQGodot2.resource_manager.wld_file {
 
             string key = character + "_" + partName;
 
-            if (!Slots.ContainsKey(key)) {
-                Slots[key] = new Dictionary<int, WldMaterial>();
+            if (!Slots.ContainsKey(key))
+            {
+                Slots[key] = [];
             }
 
             int skinIdNumber = Convert.ToInt32(skinId);
             Slots[key][skinIdNumber] = material;
 
-            if (skinIdNumber > VariantCount) {
+            if (skinIdNumber > VariantCount)
+            {
                 VariantCount = skinIdNumber;
             }
 
@@ -173,9 +165,10 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public List<WldMaterial> GetMaterialVariants(WldMaterial material)
         {
-            List<WldMaterial> additionalSkins = new List<WldMaterial>();
+            List<WldMaterial> additionalSkins = [];
 
-            if (Slots == null) {
+            if (Slots == null)
+            {
                 return additionalSkins;
             }
 
@@ -186,13 +179,16 @@ namespace EQGodot2.resource_manager.wld_file {
 
             string key = character + "_" + partName;
 
-            if (!Slots.ContainsKey(key)) {
+            if (!Slots.ContainsKey(key))
+            {
                 return additionalSkins;
             }
 
             var variants = Slots[key];
-            for (int i = 0; i < VariantCount; ++i) {
-                if (!variants.ContainsKey(i + 1)) {
+            for (int i = 0; i < VariantCount; ++i)
+            {
+                if (!variants.ContainsKey(i + 1))
+                {
                     additionalSkins.Add(null);
                     continue;
                 }

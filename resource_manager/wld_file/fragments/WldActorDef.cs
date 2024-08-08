@@ -1,5 +1,5 @@
-﻿using EQGodot2.helpers;
-using EQGodot2.resource_manager.wld_file.data_types;
+﻿using EQGodot.helpers;
+using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -7,24 +7,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    class WldActorDef : WldFragment {
+    class WldActorDef : WldFragment
+    {
         /// <summary>
         /// Mesh reference (optional)
         /// </summary>
-        public WldMeshReference MeshReference {
+        public WldMeshReference MeshReference
+        {
             get; private set;
         }
 
         /// <summary>
         /// Skeleton track reference (optional)
         /// </summary>
-        public WldSkeletonHierarchyReference SkeletonReference {
+        public WldSkeletonHierarchyReference SkeletonReference
+        {
             get; private set;
         }
 
         public int Flags;
+
+        public String CallbackName;
 
         /// <summary>
         /// Camera reference (optional)
@@ -46,12 +52,10 @@ namespace EQGodot2.resource_manager.wld_file {
 
         public string ReferenceName;
 
-        public override void Initialize(int index, int size, byte[] data,
-            List<WldFragment> fragments,
-            Godot.Collections.Dictionary<int, string> stringHash, bool isNewWldFormat)
+        public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
-            Name = stringHash[-Reader.ReadInt32()];
+            base.Initialize(index, size, data, wld);
+            Name = wld.GetName(-Reader.ReadInt32());
             Flags = Reader.ReadInt32();
 
             BitAnalyzer ba = new BitAnalyzer(Flags);
@@ -60,11 +64,7 @@ namespace EQGodot2.resource_manager.wld_file {
             bool params2Exist = ba.IsBitSet(1);
             bool fragment2MustContainZero = ba.IsBitSet(7);
 
-            // Is an index in the string hash
-            int fragment1 = Reader.ReadInt32();
-
-            // For objects, SPRITECALLBACK - and it's the same reference value
-            string stringValue = stringHash[-fragment1];
+            CallbackName = wld.GetName(Reader.ReadInt32());
 
             // 1 for both static and animated objects
             int size1 = Reader.ReadInt32();
@@ -76,47 +76,54 @@ namespace EQGodot2.resource_manager.wld_file {
             // 0 for both static and animated objects
             int fragment2 = Reader.ReadInt32();
 
-            if (params1Exist) {
+            if (params1Exist)
+            {
                 int params1 = Reader.ReadInt32();
             }
 
-            if (params2Exist) {
+            if (params2Exist)
+            {
                 Reader.BaseStream.Position += 7 * sizeof(int);
             }
 
             // Size 1 entries
-            for (int i = 0; i < size1; ++i) {
+            for (int i = 0; i < size1; ++i)
+            {
                 // Always 1
                 int dataPairCount = Reader.ReadInt32();
 
                 // Unknown purpose
                 // Always 0 and 1.00000002E+30
-                for (int j = 0; j < dataPairCount; ++j) {
+                for (int j = 0; j < dataPairCount; ++j)
+                {
                     int value = Reader.ReadInt32();
                     int value2 = Reader.ReadInt16();
                     int value3 = Reader.ReadInt16();
                 }
             }
 
-            if (componentCount > 1) {
+            if (componentCount > 1)
+            {
                 GD.PrintErr("Actor: More than one component references");
             }
 
             // Can contain either a skeleton reference (animated), mesh reference (static) or a camera reference
-            for (int i = 0; i < componentCount; ++i) {
-                int fragmentIndex = Reader.ReadInt32() - 1;
-                var fragment = fragments[fragmentIndex];
+            for (int i = 0; i < componentCount; ++i)
+            {
+                var fragment = wld.GetFragment(Reader.ReadInt32());
 
                 SkeletonReference = fragment as WldSkeletonHierarchyReference;
 
-                if (SkeletonReference != null) {
+                if (SkeletonReference != null)
+                {
                     SkeletonReference.SkeletonHierarchy.IsAssigned = true;
                     break;
                 }
 
                 MeshReference = fragment as WldMeshReference;
 
-                if (MeshReference != null && MeshReference.Mesh != null) {
+                if (MeshReference != null && MeshReference.Mesh != null)
+                {
                     MeshReference.Mesh.IsHandled = true;
                     break;
                 }
@@ -144,7 +151,7 @@ namespace EQGodot2.resource_manager.wld_file {
                 //    break;
                 //}
 
-                GD.PrintErr($"Actor: Cannot link fragment with index {fragmentIndex}");
+                GD.PrintErr($"Actor: Cannot link fragment with index {fragment.Index}");
             }
 
             // Always 0 in qeynos2 objects
@@ -159,36 +166,35 @@ namespace EQGodot2.resource_manager.wld_file {
             //    ActorType = ActorType.Camera;
             //    ReferenceName = CameraReference.Name;
             //} else
-            if (SkeletonReference != null) {
+            if (SkeletonReference != null)
+            {
                 ActorType = ActorType.Skeletal;
-            } else if (MeshReference != null) {
+            }
+            else if (MeshReference != null)
+            {
                 ActorType = ActorType.Static;
 
-                if (MeshReference != null) {
+                if (MeshReference != null)
+                {
                     ReferenceName = MeshReference.Name;
                 }
-            //} else if (ParticleSpriteReference != null) {
-            //    ActorType = ActorType.Particle;
-            //    ReferenceName = ParticleSpriteReference.Name;
-            //} else if (Fragment07 != null) {
-            //    ActorType = ActorType.Sprite;
-            //    ReferenceName = Fragment07.Name;
-            } else {
+                //} else if (ParticleSpriteReference != null) {
+                //    ActorType = ActorType.Particle;
+                //    ReferenceName = ParticleSpriteReference.Name;
+                //} else if (Fragment07 != null) {
+                //    ActorType = ActorType.Sprite;
+                //    ReferenceName = Fragment07.Name;
+            }
+            else
+            {
                 GD.PrintErr("Cannot determine actor type!");
             }
         }
 
-        public override void OutputInfo()
-        {
-            base.OutputInfo();
-            GD.Print("-----");
-            GD.Print("Skeleton: ", SkeletonReference);
-            GD.Print("Mesh:     ", MeshReference);
-        }
-
         public void AssignSkeletonReference(WldSkeletonHierarchy skeleton)
         {
-            SkeletonReference = new WldSkeletonHierarchyReference {
+            SkeletonReference = new WldSkeletonHierarchyReference
+            {
                 SkeletonHierarchy = skeleton
             };
 

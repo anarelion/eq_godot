@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace EQGodot2.resource_manager.wld_file.data_types {
+namespace EQGodot.resource_manager.wld_file.data_types
+{
     // Latern Extractor class
-    public class SkeletonBone {
+    public class SkeletonBone
+    {
         public int Index;
         public string Name;
         public string FullPath;
@@ -14,10 +16,12 @@ namespace EQGodot2.resource_manager.wld_file.data_types {
         //public ParticleCloud ParticleCloud {
         //    get; set;
         //}
-        public Dictionary<string, WldTrackFragment> AnimationTracks {
+        public Dictionary<string, WldTrackFragment> AnimationTracks
+        {
             get; set;
         }
-        public SkeletonBone Parent {
+        public SkeletonBone Parent
+        {
             get; set;
         }
     }

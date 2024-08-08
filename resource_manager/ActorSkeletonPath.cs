@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager {
-    public partial class ActorSkeletonPath : Resource {
+namespace EQGodot.resource_manager
+{
+    public partial class ActorSkeletonPath : Resource
+    {
         [Export]
         public string Name;
         [Export]
@@ -20,15 +22,18 @@ namespace EQGodot2.resource_manager {
         [Export]
         public int DefFlags;
         [Export]
-        public int FrameMs {
+        public int FrameMs
+        {
             get; set;
         }
         [Export]
-        public Godot.Collections.Array<Vector3> Translation {
+        public Godot.Collections.Array<Vector3> Translation
+        {
             get; set;
         }
         [Export]
-        public Godot.Collections.Array<Quaternion> Rotation {
+        public Godot.Collections.Array<Quaternion> Rotation
+        {
             get; set;
         }
     }

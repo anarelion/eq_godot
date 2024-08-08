@@ -1,13 +1,14 @@
-﻿using Godot;
+﻿using EQGodot.resource_manager.wld_file.fragments;
+using EQGodot.resource_manager.wld_file;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EQGodot2.resource_manager.wld_file {
+
+namespace EQGodot.resource_manager.wld_file
+{
     // Latern Extractor class
-    public static class WldFragmentBuilder {
+    public static class WldFragmentBuilder
+    {
         public static Dictionary<int, Func<WldFragment>> Fragments = new Dictionary<int, Func<WldFragment>> {
             // Materials
             {0x03, () => new WldBitmapName()},
@@ -17,9 +18,9 @@ namespace EQGodot2.resource_manager.wld_file {
             {0x31, () => new WldMaterialList()},
 
             // BSP Tree
-            //{0x21, () => new BspTree()},
-            //{0x22, () => new BspRegion()},
-            //{0x29, () => new BspRegionType()},
+            {0x21, () => new WldBspTree()},
+            {0x22, () => new WldBspRegion()},
+            {0x29, () => new WldBspRegionType()},
 
             // Meshes
             {0x36, () => new WldMesh()},
@@ -37,26 +38,26 @@ namespace EQGodot2.resource_manager.wld_file {
             {0x14, () => new WldActorDef()},
 
             // Lights
-            //{0x1B, () => new LightSource()},
-            //{0x1C, () => new LightSourceReference()},
-            //{0x28, () => new LightInstance()},
-            //{0x2A, () => new AmbientLight()},
-            //{0x35, () => new GlobalAmbientLight()},
+            {0x1B, () => new WldLightSource()},
+            {0x1C, () => new WldLightSourceReference()},
+            {0x28, () => new WldLightInstance()},
+            {0x2A, () => new WldAmbientLight()},
+            {0x35, () => new WldGlobalAmbientLight()},
 
             // Vertex colors
-            //{0x32, () => new VertexColors()},
-            //{0x33, () => new VertexColorsReference()},
+            {0x32, () => new WldVertexColors()},
+            {0x33, () => new WldVertexColorsReference()},
 
             // Particle Cloud
-            //{0x26, () => new ParticleSprite()},
-            //{0x27, () => new ParticleSpriteReference()},
-            //{0x34, () => new ParticleCloud()},
+            {0x26, () => new WldParticleSprite()},
+            {0x27, () => new WldParticleSpriteReference()},
+            {0x34, () => new WldParticleCloud()},
 
             // General
-            //{0x15, () => new ObjectInstance()},
+            {0x15, () => new WldActorInstance()},
 
             // Not used/unknown
-            //{0x08, () => new Camera()},
+            {0x08, () => new WldCamera()},
             //{0x09, () => new CameraReference()},
             //{0x16, () => new Fragment16()},
             //{0x17, () => new Polyhedron()},

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EQGodot2.resource_manager.wld_file;
-using EQGodot2.resource_manager.wld_file.data_types;
+using EQGodot.resource_manager.wld_file;
+using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 
-namespace EQGodot2.resource_manager {
-    public partial class ActorDefinition : Resource {
+namespace EQGodot.resource_manager
+{
+    public partial class ActorDefinition : Resource
+    {
         [Export]
         public string Tag;
 
@@ -16,17 +18,20 @@ namespace EQGodot2.resource_manager {
         public int Flags;
 
         [Export]
-        public Godot.Collections.Array<ActorSkeletonBone> Bones {
+        public Godot.Collections.Array<ActorSkeletonBone> Bones
+        {
             get; set;
         }
 
         [Export]
-        public Godot.Collections.Dictionary<string, ActorSkeletonBone> BonesByName {
+        public Godot.Collections.Dictionary<string, ActorSkeletonBone> BonesByName
+        {
             get; set;
         }
 
         [Export]
-        public Godot.Collections.Dictionary<string, ArrayMesh> Meshes {
+        public Godot.Collections.Dictionary<string, ArrayMesh> Meshes
+        {
             get; set;
         }
 
@@ -36,9 +41,11 @@ namespace EQGodot2.resource_manager {
             {
                 Name = Tag
             };
-            foreach (var bone in Bones) {
+            foreach (var bone in Bones)
+            {
                 skeleton.AddBone(bone.Name);
-                if (bone.Parent != null) {
+                if (bone.Parent != null)
+                {
                     skeleton.SetBoneParent(bone.Index, bone.Parent.Index);
                     skeleton.SetBonePosePosition(bone.Index, bone.BasePosition.Translation[0]);
                     skeleton.SetBonePoseRotation(bone.Index, bone.BasePosition.Rotation[0]);
