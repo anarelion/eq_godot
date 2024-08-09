@@ -1,9 +1,8 @@
-﻿using EQGodot.helpers;
-using EQGodot.resource_manager.wld_file.data_types;
-using System;
+﻿using EQGodot.resource_manager.wld_file.data_types;
+using EQGodot.resource_manager.wld_file.helpers;
 using System.Collections.Generic;
 
-namespace EQGodot.resource_manager.wld_file
+namespace EQGodot.resource_manager.wld_file.fragments
 {
     // Latern Extractor class
     public class WldLegacyMesh : WldFragment

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot.resource_manager
+namespace EQGodot.resource_manager.godot_resources
 {
     public partial class ActorSkeletonPath : Resource
     {

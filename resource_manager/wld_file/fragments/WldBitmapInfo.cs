@@ -1,13 +1,7 @@
-﻿using Godot;
-using EQGodot.helpers;
-using System;
+﻿using EQGodot.resource_manager.wld_file.helpers;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
-namespace EQGodot.resource_manager.wld_file
+namespace EQGodot.resource_manager.wld_file.fragments
 {
     // Latern Extractor class
     public class WldBitmapInfo : WldFragment

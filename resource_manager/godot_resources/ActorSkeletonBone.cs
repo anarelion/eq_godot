@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using EQGodot.resource_manager.wld_file;
 using EQGodot.resource_manager.wld_file.data_types;
 
-namespace EQGodot.resource_manager
+namespace EQGodot.resource_manager.godot_resources
 {
     public partial class ActorSkeletonBone : Resource
     {

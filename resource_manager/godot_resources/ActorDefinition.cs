@@ -7,7 +7,7 @@ using EQGodot.resource_manager.wld_file;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 
-namespace EQGodot.resource_manager
+namespace EQGodot.resource_manager.godot_resources
 {
     public partial class ActorDefinition : Resource
     {

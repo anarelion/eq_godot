@@ -18,6 +18,8 @@ namespace EQGodot.resource_manager.wld_file
         /// </summary>
         public string ObjectName { get; private set; }
 
+        public string Unknown2;
+
         /// <summary>
         /// The instance position in the world
         /// </summary>
@@ -44,10 +46,7 @@ namespace EQGodot.resource_manager.wld_file
             Name = wld.GetName(Reader.ReadInt32());
 
             // in main zone, points to 0x16, in object wld, it contains the object name
-            int reference = Reader.ReadInt32();
-
-            ObjectName = wld.GetName(reference);
-            GD.Print($"ObjectName: {ObjectName}");
+            ObjectName = wld.GetName(Reader.ReadInt32());
 
             // Main zone: 0x2E, Objects: 0x32E
             int flags = Reader.ReadInt32();
@@ -55,7 +54,7 @@ namespace EQGodot.resource_manager.wld_file
             // Fragment reference
             // In main zone, it points to a 0x16 fragment
             // In objects.wld, it is 0
-            int unknown2 = Reader.ReadInt32();
+            Unknown2 = wld.GetName(Reader.ReadInt32());
 
             Position = new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
 

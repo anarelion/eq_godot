@@ -1,14 +1,14 @@
-﻿using EQGodot.resource_manager.wld_file;
-using EQGodot.helpers;
+﻿using EQGodot.resource_manager.godot_resources;
 using EQGodot.resource_manager.pack_file;
+using EQGodot.resource_manager.wld_file.fragments;
+using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace EQGodot.resource_manager.wld_file
 {
@@ -33,6 +33,12 @@ namespace EQGodot.resource_manager.wld_file
 
         [Export]
         public Godot.Collections.Dictionary<int, string> Strings;
+
+        [Export]
+        public Godot.Collections.Dictionary<int, int> FragmentTypes;
+
+        [Export]
+        public Godot.Collections.Dictionary<int, byte[]> FragmentContents;
 
         [Export]
         public Godot.Collections.Dictionary<int, Material> Materials;
@@ -66,6 +72,7 @@ namespace EQGodot.resource_manager.wld_file
             Name = pfsFile.Name;
             var content = pfsFile.FileBytes;
             Archive = archive;
+
             GD.Print("Extracting WLD archive of length ", content.Length);
             var reader = new BinaryReader(new MemoryStream(content));
 
@@ -79,6 +86,8 @@ namespace EQGodot.resource_manager.wld_file
 
             Fragments = [];
             Fragments.Add(new WldGeneric());
+            FragmentTypes = [];
+            FragmentContents = [];
             FragmentTypeDictionary = [];
             FragmentNameDictionary = [];
             Materials = [];
@@ -134,6 +143,9 @@ namespace EQGodot.resource_manager.wld_file
                     GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
                 }
                 var fragmentContents = reader.ReadBytes((int)fragSize);
+
+                FragmentTypes[i + 1] = fragType;
+                FragmentContents[i + 1] = fragmentContents;
 
                 var newFragment = !WldFragmentBuilder.Fragments.TryGetValue(fragType, out Func<WldFragment> value)
                     ? new WldGeneric()
@@ -268,7 +280,7 @@ namespace EQGodot.resource_manager.wld_file
                     {
                         var meshref = bone.MeshReference;
                         var mesh = meshref != null && meshref.Mesh != null ? Meshes[meshref.Mesh.Index] : null;
-                        var boneName = bone.Name.Substring(3).ToLower().Replace("_dag", "");
+                        string boneName = bone.Name.Substring(3).ToLower().Replace("_dag", "");
                         if (boneName == "")
                         {
                             boneName = "root";

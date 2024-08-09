@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EQGodot.helpers
+namespace EQGodot.resource_manager.wld_file.helpers
 {
     // Latern Extractor class
     internal class WldStringDecoder

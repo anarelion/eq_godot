@@ -1,149 +1,149 @@
+using EQGodot.resource_manager.godot_resources;
+using EQGodot.resource_manager.pack_file;
 using Godot;
 using System;
-using EQGodot.resource_manager.pack_file;
-using EQGodot.resource_manager;
-using EQGodot.helpers;
 
-[GlobalClass]
-public partial class ResourceManager : Node
+namespace EQGodot.resource_manager
 {
-    private Godot.Collections.Dictionary<string, ActorDefinition> CharacterActor;
-    private Godot.Collections.Dictionary<string, ActorSkeletonPath> ExtraAnimations;
-
-    private ResourceManager()
+    [GlobalClass]
+    public partial class ResourceManager : Node
     {
-        GD.Print("Starting Resource Manager!");
+        private Godot.Collections.Dictionary<string, ActorDefinition> CharacterActor;
+        private Godot.Collections.Dictionary<string, ActorSkeletonPath> ExtraAnimations;
 
-        CharacterActor = [];
-        ExtraAnimations = [];
-
-        string[] paths = [
-            "res://eq_files/gequip.s3d",
-            "res://eq_files/global_chr.s3d",
-            "res://eq_files/airplane_chr.s3d",
-        ];
-
-        foreach (var path in paths)
+        private ResourceManager()
         {
-            var pfsArchive = GD.Load<PFSArchive>(path);
-            foreach (var wldFile in pfsArchive.WldFiles)
+            GD.Print("Starting Resource Manager!");
+
+            CharacterActor = [];
+            ExtraAnimations = [];
+
+            string[] paths = [
+                "res://eq_files/gequip.s3d",
+                "res://eq_files/global_chr.s3d",
+                "res://eq_files/airplane_chr.s3d",
+            ];
+
+            foreach (var path in paths)
             {
-                GD.Print($"Loaded {wldFile.Key}");
-                foreach (var actorDef in wldFile.Value.ActorDefs)
+                var pfsArchive = GD.Load<PFSArchive>(path);
+                foreach (var wldFile in pfsArchive.WldFiles)
                 {
-                    var name = actorDef.Value.ResourceName;
-                    CharacterActor[name] = actorDef.Value;
-                    GD.Print($"Loaded {name}");
-                }
-                foreach (var animation in wldFile.Value.ExtraAnimations.Values)
-                {
-                    if (ExtraAnimations.ContainsKey(animation.Name))
+                    GD.Print($"Loaded {wldFile.Key}");
+                    foreach (var actorDef in wldFile.Value.ActorDefs)
                     {
-                        GD.Print($"{animation.Name} already exists");
-                        continue;
+                        var name = actorDef.Value.ResourceName;
+                        CharacterActor[name] = actorDef.Value;
+                        GD.Print($"Loaded {name}");
                     }
-                    ExtraAnimations.Add(animation.Name, animation);
+                    foreach (var animation in wldFile.Value.ExtraAnimations.Values)
+                    {
+                        if (ExtraAnimations.ContainsKey(animation.Name))
+                        {
+                            GD.Print($"{animation.Name} already exists");
+                            continue;
+                        }
+                        ExtraAnimations.Add(animation.Name, animation);
+                    }
                 }
             }
-        }
 
-        foreach (var animation in ExtraAnimations.Values)
-        {
-            var animationName = animation.Name.Substr(0, 3);
-            var actorName = animation.Name.Substr(3, 3);
-            var boneName = animation.Name.Substring(6).Replace("_track", "");
-            if (boneName == "")
+            foreach (var animation in ExtraAnimations.Values)
             {
-                boneName = "root";
-            }
-
-            if (CharacterActor.ContainsKey(actorName))
-            {
-                var actor = CharacterActor[actorName];
-                if (actor.BonesByName.ContainsKey(boneName))
+                var animationName = animation.Name.Substr(0, 3);
+                var actorName = animation.Name.Substr(3, 3);
+                var boneName = animation.Name.Substring(6).Replace("_track", "");
+                if (boneName == "")
                 {
-                    var bone = actor.BonesByName[boneName];
-                    bone.AnimationTracks[animationName] = animation;
+                    boneName = "root";
+                }
+
+                if (CharacterActor.TryGetValue(actorName, out ActorDefinition actor))
+                {
+                    if (actor.BonesByName.TryGetValue(boneName, out ActorSkeletonBone bone))
+                    {
+                        bone.AnimationTracks[animationName] = animation;
+                    }
                 }
             }
+
+            AddChild(InstantiateCharacter("avi"));
         }
 
-        AddChild(InstantiateCharacter("avi"));
-    }
-
-    public ActorInstance InstantiateCharacter(string tagName)
-    {
-        var actorDef = CharacterActor[tagName];
-        var node = new ActorInstance
+        public ActorInstance InstantiateCharacter(string tagName)
         {
-            Name = actorDef.ResourceName
-        };
-
-        var skeleton = actorDef.BuildSkeleton();
-        // swap Y and Z to get a godot coordinate system
-        skeleton.RotateX((float)(-Math.PI / 2));
-        node.AddChild(skeleton);
-        foreach (var mesh in actorDef.Meshes)
-        {
-            var inst = new MeshInstance3D
+            var actorDef = CharacterActor[tagName];
+            var node = new ActorInstance
             {
-                Name = mesh.Key,
-                Mesh = mesh.Value,
+                Name = actorDef.ResourceName
             };
-            skeleton.AddChild(inst);
-        }
 
-        var animationTag = convertAnimationTag(tagName);
-
-        var animationPlayer = new AnimationPlayer
-        {
-            Name = tagName + "_anim",
-        };
-
-        var animationLibrary = new AnimationLibrary();
-
-        Godot.Collections.Dictionary<string, Animation> animationDict = [];
-
-        foreach (var bone in actorDef.Bones)
-        {
-            foreach (var boneAnim in bone.AnimationTracks.Values)
+            var skeleton = actorDef.BuildSkeleton();
+            // swap Y and Z to get a godot coordinate system
+            skeleton.RotateX((float)(-Math.PI / 2));
+            node.AddChild(skeleton);
+            foreach (var mesh in actorDef.Meshes)
             {
-                if (!animationDict.ContainsKey(boneAnim.AnimationName))
+                var inst = new MeshInstance3D
                 {
-                    var a = new Animation();
-                    if (animationTag == "P01")
-                    {
-                        a.LoopMode = Animation.LoopModeEnum.Linear;
-                    }
-                    animationDict.Add(boneAnim.AnimationName, a);
-                    animationLibrary.AddAnimation(boneAnim.AnimationName, a);
-                }
-                var gdAnimation = animationDict[boneAnim.AnimationName];
-                var bonePath = new NodePath($":{boneAnim.PieceName}");
-                var posIdx = gdAnimation.AddTrack(Animation.TrackType.Position3D);
-                gdAnimation.TrackSetPath(posIdx, bonePath);
-
-                var rotIdx = gdAnimation.AddTrack(Animation.TrackType.Rotation3D);
-                gdAnimation.TrackSetPath(rotIdx, bonePath);
-                gdAnimation.TrackSetInterpolationType(rotIdx, Animation.InterpolationType.LinearAngle);
-                for (int frame = 0; frame < boneAnim.Translation.Count; frame++)
-                {
-                    gdAnimation.PositionTrackInsertKey(posIdx, frame * 0.001f * boneAnim.FrameMs, boneAnim.Translation[frame]);
-                    gdAnimation.RotationTrackInsertKey(rotIdx, frame * 0.001f * boneAnim.FrameMs, boneAnim.Rotation[frame]);
-                }
-                gdAnimation.Length = Math.Max(gdAnimation.Length, boneAnim.Translation.Count * 0.001f * boneAnim.FrameMs);
+                    Name = mesh.Key,
+                    Mesh = mesh.Value,
+                };
+                skeleton.AddChild(inst);
             }
+
+            var animationTag = convertAnimationTag(tagName);
+
+            var animationPlayer = new AnimationPlayer
+            {
+                Name = tagName + "_anim",
+            };
+
+            var animationLibrary = new AnimationLibrary();
+
+            Godot.Collections.Dictionary<string, Animation> animationDict = [];
+
+            foreach (var bone in actorDef.Bones)
+            {
+                foreach (var boneAnim in bone.AnimationTracks.Values)
+                {
+                    if (!animationDict.ContainsKey(boneAnim.AnimationName))
+                    {
+                        var a = new Animation();
+                        if (animationTag == "P01")
+                        {
+                            a.LoopMode = Animation.LoopModeEnum.Linear;
+                        }
+                        animationDict.Add(boneAnim.AnimationName, a);
+                        animationLibrary.AddAnimation(boneAnim.AnimationName, a);
+                    }
+                    var gdAnimation = animationDict[boneAnim.AnimationName];
+                    var bonePath = new NodePath($":{boneAnim.PieceName}");
+                    var posIdx = gdAnimation.AddTrack(Animation.TrackType.Position3D);
+                    gdAnimation.TrackSetPath(posIdx, bonePath);
+
+                    var rotIdx = gdAnimation.AddTrack(Animation.TrackType.Rotation3D);
+                    gdAnimation.TrackSetPath(rotIdx, bonePath);
+                    gdAnimation.TrackSetInterpolationType(rotIdx, Animation.InterpolationType.LinearAngle);
+                    for (int frame = 0; frame < boneAnim.Translation.Count; frame++)
+                    {
+                        gdAnimation.PositionTrackInsertKey(posIdx, frame * 0.001f * boneAnim.FrameMs, boneAnim.Translation[frame]);
+                        gdAnimation.RotationTrackInsertKey(rotIdx, frame * 0.001f * boneAnim.FrameMs, boneAnim.Rotation[frame]);
+                    }
+                    gdAnimation.Length = Math.Max(gdAnimation.Length, boneAnim.Translation.Count * 0.001f * boneAnim.FrameMs);
+                }
+            }
+
+            animationPlayer.AddAnimationLibrary(tagName, animationLibrary);
+            skeleton.AddChild(animationPlayer);
+            animationPlayer.Play($"{tagName}/P01");
+            return node;
         }
 
-        animationPlayer.AddAnimationLibrary(tagName, animationLibrary);
-        skeleton.AddChild(animationPlayer);
-        animationPlayer.Play($"{tagName}/P01");
-        return node;
+        private string convertAnimationTag(string tagName)
+        {
+            return tagName;
+        }
     }
 
-    private string convertAnimationTag(string tagName)
-    {
-        return tagName;
-    }
 }
-

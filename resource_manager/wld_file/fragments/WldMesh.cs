@@ -1,14 +1,9 @@
 ﻿using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
-using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace EQGodot.resource_manager.wld_file
+namespace EQGodot.resource_manager.wld_file.fragments
 {
     // Latern Extractor class adapted for Godot
     public class WldMesh : WldFragment

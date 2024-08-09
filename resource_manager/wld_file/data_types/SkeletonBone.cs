@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using EQGodot.resource_manager.wld_file.fragments;
+using System.Collections.Generic;
 
 namespace EQGodot.resource_manager.wld_file.data_types
 {

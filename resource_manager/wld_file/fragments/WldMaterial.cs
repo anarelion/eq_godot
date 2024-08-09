@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EQGodot.helpers;
+﻿using EQGodot.helpers;
 using EQGodot.resource_manager.pack_file;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
+using System.Collections.Generic;
 
-namespace EQGodot.resource_manager.wld_file
+namespace EQGodot.resource_manager.wld_file.fragments
 {
     // Latern Extractor class
     public class WldMaterial : WldFragment
