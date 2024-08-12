@@ -157,7 +157,7 @@ namespace EQGodot.resource_manager.wld_file
                     break;
                 }
 
-                newFragment.Initialize(i, (int)fragSize, fragmentContents, this);
+                newFragment.Initialize(i, fragType, (int)fragSize, fragmentContents, this);
 
                 Fragments.Add(newFragment);
                 if (!FragmentTypeDictionary.ContainsKey(newFragment.GetType()))
@@ -265,7 +265,7 @@ namespace EQGodot.resource_manager.wld_file
                     BonesByName = [],
                     Meshes = [],
                 };
-                GD.Print(actor.Tag);
+                // GD.Print(actor.Tag);
 
                 var skeleton = actordef.SkeletonReference?.SkeletonHierarchy;
                 if (skeleton != null)

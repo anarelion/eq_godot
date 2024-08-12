@@ -17,9 +17,9 @@ namespace EQGodot.resource_manager.wld_file.fragments
         /// </summary>
         public WldLightSource LightSource { get; private set; }
 
-        public override void Initialize(int index, int size, byte[] data, WldFile wld)
+        public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
         {
-            base.Initialize(index, size, data, wld);
+            base.Initialize(index, type, size, data, wld);
             Name = wld.GetName(Reader.ReadInt32());
             LightSource = wld.GetFragment(Reader.ReadInt32()) as WldLightSource;
         }

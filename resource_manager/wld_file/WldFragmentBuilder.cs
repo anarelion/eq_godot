@@ -9,7 +9,8 @@ namespace EQGodot.resource_manager.wld_file
     // Latern Extractor class
     public static class WldFragmentBuilder
     {
-        public static Dictionary<int, Func<WldFragment>> Fragments = new Dictionary<int, Func<WldFragment>> {
+        public static Dictionary<int, Func<WldFragment>> Fragments = new()
+        {
             // Materials
             {0x03, () => new WldBitmapName()},
             {0x04, () => new WldBitmapInfo()},
