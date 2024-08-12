@@ -58,7 +58,7 @@ namespace EQGodot.resource_manager.wld_file
 
             // Not used/unknown
             {0x08, () => new WldCamera()},
-            //{0x09, () => new CameraReference()},
+            {0x09, () => new WldCameraReference()},
             //{0x16, () => new Fragment16()},
             //{0x17, () => new Polyhedron()},
             //{0x18, () => new PolyhedronReference()},
