@@ -51,10 +51,10 @@ namespace EQGodot.resource_manager.wld_file.fragments
         public override void Initialize(int index, int size, byte[] data, WldFile wld)
         {
             base.Initialize(index, size, data, wld);
-            Name = wld.GetName(-Reader.ReadInt32());
+            Name = wld.GetName(Reader.ReadInt32());
             Flags = Reader.ReadInt32();
 
-            BitAnalyzer ba = new BitAnalyzer(Flags);
+            BitAnalyzer ba = new(Flags);
 
             bool params1Exist = ba.IsBitSet(0);
             bool params2Exist = ba.IsBitSet(1);

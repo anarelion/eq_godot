@@ -24,6 +24,9 @@ namespace EQGodot2.GameController
             ActiveScene = packed.Instantiate<login_screen>();
             (ActiveScene as login_screen).DoLogin += OnLoginScreenDoLogin;
             AddChild(ActiveScene);
+
+            Resources = (ResourceManager)ResourceLoader.Load<CSharpScript>("res://resource_manager/ResourceManager.cs").New();
+            AddChild(Resources);
         }
 
         public override void _Process(double delta)

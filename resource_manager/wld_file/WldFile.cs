@@ -256,7 +256,7 @@ namespace EQGodot.resource_manager.wld_file
             foreach (var actordef in actordefs)
             {
                 var name = FragmentNameCleaner.CleanName(actordef, true);
-                ActorDefinition actor = new ActorDefinition
+                ActorDefinition actor = new()
                 {
                     ResourceName = name,
                     Tag = name,
@@ -314,7 +314,15 @@ namespace EQGodot.resource_manager.wld_file
                 }
                 else
                 {
-                    GD.PrintErr($"Skeleton is null for {actor.Tag}");
+                    var mesh = actordef.MeshReference?.Mesh;
+                    if (mesh != null)
+                    {
+                        actor.Meshes.Add(mesh.Name, Meshes[mesh.Index]);
+                    }
+                    else
+                    {
+                        GD.PrintErr($"Skeleton is null for {actor.Tag}");
+                    }
                 }
                 ActorDefs.Add(actordef.Index, actor);
             }
@@ -324,7 +332,7 @@ namespace EQGodot.resource_manager.wld_file
         {
             string animationName = null;
             string pieceName = null;
-            if (Regex.IsMatch(track.Name, @"^[A-Z][0-9][0-9]"))
+            if (AnimatedTrackRegex().IsMatch(track.Name))
             {
                 animationName = track.Name.Substr(0, 3);
                 pieceName = track.Name.Substring(6).ToLower().Replace("_track", "");
@@ -365,6 +373,7 @@ namespace EQGodot.resource_manager.wld_file
             }
         }
 
-
+        [GeneratedRegex(@"^[A-Z][0-9][0-9]")]
+        private static partial Regex AnimatedTrackRegex();
     }
 }

@@ -11,12 +11,31 @@ namespace EQGodot.resource_manager
         private Godot.Collections.Dictionary<string, ActorDefinition> CharacterActor;
         private Godot.Collections.Dictionary<string, ActorSkeletonPath> ExtraAnimations;
 
+        private ResourcePreparer Preparer;
+
         private ResourceManager()
         {
             GD.Print("Starting Resource Manager!");
 
             CharacterActor = [];
             ExtraAnimations = [];
+            Preparer = new ResourcePreparer();
+            Preparer.PFSArchiveLoaded += OnPFSArchiveLoaded;
+            AddChild(Preparer);
+
+            StartLoading("res://eq_files/gequip.s3d");
+            StartLoading("res://eq_files/global_chr.s3d");
+            StartLoading("res://eq_files/load2_obj.s3d");
+            StartLoading("res://eq_files/load2.s3d");
+        }
+
+        public void StartLoading(string path)
+        {
+            Preparer.StartLoading(path);
+        }
+
+        private void Remainder()
+        {
 
             string[] paths = [
                 "res://eq_files/gequip.s3d",
@@ -52,7 +71,7 @@ namespace EQGodot.resource_manager
             {
                 var animationName = animation.Name.Substr(0, 3);
                 var actorName = animation.Name.Substr(3, 3);
-                var boneName = animation.Name.Substring(6).Replace("_track", "");
+                var boneName = animation.Name[6..].Replace("_track", "");
                 if (boneName == "")
                 {
                     boneName = "root";
@@ -68,6 +87,11 @@ namespace EQGodot.resource_manager
             }
 
             AddChild(InstantiateCharacter("avi"));
+        }
+
+        private void OnPFSArchiveLoaded(string path, PFSArchive pfs)
+        {
+            throw new NotImplementedException();
         }
 
         public ActorInstance InstantiateCharacter(string tagName)
