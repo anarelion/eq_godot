@@ -7,9 +7,9 @@ namespace EQGodot.resource_manager.wld_file.data_types
     public class Animation
     {
         public string AnimModelBase;
-        public Dictionary<string, WldTrackFragment> Tracks;
-        public Dictionary<string, WldTrackFragment> TracksCleaned;
-        public Dictionary<string, WldTrackFragment> TracksCleanedStripped;
+        public Dictionary<string, Frag13Track> Tracks;
+        public Dictionary<string, Frag13Track> TracksCleaned;
+        public Dictionary<string, Frag13Track> TracksCleanedStripped;
         public int FrameCount;
         public int AnimationTimeMs
         {
@@ -56,7 +56,7 @@ namespace EQGodot.resource_manager.wld_file.data_types
             return boneName.ToLower().Replace("_dag", string.Empty);
         }
 
-        public void AddTrack(WldTrackFragment track, string pieceName, string cleanedName, string cleanStrippedName)
+        public void AddTrack(Frag13Track track, string pieceName, string cleanedName, string cleanStrippedName)
         {
             // Prevent overwriting tracks
             // Drachnid edge case

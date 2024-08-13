@@ -12,12 +12,12 @@ namespace EQGodot.resource_manager.wld_file.data_types
         public string CleanedName;
         public string CleanedFullPath;
         public List<int> Children;
-        public WldTrackFragment Track;
-        public WldMeshReference MeshReference;
+        public Frag13Track Track;
+        public Frag2DDMSprite MeshReference;
         //public ParticleCloud ParticleCloud {
         //    get; set;
         //}
-        public Dictionary<string, WldTrackFragment> AnimationTracks
+        public Dictionary<string, Frag13Track> AnimationTracks
         {
             get; set;
         }

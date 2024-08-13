@@ -85,7 +85,7 @@ namespace EQGodot.resource_manager.wld_file
             }
 
             Fragments = [];
-            Fragments.Add(new WldGeneric());
+            Fragments.Add(new FragXXFallback());
             FragmentTypes = [];
             FragmentContents = [];
             FragmentTypeDictionary = [];
@@ -148,10 +148,10 @@ namespace EQGodot.resource_manager.wld_file
                 FragmentContents[i + 1] = fragmentContents;
 
                 var newFragment = !WldFragmentBuilder.Fragments.TryGetValue(fragType, out Func<WldFragment> value)
-                    ? new WldGeneric()
+                    ? new FragXXFallback()
                     : value();
 
-                if (newFragment is WldGeneric)
+                if (newFragment is FragXXFallback)
                 {
                     GD.PrintErr($"WldFile {Name}: Unhandled fragment type: {fragType:x}");
                     break;
@@ -226,7 +226,7 @@ namespace EQGodot.resource_manager.wld_file
 
         public void BuildMaterials()
         {
-            var materials = GetFragmentsOfType<WldMaterial>();
+            var materials = GetFragmentsOfType<Frag30MaterialDef>();
             foreach (var material in materials)
             {
                 var g = material.ToGodotMaterial(Archive);
@@ -239,7 +239,7 @@ namespace EQGodot.resource_manager.wld_file
 
         public void BuildMeshes()
         {
-            var meshes = GetFragmentsOfType<WldMesh>();
+            var meshes = GetFragmentsOfType<Frag36DmSpriteDef2>();
             foreach (var mesh in meshes)
             {
                 var g = mesh.ToGodotMesh(this);
@@ -252,7 +252,7 @@ namespace EQGodot.resource_manager.wld_file
 
         public void BuildActorDefs()
         {
-            var actordefs = GetFragmentsOfType<WldActorDef>();
+            var actordefs = GetFragmentsOfType<Frag14ActorDef>();
             foreach (var actordef in actordefs)
             {
                 var name = FragmentNameCleaner.CleanName(actordef, true);
@@ -328,7 +328,7 @@ namespace EQGodot.resource_manager.wld_file
             }
         }
 
-        public ActorSkeletonPath ConvertTrack(WldTrackFragment track)
+        public ActorSkeletonPath ConvertTrack(Frag13Track track)
         {
             string animationName = null;
             string pieceName = null;
@@ -362,7 +362,7 @@ namespace EQGodot.resource_manager.wld_file
 
         public void BuildAnimations()
         {
-            var animations = GetFragmentsOfType<WldTrackFragment>();
+            var animations = GetFragmentsOfType<Frag13Track>();
             foreach (var animation in animations)
             {
                 if (animation.IsProcessed)

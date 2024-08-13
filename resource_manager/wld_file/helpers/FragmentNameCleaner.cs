@@ -14,14 +14,14 @@ namespace EQGodot.resource_manager.wld_file.helpers
         private static Dictionary<Type, string> _prefixes = new Dictionary<Type, string>
         {
             // Materials
-            {typeof(WldMaterialList), "_MP"},
-            {typeof(WldMaterial), "_MDF"},
-            {typeof(WldMesh), "_DMSPRITEDEF"},
-            {typeof(WldLegacyMesh), "_DMSPRITEDEF"},
-            {typeof(WldActorDef), "_ACTORDEF"},
-            {typeof(WldSkeletonHierarchy), "_HS_DEF"},
-            {typeof(WldTrackDefFragment), "_TRACKDEF"},
-            {typeof(WldTrackFragment), "_TRACK"},
+            {typeof(Frag31MaterialPalette), "_MP"},
+            {typeof(Frag30MaterialDef), "_MDF"},
+            {typeof(Frag36DmSpriteDef2), "_DMSPRITEDEF"},
+            {typeof(Frag2CDMSpriteDef), "_DMSPRITEDEF"},
+            {typeof(Frag14ActorDef), "_ACTORDEF"},
+            {typeof(Frag10HierarchicalSpriteDef), "_HS_DEF"},
+            {typeof(Frag12TrackDef), "_TRACKDEF"},
+            {typeof(Frag13Track), "_TRACK"},
             // {typeof(ParticleCloud), "_PCD"},
         };
 

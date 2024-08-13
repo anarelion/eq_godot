@@ -11,60 +11,49 @@ namespace EQGodot.resource_manager.wld_file
     {
         public static Dictionary<int, Func<WldFragment>> Fragments = new()
         {
-            // Materials
-            {0x03, () => new WldBitmapName()},
-            {0x04, () => new WldBitmapInfo()},
-            {0x05, () => new WldBitmapInfoReference()},
-            {0x30, () => new WldMaterial()},
-            {0x31, () => new WldMaterialList()},
+            {0x00, () => new Frag00Default()},
+            {0x01, () => new Frag01DefaultPaletteFile()},
+            {0x02, () => new Frag02UserData()},
+            {0x03, () => new Frag03BMInfo()},
+            {0x04, () => new Frag04SimpleSpriteDef()},
+            {0x05, () => new Frag05SimpleSprite()},
+            {0x06, () => new Frag06Sprite2DDef()},
+            {0x07, () => new Frag07Sprite2D()},
+            {0x08, () => new Frag08Sprite3DDef()},
+            {0x09, () => new Frag09Sprite3D()},
 
-            // BSP Tree
-            {0x21, () => new WldBspTree()},
-            {0x22, () => new WldBspRegion()},
-            {0x29, () => new WldBspRegionType()},
+            {0x10, () => new Frag10HierarchicalSpriteDef()},
+            {0x11, () => new Frag11HierarchicalSprite()},
+            {0x12, () => new Frag12TrackDef()},
+            {0x13, () => new Frag13Track()},
+            {0x14, () => new Frag14ActorDef()},
+            {0x15, () => new Frag15Actor()},
+            {0x16, () => new Frag16Sphere()},
+            {0x17, () => new Frag17PolyhedronDef()},
+            {0x18, () => new Frag18Polyhedron()},
 
-            // Meshes
-            {0x36, () => new WldMesh()},
-            //{0x37, () => new MeshAnimatedVertices()},
-            //{0x2E, () => new LegacyMeshAnimatedVertices()},
-            //{0x2F, () => new MeshAnimatedVerticesReference()},
-            {0x2D, () => new WldMeshReference()},
-            {0x2C, () => new WldLegacyMesh()},
+            {0x1B, () => new Frag1BLightDef()},
+            {0x1C, () => new Frag1CLight()},
 
-            // Animation
-            {0x10, () => new WldSkeletonHierarchy()},
-            {0x11, () => new WldSkeletonHierarchyReference()},
-            {0x12, () => new WldTrackDefFragment()},
-            {0x13, () => new WldTrackFragment()},
-            {0x14, () => new WldActorDef()},
+            {0x21, () => new Frag21WorldTree()},
+            {0x22, () => new Frag22Region()},
 
-            // Lights
-            {0x1B, () => new WldLightSource()},
-            {0x1C, () => new WldLightSourceReference()},
-            {0x28, () => new WldLightInstance()},
-            {0x2A, () => new WldAmbientLight()},
-            {0x35, () => new WldGlobalAmbientLight()},
+            {0x26, () => new Frag26BlitSpriteDef()},
+            {0x27, () => new Frag27BlitSprite()},
+            {0x28, () => new Frag28PointLight()},
+            {0x29, () => new Frag29Zone()},
+            {0x2A, () => new Frag2AAmbientLight()},
 
-            // Vertex colors
-            {0x32, () => new WldVertexColors()},
-            {0x33, () => new WldVertexColorsReference()},
+            {0x2C, () => new Frag2CDMSpriteDef()},
+            {0x2D, () => new Frag2DDMSprite()},
 
-            // Particle Cloud
-            {0x26, () => new WldParticleSprite()},
-            {0x27, () => new WldParticleSpriteReference()},
-            {0x34, () => new WldParticleCloud()},
-
-            // General
-            {0x15, () => new WldActorInstance()},
-
-            // Not used/unknown
-            {0x08, () => new WldCamera()},
-            {0x09, () => new WldCameraReference()},
-            //{0x16, () => new Fragment16()},
-            //{0x17, () => new Polyhedron()},
-            //{0x18, () => new PolyhedronReference()},
-            //{0x06, () => new Fragment06()},
-            //{0x07, () => new Fragment07()},
+            {0x30, () => new Frag30MaterialDef()},
+            {0x31, () => new Frag31MaterialPalette()},
+            {0x32, () => new Frag32DmRGBTrackDef()},
+            {0x33, () => new Frag33DmRGBTrack()},
+            {0x34, () => new Frag34ParticleCloudDef()},
+            {0x35, () => new Frag35GlobalAmbientLightDef()},
+            {0x36, () => new Frag36DmSpriteDef2()},
         };
     }
 }

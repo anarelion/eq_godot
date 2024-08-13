@@ -11,6 +11,6 @@ namespace EQGodot.resource_manager.wld_file.data_types
         public int RegionId { get; set; }
         public int LeftNode { get; set; }
         public int RightNode { get; set; }
-        public WldBspRegion Region { get; set; }
+        public Frag22Region Region { get; set; }
     }
 }
