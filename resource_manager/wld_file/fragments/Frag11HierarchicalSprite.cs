@@ -11,7 +11,7 @@ namespace EQGodot.resource_manager.wld_file.fragments
     // Latern Extractor class
     class Frag11HierarchicalSprite : WldFragment
     {
-        public Frag10HierarchicalSpriteDef SkeletonHierarchy
+        public Frag10HierarchicalSpriteDef HierarchicalSpriteDef
         {
             get; set;
         }
@@ -25,9 +25,9 @@ namespace EQGodot.resource_manager.wld_file.fragments
             // Reference is usually 0
             // Confirmed
             Name = wld.GetName(Reader.ReadInt32());
-            SkeletonHierarchy = wld.GetFragment(Reader.ReadInt32()) as Frag10HierarchicalSpriteDef;
+            HierarchicalSpriteDef = wld.GetFragment(Reader.ReadInt32()) as Frag10HierarchicalSpriteDef;
 
-            if (SkeletonHierarchy == null)
+            if (HierarchicalSpriteDef == null)
             {
                 GD.PrintErr("Bad skeleton hierarchy reference");
             }
@@ -38,13 +38,13 @@ namespace EQGodot.resource_manager.wld_file.fragments
             // Confirmed
             if (params1 != 0)
             {
-
+                GD.Print($"Frag11HierarchicalSprite {wld.Name} {HierarchicalSpriteDef.Name}: has params1 {params1:X}");
             }
 
             // Confirmed end
             if (reader.BaseStream.Position != reader.BaseStream.Length)
             {
-
+                GD.Print($"Frag11HierarchicalSprite {wld.Name} {HierarchicalSpriteDef.Name}: has a remainder {reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position)).HexEncode()}");
             }
         }
     }

@@ -138,10 +138,10 @@ namespace EQGodot.resource_manager.wld_file
             {
                 uint fragSize = reader.ReadUInt32();
                 int fragType = reader.ReadInt32();
-                if (i % 1000 == 0)
-                {
-                    GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
-                }
+                // if (i % 1000 == 0)
+                // {
+                //     GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
+                // }
                 var fragmentContents = reader.ReadBytes((int)fragSize);
 
                 FragmentTypes[i + 1] = fragType;
@@ -195,7 +195,7 @@ namespace EQGodot.resource_manager.wld_file
             {
                 if (!Strings.ContainsKey(-reference))
                 {
-                    GD.PrintErr($"String not found at {-reference}");
+                    GD.PrintErr($"WldFile {Name}: String not found at {-reference}");
                 }
                 return Strings[-reference];
             }
@@ -267,7 +267,7 @@ namespace EQGodot.resource_manager.wld_file
                 };
                 // GD.Print(actor.Tag);
 
-                var skeleton = actordef.SkeletonReference?.SkeletonHierarchy;
+                var skeleton = actordef.HierarchicalSprite?.HierarchicalSpriteDef;
                 if (skeleton != null)
                 {
                     skeleton.BuildSkeletonData(false);
@@ -314,14 +314,14 @@ namespace EQGodot.resource_manager.wld_file
                 }
                 else
                 {
-                    var mesh = actordef.MeshReference?.Mesh;
+                    var mesh = actordef.DMSprite?.Mesh;
                     if (mesh != null)
                     {
                         actor.Meshes.Add(mesh.Name, Meshes[mesh.Index]);
                     }
                     else
                     {
-                        GD.PrintErr($"Skeleton is null for {actor.Tag}");
+                        GD.PrintErr($"WldFile {Name}: Skeleton is null for {actor.Tag}");
                     }
                 }
                 ActorDefs.Add(actordef.Index, actor);

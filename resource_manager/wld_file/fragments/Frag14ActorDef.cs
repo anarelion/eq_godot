@@ -10,12 +10,12 @@ namespace EQGodot.resource_manager.wld_file.fragments
     {
         public int Flags;
         public String CallbackName;
-        public Frag2DDMSprite MeshReference { get; private set; }
-        public Frag11HierarchicalSprite SkeletonReference { get; private set; }
-        public Frag09Sprite3D CameraReference { get; private set; }
-        public Frag27BlitSprite ParticleSpriteReference { get; private set; }
 
-        //public Fragment07 Fragment07;
+        public Frag07Sprite2D Sprite2D;
+        public Frag09Sprite3D Sprite3D { get; private set; }
+        public Frag11HierarchicalSprite HierarchicalSprite { get; private set; }
+        public Frag27BlitSprite BlitSprite { get; private set; }
+        public Frag2DDMSprite DMSprite { get; private set; }
 
         public ActorType ActorType;
 
@@ -81,46 +81,37 @@ namespace EQGodot.resource_manager.wld_file.fragments
             {
                 var fragment = wld.GetFragment(Reader.ReadInt32());
 
-                SkeletonReference = fragment as Frag11HierarchicalSprite;
-
-                if (SkeletonReference != null)
-                {
-                    SkeletonReference.SkeletonHierarchy.IsAssigned = true;
-                    break;
-                }
-
-                MeshReference = fragment as Frag2DDMSprite;
-
-                if (MeshReference != null && MeshReference.Mesh != null)
-                {
-                    MeshReference.Mesh.IsHandled = true;
-                    break;
-                }
-
-                //if (MeshReference != null && MeshReference.LegacyMesh != null) {
-                //    break;
-                //}
-
-                // This only exists in the main zone WLD
-                CameraReference = fragment as Frag09Sprite3D;
-
-                if (CameraReference != null)
+                Sprite2D = fragment as Frag07Sprite2D;
+                if (Sprite2D != null)
                 {
                     break;
                 }
 
-                ParticleSpriteReference = fragment as Frag27BlitSprite;
-
-                if (ParticleSpriteReference != null)
+                Sprite3D = fragment as Frag09Sprite3D;
+                if (Sprite3D != null)
                 {
                     break;
                 }
 
-                //Fragment07 = fragment as Fragment07;
+                HierarchicalSprite = fragment as Frag11HierarchicalSprite;
+                if (HierarchicalSprite != null)
+                {
+                    HierarchicalSprite.HierarchicalSpriteDef.IsAssigned = true;
+                    break;
+                }
 
-                //if (Fragment07 != null) {
-                //    break;
-                //}
+                BlitSprite = fragment as Frag27BlitSprite;
+                if (BlitSprite != null)
+                {
+                    break;
+                }
+
+                DMSprite = fragment as Frag2DDMSprite;
+                if (DMSprite != null && DMSprite.Mesh != null)
+                {
+                    DMSprite.Mesh.IsHandled = true;
+                    break;
+                }
 
                 GD.PrintErr($"Actor: Cannot link fragment with index {fragment.Index} of type {fragment.Type}");
             }
@@ -133,28 +124,30 @@ namespace EQGodot.resource_manager.wld_file.fragments
 
         private void CalculateActorType()
         {
-            if (CameraReference != null)
+            if (Sprite3D != null)
             {
                 ActorType = ActorType.Camera;
-                ReferenceName = CameraReference.Name;
+                ReferenceName = Sprite3D.Name;
             }
-            else if (SkeletonReference != null)
+            else if (HierarchicalSprite != null)
             {
                 ActorType = ActorType.Skeletal;
+                ReferenceName = HierarchicalSprite.Name;
             }
-            else if (MeshReference != null)
+            else if (DMSprite != null)
             {
                 ActorType = ActorType.Static;
-                ReferenceName = MeshReference.Name;
+                ReferenceName = DMSprite.Name;
             }
-            else if (ParticleSpriteReference != null)
+            else if (BlitSprite != null)
             {
                 ActorType = ActorType.Particle;
-                ReferenceName = ParticleSpriteReference.Name;
-
-                // } else if (Fragment07 != null) {
-                //    ActorType = ActorType.Sprite;
-                //    ReferenceName = Fragment07.Name;
+                ReferenceName = BlitSprite.Name;
+            }
+            else if (Sprite2D != null)
+            {
+                ActorType = ActorType.Sprite;
+                ReferenceName = Sprite2D.Name;
             }
             else
             {
@@ -164,9 +157,9 @@ namespace EQGodot.resource_manager.wld_file.fragments
 
         public void AssignSkeletonReference(Frag10HierarchicalSpriteDef skeleton)
         {
-            SkeletonReference = new Frag11HierarchicalSprite
+            HierarchicalSprite = new Frag11HierarchicalSprite
             {
-                SkeletonHierarchy = skeleton
+                HierarchicalSpriteDef = skeleton
             };
 
             CalculateActorType();
