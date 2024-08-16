@@ -125,7 +125,7 @@ namespace EQGodot.resource_manager.wld_file.fragments
                 return bitmapNames;
             }
 
-            foreach (Frag03BMInfo bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
+            foreach (Frag03BMInfo bitmapName in BitmapInfoReference.SimpleSpriteDef.BitmapNames)
             {
                 string filename = bitmapName.Filename;
                 bitmapNames.Add(filename);
@@ -148,7 +148,7 @@ namespace EQGodot.resource_manager.wld_file.fragments
                 {
                     var image = archive.FilesByName[names[i]] as ImageTexture;
                     animated.SetFrameTexture(i, image);
-                    animated.SetFrameDuration(i, BitmapInfoReference.BitmapInfo.AnimationDelayMs / 1000.0f);
+                    animated.SetFrameDuration(i, BitmapInfoReference.SimpleSpriteDef.AnimationDelayMs / 1000.0f);
                 }
                 var animresult = new StandardMaterial3D
                 {

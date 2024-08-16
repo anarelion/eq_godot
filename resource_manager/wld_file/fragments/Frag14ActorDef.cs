@@ -25,7 +25,7 @@ namespace EQGodot.resource_manager.wld_file.fragments
         {
             base.Initialize(index, type, size, data, wld);
             Name = wld.GetName(Reader.ReadInt32());
-            Flags = Reader.ReadInt32();
+            Flags = Reader.ReadInt32();  // 0x04
 
             BitAnalyzer ba = new(Flags);
 
@@ -33,14 +33,14 @@ namespace EQGodot.resource_manager.wld_file.fragments
             bool params2Exist = ba.IsBitSet(1);
             bool fragment2MustContainZero = ba.IsBitSet(7);
 
-            CallbackName = wld.GetName(Reader.ReadInt32());
+            CallbackName = wld.GetName(Reader.ReadInt32());  // 0x08
 
             // 1 for both static and animated objects
-            int size1 = Reader.ReadInt32();
+            int size1 = Reader.ReadInt32();  // 0x0c
 
             // The number of components (meshes, skeletons, camera references) the actor has
             // In all Trilogy files, there is only ever 1
-            int componentCount = Reader.ReadInt32();
+            int componentCount = Reader.ReadInt32();  // 0x10
 
             // 0 for both static and animated objects
             int fragment2 = Reader.ReadInt32();

@@ -39,14 +39,14 @@ namespace EQGodot.resource_manager.pack_file
 
         public void ProcessFiles()
         {
-            List<Task> handles = [];
+            List<Task> image_handles = [];
             for (var i = 0; i < Files.Count; i++)
             {
                 if (Files[i] is PFSFile pfsFile && (pfsFile.Name.EndsWith(".dds") || (pfsFile.FileBytes[0] == 'D' && pfsFile.FileBytes[1] == 'D' && pfsFile.FileBytes[2] == 'S')))
                 {
                     var index = i;
                     var pfs = pfsFile;
-                    handles.Add(Task.Run(() => ProcessDDSImage(pfs, index)));
+                    image_handles.Add(Task.Run(() => ProcessDDSImage(pfs, index)));
                 }
             }
 
@@ -58,13 +58,14 @@ namespace EQGodot.resource_manager.pack_file
                     {
                         var index = i;
                         var pfs = pfsFile;
-                        handles.Add(Task.Run(() => ProcessBMPImage(pfs, index)));
+                        image_handles.Add(Task.Run(() => ProcessBMPImage(pfs, index)));
                     }
                 }
             }
 
-            Task.WaitAll([.. handles]);
+            Task.WaitAll([.. image_handles]);
 
+            List<Task> wld_handles = [];
             for (var i = 0; i < Files.Count; i++)
             {
                 if (Files[i] is PFSFile pfsFile)
@@ -75,10 +76,10 @@ namespace EQGodot.resource_manager.pack_file
                         {
 
                             IsWldArchive = true;
-                            var wld = ProcessWldResource(pfsFile);
-                            Files[i] = wld;
-                            FilesByName[pfsFile.Name] = wld;
-                            WldFiles[pfsFile.Name] = wld;
+                            var index = i;
+                            var pfs = pfsFile;
+                            wld_handles.Add(Task.Run(() => ProcessWldResource(pfs, index)));
+
                         }
                         catch (Exception ex)
                         {
@@ -87,6 +88,7 @@ namespace EQGodot.resource_manager.pack_file
                     }
                 }
             }
+            Task.WaitAll([.. wld_handles]);
         }
 
         private void ProcessDDSImage(PFSFile pfsFile, int index)
@@ -177,9 +179,12 @@ namespace EQGodot.resource_manager.pack_file
             }
         }
 
-        private WldFile ProcessWldResource(PFSFile pfsFile)
+        private void ProcessWldResource(PFSFile pfsFile, int index)
         {
-            return new WldFile(pfsFile, this);
+            var wld = new WldFile(pfsFile, this);
+            Files[index] = wld;
+            FilesByName[pfsFile.Name] = wld;
+            WldFiles[pfsFile.Name] = wld;
         }
 
     }

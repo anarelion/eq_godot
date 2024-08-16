@@ -7,7 +7,7 @@ namespace EQGodot.resource_manager.wld_file.fragments
         /// <summary>
         /// The reference to the BitmapInfo
         /// </summary>
-        public Frag04SimpleSpriteDef BitmapInfo
+        public Frag04SimpleSpriteDef SimpleSpriteDef
         {
             get; private set;
         }
@@ -18,7 +18,7 @@ namespace EQGodot.resource_manager.wld_file.fragments
         {
             base.Initialize(index, type, size, data, wld);
             Name = wld.GetName(Reader.ReadInt32());
-            BitmapInfo = wld.GetFragment(Reader.ReadInt32()) as Frag04SimpleSpriteDef;
+            SimpleSpriteDef = wld.GetFragment(Reader.ReadInt32()) as Frag04SimpleSpriteDef;
 
             // Either 0 or 80 - unknown
             Flags = Reader.ReadInt32();

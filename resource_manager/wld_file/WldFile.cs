@@ -73,7 +73,7 @@ namespace EQGodot.resource_manager.wld_file
             var content = pfsFile.FileBytes;
             Archive = archive;
 
-            GD.Print("Extracting WLD archive of length ", content.Length);
+            GD.Print($"WldFile {Name}: extracting WLD archive of length {content.Length}");
             var reader = new BinaryReader(new MemoryStream(content));
 
             int identifier = reader.ReadInt32();
@@ -115,11 +115,11 @@ namespace EQGodot.resource_manager.wld_file
             int maxObjectBytes = reader.ReadInt32();
             uint stringHashSize = reader.ReadUInt32();
             int stringCount = reader.ReadInt32();
-            //GD.Print("fragmentCount: ", fragmentCount);
-            //GD.Print("bspRegionCount: ", bspRegionCount);
-            //GD.Print("maxObjectBytes: ", maxObjectBytes);
-            GD.Print("stringHashSize: ", stringHashSize);
-            GD.Print("stringCount: ", stringCount);
+            // GD.Print("fragmentCount: ", fragmentCount);
+            // GD.Print("bspRegionCount: ", bspRegionCount);
+            // GD.Print("maxObjectBytes: ", maxObjectBytes);
+            // GD.Print("stringHashSize: ", stringHashSize);
+            // GD.Print("stringCount: ", stringCount);
 
             var strings = reader.ReadBytes((int)stringHashSize);
             var decoded = WldStringDecoder.Decode(strings);
@@ -177,6 +177,7 @@ namespace EQGodot.resource_manager.wld_file
             BuildMeshes();
             BuildActorDefs();
             BuildAnimations();
+            GD.Print($"WldFile {Name}: completed.");
         }
 
         public List<T> GetFragmentsOfType<T>() where T : WldFragment
@@ -271,15 +272,15 @@ namespace EQGodot.resource_manager.wld_file
                 if (skeleton != null)
                 {
                     skeleton.BuildSkeletonData(false);
-                    foreach (var mesh in skeleton.Meshes)
+                    foreach (var skel_mesh in skeleton.Meshes)
                     {
-                        actor.Meshes.Add(mesh.Name, Meshes[mesh.Index]);
+                        actor.Meshes.Add(skel_mesh.Name, Meshes[skel_mesh.Index]);
                     }
 
                     foreach (var bone in skeleton.Skeleton)
                     {
                         var meshref = bone.MeshReference;
-                        var mesh = meshref != null && meshref.Mesh != null ? Meshes[meshref.Mesh.Index] : null;
+                        var bone_mesh = meshref != null && meshref.Mesh != null ? Meshes[meshref.Mesh.Index] : null;
                         string boneName = bone.Name.Substring(3).ToLower().Replace("_dag", "");
                         if (boneName == "")
                         {
@@ -293,7 +294,7 @@ namespace EQGodot.resource_manager.wld_file
                             FullPath = bone.FullPath,
                             CleanedName = bone.CleanedName,
                             CleanedFullPath = bone.CleanedFullPath,
-                            ReferencedMesh = mesh,
+                            ReferencedMesh = bone_mesh,
                             Parent = bone.Parent != null ? actor.Bones[bone.Parent.Index] : null
                         };
                         var track = bone.Track;
@@ -311,20 +312,26 @@ namespace EQGodot.resource_manager.wld_file
                         }
                         actor.BonesByName.Add(boneName, rbone);
                     }
+                    ActorDefs.Add(actordef.Index, actor);
+                    continue;
                 }
-                else
+
+                var blit = actordef.BlitSprite?.BlitSpriteDef?.SimpleSprite?.SimpleSpriteDef;
+                if (blit != null)
                 {
-                    var mesh = actordef.DMSprite?.Mesh;
-                    if (mesh != null)
-                    {
-                        actor.Meshes.Add(mesh.Name, Meshes[mesh.Index]);
-                    }
-                    else
-                    {
-                        GD.PrintErr($"WldFile {Name}: Skeleton is null for {actor.Tag}");
-                    }
+                    GD.Print($"WldFile {Name}: Need to process BlitSpriteDef {blit.Name}");
+                    continue;
                 }
-                ActorDefs.Add(actordef.Index, actor);
+
+                var dm_mesh = actordef.DMSprite?.Mesh;
+                if (dm_mesh != null)
+                {
+                    actor.Meshes.Add(dm_mesh.Name, Meshes[dm_mesh.Index]);
+                    ActorDefs.Add(actordef.Index, actor);
+                    continue;
+                }
+
+                GD.PrintErr($"WldFile {Name}: Skeleton is null for {actor.Tag} - Sprite2D: {actordef.Sprite2D}");
             }
         }
 

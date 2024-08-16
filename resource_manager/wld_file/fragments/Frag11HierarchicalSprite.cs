@@ -38,13 +38,13 @@ namespace EQGodot.resource_manager.wld_file.fragments
             // Confirmed
             if (params1 != 0)
             {
-                GD.Print($"Frag11HierarchicalSprite {wld.Name} {HierarchicalSpriteDef.Name}: has params1 {params1:X}");
+                GD.Print($"Frag11HierarchicalSprite {index} -> {HierarchicalSpriteDef.Index} {wld.Name} {HierarchicalSpriteDef.Name}: has params1 {params1:X}");
             }
 
             // Confirmed end
             if (reader.BaseStream.Position != reader.BaseStream.Length)
             {
-                GD.Print($"Frag11HierarchicalSprite {wld.Name} {HierarchicalSpriteDef.Name}: has a remainder {reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position)).HexEncode()}");
+                // GD.Print($"Frag11HierarchicalSprite {index} -> {HierarchicalSpriteDef.Index} {wld.Name} {HierarchicalSpriteDef.Name}: has a remainder {reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position)).HexEncode()}");
             }
         }
     }
