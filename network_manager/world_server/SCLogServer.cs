@@ -1,22 +1,19 @@
-
 using System;
 using EQGodot2.network_manager.network_session;
 using EQGodot2.network_manager.packets;
 using Godot;
 
-namespace EQGodot2.network_manager.world_server
+namespace EQGodot2.network_manager.world_server;
+
+public class SCLogServer(PacketReader reader) : AppPacket(reader)
 {
-    public class SCLogServer(PacketReader reader) : AppPacket(reader)
+    public override void Write()
     {
-        public override void Write()
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
+    }
 
-        public override void Read()
-        {
-            GD.Print($"SCLogServer {Reader.ReadBytes(Reader.Remaining()).HexEncode()}");
-        }
-
+    public override void Read()
+    {
+        GD.Print($"SCLogServer {Reader.ReadBytes(Reader.Remaining()).HexEncode()}");
     }
 }

@@ -1,19 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Godot;
 
-namespace EQGodot.resource_manager.wld_file.data_types
-{
+namespace EQGodot.resource_manager.wld_file.data_types;
 
-    public class ZonelineInfo
-    {
-        public ZonelineType Type { get; set; }
-        public int Index { get; set; }
-        public Vector3 Position { get; set; }
-        public int Heading { get; set; }
-        public int ZoneIndex { get; set; }
-    }
+public class ZonelineInfo
+{
+    public ZonelineType Type { get; set; }
+    public int Index { get; set; }
+    public Vector3 Position { get; set; }
+    public int Heading { get; set; }
+    public int ZoneIndex { get; set; }
 }

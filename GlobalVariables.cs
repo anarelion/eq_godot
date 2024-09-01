@@ -1,12 +1,8 @@
-using EQGodot2.network_manager.login_server;
 using System;
 
-namespace EQGodot2.network_manager.network_session
+namespace EQGodot2.network_manager.network_session;
+
+public static class GlobalVariables
 {
-
-    public static class GlobalVariables
-    {
-        public static Random Rand = new Random();
-    }
-
+    public static Random Rand = new();
 }

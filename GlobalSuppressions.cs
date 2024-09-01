@@ -7,8 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage(
     "Interoperability",
-    "CA1416:Validate platform compatibility", 
+    "CA1416:Validate platform compatibility",
     Justification = "",
     Scope = "member",
-    Target = "~M:EQGodot2.resource_manager.pack_file.PFSArchive.ProcessBMPImage(EQGodot2.resource_manager.pack_file.PFSFile)~Godot.ImageTexture"
+    Target =
+        "~M:EQGodot2.resource_manager.pack_file.PFSArchive.ProcessBMPImage(EQGodot2.resource_manager.pack_file.PFSFile)~Godot.ImageTexture"
 )]

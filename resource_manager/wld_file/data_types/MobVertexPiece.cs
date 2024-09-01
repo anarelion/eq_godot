@@ -1,25 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace EQGodot.resource_manager.wld_file.data_types;
 
-namespace EQGodot.resource_manager.wld_file.data_types
+// Latern Extractor class
+public class MobVertexPiece
 {
-    // Latern Extractor class
-    public class MobVertexPiece
-    {
-        public int Start
-        {
-            get; set;
-        }
-        public int Count
-        {
-            get; set;
-        }
-        public int Bone
-        {
-            get; set;
-        }
-    }
+    public int Start { get; set; }
+
+    public int Count { get; set; }
+
+    public int Bone { get; set; }
 }

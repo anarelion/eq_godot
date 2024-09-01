@@ -1,16 +1,15 @@
+using System.Collections.Generic;
 using EQGodot2.network_manager.login_server;
 using Godot;
-using System;
-using System.Collections.Generic;
 
 public partial class server_selection : Control
 {
-    private int SelectedServer;
-    private EQServerDescription[] Servers;
-    private Dictionary<int, int> ListToPacketMap;
-
     [Signal]
     public delegate void ServerJoinStartEventHandler(EQServerDescription server);
+
+    private Dictionary<int, int> ListToPacketMap;
+    private int SelectedServer;
+    private EQServerDescription[] Servers;
 
     public void LoadServers(EQServerDescription[] servers)
     {
@@ -18,7 +17,7 @@ public partial class server_selection : Control
         var list = GetNode<ItemList>("%ServerList");
         list.ItemSelected += OnServerSelected;
         Servers = servers;
-        for (int i = 0; i < Servers.Length; i++)
+        for (var i = 0; i < Servers.Length; i++)
         {
             var server = Servers[i];
             var index = list.AddItem($"{server.Address} - {server.LongName} - {server.Players}");

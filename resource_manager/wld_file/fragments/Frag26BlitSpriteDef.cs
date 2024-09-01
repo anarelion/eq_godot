@@ -1,19 +1,17 @@
+namespace EQGodot.resource_manager.wld_file.fragments;
 
-namespace EQGodot.resource_manager.wld_file.fragments
+// Latern Extractor class
+public class Frag26BlitSpriteDef : WldFragment
 {
-    // Latern Extractor class
-    public class Frag26BlitSpriteDef : WldFragment
+    public int Flags;
+    public Frag05SimpleSprite SimpleSprite;
+
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
-        public Frag05SimpleSprite SimpleSprite;
-
-        public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
-        {
-            base.Initialize(index, type, size, data, wld);
-            Name = wld.GetName(Reader.ReadInt32());
-            int value04 = Reader.ReadInt32(); // flags? always 0
-            SimpleSprite = wld.GetFragment(Reader.ReadInt32()) as Frag05SimpleSprite;
-            int value12 = Reader.ReadInt32(); // always the same value. unlikely a float, or bytes. Not color.
-
-        }
+        base.Initialize(index, type, size, data, wld);
+        Name = wld.GetName(Reader.ReadInt32());
+        Flags = Reader.ReadInt32(); // flags? always 0
+        SimpleSprite = wld.GetFragment(Reader.ReadInt32()) as Frag05SimpleSprite;
+        var value12 = Reader.ReadInt32(); // always the same value. unlikely a float, or bytes. Not color.
     }
 }
