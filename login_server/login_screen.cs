@@ -1,6 +1,6 @@
 using Godot;
 
-namespace EQGodot2.login_server;
+namespace EQGodot.login_server;
 
 public partial class login_screen : Control
 {

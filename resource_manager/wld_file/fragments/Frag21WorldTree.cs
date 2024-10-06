@@ -4,7 +4,7 @@ using EQGodot.resource_manager.wld_file.data_types;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag21WorldTree : WldFragment
+public partial class Frag21WorldTree : WldFragment
 {
     public List<BspNode> Nodes { get; private set; }
 

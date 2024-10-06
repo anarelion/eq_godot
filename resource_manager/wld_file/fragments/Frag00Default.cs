@@ -1,6 +1,7 @@
-namespace EQGodot.resource_manager.wld_file;
+using Godot;
+
+namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag00Default : WldFragment
-{
-}
+[GlobalClass]
+public partial class Frag00Default : WldFragment;

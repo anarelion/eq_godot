@@ -8,13 +8,11 @@ namespace EQGodot.resource_manager.godot_resources.converters;
 
 internal partial class HierarchicalActorBuilder
 {
-    [GeneratedRegex(@"^[A-Z][0-9][0-9]")]
-    private static partial Regex AnimatedTrackRegex();
-
     public static HierarchicalActorDefinition Convert(Frag14ActorDef actordef, Frag10HierarchicalSpriteDef skeleton,
         Dictionary<int, ArrayMesh> meshes)
     {
         var name = FragmentNameCleaner.CleanName(actordef);
+        GD.Print($"HierarchicalActorBuilder::Convert: {name}");
 
         HierarchicalActorDefinition actor = new()
         {
@@ -32,8 +30,8 @@ internal partial class HierarchicalActorBuilder
         foreach (var bone in skeleton.Skeleton)
         {
             var meshref = bone.MeshReference;
-            var bone_mesh = meshref != null && meshref.Mesh != null ? meshes[meshref.Mesh.Index] : null;
-            var boneName = bone.Name.Substring(3).ToLower().Replace("_dag", "");
+            var bone_mesh = meshref is { Mesh: not null } ? meshes[meshref.Mesh.Index] : null;
+            var boneName = bone.Name[3..].ToLower().Replace("_dag", "");
             if (boneName == "") boneName = "root";
             var rbone = new ActorSkeletonBone
             {
@@ -51,7 +49,7 @@ internal partial class HierarchicalActorBuilder
             {
                 track.IsProcessed = true;
                 track.IsPoseAnimation = true;
-                rbone.BasePosition = ConvertTrack(track);
+                rbone.BasePosition = ActorSkeletonPath.FromFrag13Track(track);
             }
 
             actor.Bones.Add(rbone);
@@ -62,34 +60,5 @@ internal partial class HierarchicalActorBuilder
         return actor;
     }
 
-    public static ActorSkeletonPath ConvertTrack(Frag13Track track)
-    {
-        string animationName = null;
-        string pieceName = null;
-        if (AnimatedTrackRegex().IsMatch(track.Name))
-        {
-            animationName = track.Name.Substr(0, 3);
-            pieceName = track.Name.Substring(6).ToLower().Replace("_track", "");
-            if (pieceName == "") pieceName = "root";
-        }
-
-        var skeletonPath = new ActorSkeletonPath
-        {
-            Name = track.Name.ToLower(),
-            AnimationName = animationName,
-            PieceName = pieceName,
-            FrameMs = track.FrameMs,
-            Flags = track.Flags,
-            DefFlags = track.TrackDefFragment.Flags,
-            Translation = [],
-            Rotation = []
-        };
-        foreach (var frame in track.TrackDefFragment.Frames)
-        {
-            skeletonPath.Translation.Add(frame.Translation);
-            skeletonPath.Rotation.Add(frame.Rotation);
-        }
-
-        return skeletonPath;
-    }
+ 
 }

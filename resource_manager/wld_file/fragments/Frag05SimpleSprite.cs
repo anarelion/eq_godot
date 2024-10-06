@@ -5,14 +5,11 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag05SimpleSprite : WldFragment
+[GlobalClass]
+public partial class Frag05SimpleSprite : WldFragment
 {
-    public int Flags;
-
-    /// <summary>
-    ///     The reference to the BitmapInfo
-    /// </summary>
-    public Frag04SimpleSpriteDef SimpleSpriteDef { get; private set; }
+    [Export] public int Flags;
+    [Export] public Frag04SimpleSpriteDef SimpleSpriteDef { get; private set; }
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -23,27 +20,7 @@ public class Frag05SimpleSprite : WldFragment
         // Either 0 or 80 - unknown
         Flags = Reader.ReadInt32();
     }
-
-    public Texture2D ToGodotTexture(PFSArchive archive)
-    {
-        var names = GetAllBitmapNames();
-        if (names.Count > 1)
-        {
-            var animated = new AnimatedTexture { Frames = names.Count };
-
-            for (var i = 0; i < names.Count; i++)
-            {
-                var image = archive.FilesByName[names[i]] as ImageTexture;
-                animated.SetFrameTexture(i, image);
-                animated.SetFrameDuration(i, SimpleSpriteDef.AnimationDelayMs / 1000.0f);
-            }
-
-            return animated;
-        }
-
-        return archive.FilesByName[names[0]] as ImageTexture;
-    }
-
+    
     public List<string> GetAllBitmapNames()
     {
         var bitmapNames = new List<string>();

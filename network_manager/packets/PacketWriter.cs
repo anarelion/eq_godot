@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace EQGodot2.network_manager.packets;
+namespace EQGodot.network_manager.packets;
 
 public class PacketWriter
 {

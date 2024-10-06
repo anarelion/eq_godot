@@ -1,42 +1,13 @@
-using System;
+﻿using System;
 using EQGodot.resource_manager.pack_file;
 using Godot;
 using Godot.Collections;
 
-namespace EQGodot.addons.pack_files;
+namespace EQGodot.addons.pfs_loader.Importers;
 
-#if TOOLS
 [Tool]
-public partial class pack_file : EditorPlugin
-{
-    // private PFSArchiveImport Import;
-    private PackFileLoader Loader;
-
-    public override void _EnterTree()
-    {
-        GD.Print("Entering tree!");
-        // Import = new PFSArchiveImport();
-        // AddImportPlugin(Import, false);
-        Loader = new PackFileLoader();
-        ResourceLoader.AddResourceFormatLoader(Loader);
-    }
-
-    public override void _ExitTree()
-    {
-        GD.Print("Exiting tree!");
-        if (Loader == null) return;
-        ResourceLoader.RemoveResourceFormatLoader(Loader);
-        Loader.Dispose();
-        Loader = null;
-        // if (Import != null)
-        // {
-        //     RemoveImportPlugin(Import);
-        //     Import = null;
-        // }
-    }
-}
-
-public partial class PFSArchiveImport : EditorImportPlugin
+[GlobalClass]
+public partial class EqPackFileImporter : EditorImportPlugin
 {
     public override string _GetImporterName()
     {
@@ -107,5 +78,3 @@ public partial class PFSArchiveImport : EditorImportPlugin
         }
     }
 }
-
-#endif

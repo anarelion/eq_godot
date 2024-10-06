@@ -5,7 +5,7 @@ using EQGodot.resource_manager.wld_file.helpers;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag2CDMSpriteDef : WldFragment
+public partial class Frag2CDMSpriteDef : WldFragment
 {
     public Frag31MaterialPalette MaterialList;
 

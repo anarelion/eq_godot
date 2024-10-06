@@ -21,7 +21,7 @@ public partial class ActorSkeletonBone : Resource
 
     [Export] public Mesh ReferencedMesh;
 
-    [Export] public Dictionary<string, ActorSkeletonPath> AnimationTracks { get; set; }
+    [Export] public Dictionary<string, ActorSkeletonPath> AnimationTracks = [];
 
     //public ParticleCloud ParticleCloud {
     //    get; set;

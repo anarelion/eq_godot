@@ -1,8 +1,8 @@
 using System;
-using EQGodot2.network_manager.network_session;
+using EQGodot.network_manager.network_session;
 using Godot;
 
-namespace EQGodot2.network_manager.login_server;
+namespace EQGodot.network_manager.login_server;
 
 public class CSJoinServer(uint serverId) : AppPacket
 {

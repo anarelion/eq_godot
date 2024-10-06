@@ -1,6 +1,8 @@
 using System.Collections.Generic;
-using EQGodot2.network_manager.login_server;
+using EQGodot.network_manager.login_server;
 using Godot;
+
+namespace EQGodot.login_server;
 
 public partial class server_selection : Control
 {

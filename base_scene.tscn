@@ -1,8 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://bav1ji3y2p1d4"]
+[gd_scene load_steps=4 format=3 uid="uid://bav1ji3y2p1d4"]
 
+[ext_resource type="Script" path="res://base_scene.gd" id="1_p6kus"]
 [ext_resource type="Script" path="res://addons/debug_camera/scripts/DebugCamera3D.gd" id="2_jnlh8"]
+[ext_resource type="Script" path="res://button.gd" id="3_uaip4"]
 
 [node name="BaseScene" type="Node3D"]
+script = ExtResource("1_p6kus")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-0.15124, 0.0667683, 0.98624, -0.0132674, 0.997489, -0.0695645, -0.988408, -0.0236057, -0.149974, 6.50196, 1.5563, 0.451755)
@@ -15,3 +18,11 @@ light_indirect_energy = 3.238
 light_size = 0.168
 omni_range = 20.0
 omni_attenuation = 0.210224
+
+[node name="Button" type="Button" parent="."]
+offset_right = 41.0
+offset_bottom = 29.0
+text = "Do"
+script = ExtResource("3_uaip4")
+
+[connection signal="pressed" from="Button" to="Button" method="_on_button_pressed"]

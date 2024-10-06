@@ -1,8 +1,8 @@
 using System;
-using EQGodot2.network_manager.network_session;
-using EQGodot2.network_manager.packets;
+using EQGodot.network_manager.network_session;
+using EQGodot.network_manager.packets;
 
-namespace EQGodot2.network_manager.world_server;
+namespace EQGodot.network_manager.world_server;
 
 public class SCGuildList(PacketReader reader) : AppPacket(reader)
 {

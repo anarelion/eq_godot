@@ -1,6 +1,6 @@
 using System;
 
-namespace EQGodot2.network_manager.network_session;
+namespace EQGodot;
 
 public static class GlobalVariables
 {

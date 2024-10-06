@@ -1,10 +1,9 @@
-using EQGodot.resource_manager.wld_file.fragments;
 using Godot;
 
-namespace EQGodot.resource_manager.wld_file;
+namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag15Actor : WldFragment
+public partial class Frag15ActorInstance : WldFragment
 {
     /// <summary>
     ///     The vertex colors lighting data for this instance

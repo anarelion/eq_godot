@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag2AAmbientLight : WldFragment
+public partial class Frag2AAmbientLight : WldFragment
 {
     public int Flags;
     public Frag1CLight LightReference { get; private set; }

@@ -7,12 +7,13 @@ using Array = Godot.Collections.Array;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Lantern Extractor class adapted for Godot
-public class Frag36DmSpriteDef2 : WldFragment
+[GlobalClass]
+public partial class Frag36DmSpriteDef2 : WldFragment
 {
     public bool IsHandled = false;
-    public int StartTextureIndex;
-    public Vector3 Center { get; private set; }
-    public float MaxDistance { get; private set; }
+    [Export] public int StartTextureIndex;
+    [Export] public Vector3 Center;
+    [Export] public float MaxDistance;
     public Vector3 MinPosition { get; private set; }
     public Vector3 MaxPosition { get; private set; }
     public Frag31MaterialPalette MaterialPalette { get; private set; }
@@ -180,6 +181,11 @@ public class Frag36DmSpriteDef2 : WldFragment
         if (Vertices.Length == TextureUvCoordinates.Length) return;
 
         var difference = Vertices.Length - TextureUvCoordinates.Length;
+        if (difference > 0)
+        {
+            GD.PrintErr(
+                $"Name {Name} Vertices {Vertices.Length} TextureUvCoordinates {TextureUvCoordinates.Length} = {difference}");
+        }
 
         for (var i = 0; i < difference; ++i)
             TextureUvCoordinates[TextureUvCoordinates.Length + i] = new Vector2(0.0f, 0.0f);

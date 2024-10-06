@@ -1,7 +1,7 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag34ParticleCloudDef : WldFragment
+public partial class Frag34ParticleCloudDef : WldFragment
 {
     private Frag26BlitSpriteDef _particleSprite;
 

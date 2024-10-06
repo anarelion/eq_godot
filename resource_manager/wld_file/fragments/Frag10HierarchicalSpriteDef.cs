@@ -8,7 +8,7 @@ using Animation = EQGodot.resource_manager.wld_file.data_types.Animation;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag10HierarchicalSpriteDef : WldFragment
+public partial class Frag10HierarchicalSpriteDef : WldFragment
 {
     //public List<LegacyMesh> SecondaryAlternateMeshes = new List<LegacyMesh>();
 

@@ -4,7 +4,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-internal class Frag11HierarchicalSprite : WldFragment
+internal partial class Frag11HierarchicalSprite : WldFragment
 {
     public Frag10HierarchicalSpriteDef HierarchicalSpriteDef { get; set; }
 

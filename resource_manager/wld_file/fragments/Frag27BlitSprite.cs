@@ -3,10 +3,10 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Lantern Extractor class
-public class Frag27BlitSprite : WldFragment
+public partial class Frag27BlitSprite : WldFragment
 {
-    public Frag26BlitSpriteDef BlitSpriteDef;
-    public int Flags;
+    [Export] public Frag26BlitSpriteDef BlitSpriteDef;
+    [Export] public int Flags;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

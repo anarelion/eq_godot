@@ -7,7 +7,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag31MaterialPalette : WldFragment
+public partial class Frag31MaterialPalette : WldFragment
 {
     public List<Frag30MaterialDef> Materials { get; private set; }
 

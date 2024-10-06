@@ -1,20 +1,22 @@
 using System;
+using EQGodot.resource_manager.pack_file;
 using Godot;
 
-namespace EQGodot.resource_manager.pack_file;
+namespace EQGodot.addons.pfs_loader.Importers;
 
 [GlobalClass]
-public partial class PackFileLoader : ResourceFormatLoader
+[Tool]
+public partial class EqPackFileLoader : ResourceFormatLoader
 {
     public override string[] _GetRecognizedExtensions()
     {
-        GD.Print("_GetRecognizedExtensions");
-        return ["s3d"];
+        // GD.Print("_GetRecognizedExtensions");
+        return ["s3d", "eqg"];
     }
 
     public override string _GetResourceScriptClass(string path)
     {
-        GD.Print($"_GetResourceScriptClass({path})");
+        // GD.Print($"_GetResourceScriptClass({path})");
         return "PFSArchive.cs";
     }
 
@@ -37,7 +39,7 @@ public partial class PackFileLoader : ResourceFormatLoader
 
     public override bool _HandlesType(StringName type)
     {
-        GD.Print($"_HandlesType({type})");
+        // GD.Print($"_HandlesType({type})");
         return type == "PFSArchive";
     }
 

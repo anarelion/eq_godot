@@ -1,16 +1,18 @@
-﻿using EQGodot.resource_manager.wld_file.data_types;
+﻿using System.Collections.Generic;
+using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-internal class Frag14ActorDef : WldFragment
+[GlobalClass]
+internal partial class Frag14ActorDef : WldFragment
 {
     public ActorType ActorType;
     public string CallbackName;
     public int Flags;
-
     public string ReferenceName;
 
     public Frag07Sprite2D Sprite2D { get; private set; }
@@ -18,6 +20,8 @@ internal class Frag14ActorDef : WldFragment
     public Frag11HierarchicalSprite HierarchicalSprite { get; private set; }
     public Frag27BlitSprite BlitSprite { get; private set; }
     public Frag2DDMSprite DMSprite { get; private set; }
+    public int BoundsRef;
+    public int CurrentAction;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -25,33 +29,42 @@ internal class Frag14ActorDef : WldFragment
         Name = wld.GetName(Reader.ReadInt32());
         Flags = Reader.ReadInt32(); // 0x04
 
-        BitAnalyzer ba = new(Flags);
-
-        var params1Exist = ba.IsBitSet(0);
-        var params2Exist = ba.IsBitSet(1);
-        var fragment2MustContainZero = ba.IsBitSet(7);
+        BitAnalyzer flag = new(Flags);
+        var fragment2MustContainZero = flag.IsBitSet(7);
 
         CallbackName = wld.GetName(Reader.ReadInt32()); // 0x08
 
         // 1 for both static and animated objects
-        var size1 = Reader.ReadInt32(); // 0x0c
+        var actionCount = Reader.ReadInt32(); // 0x0c
 
         // The number of components (meshes, skeletons, camera references) the actor has
         // In all Trilogy files, there is only ever 1
-        var componentCount = Reader.ReadInt32(); // 0x10
+        var fragmentRefCount = Reader.ReadInt32(); // 0x10
 
         // 0 for both static and animated objects
-        var fragment2 = Reader.ReadInt32();
+        BoundsRef = Reader.ReadInt32();
 
-        if (params1Exist)
+        if (flag.IsBitSet(0))
         {
-            var params1 = Reader.ReadInt32();
+            CurrentAction = Reader.ReadInt32();
         }
 
-        if (params2Exist) Reader.BaseStream.Position += 7 * sizeof(int);
+        if (flag.IsBitSet(1))
+        {
+            List<float> location =
+            [
+                Reader.ReadSingle(),
+                Reader.ReadSingle(),
+                Reader.ReadSingle(),
+                Reader.ReadSingle(),
+                Reader.ReadSingle(),
+                Reader.ReadSingle(),
+            ];
+            var unk1 = Reader.ReadInt32();
+        }
 
         // Size 1 entries
-        for (var i = 0; i < size1; ++i)
+        for (var i = 0; i < actionCount; ++i)
         {
             // Always 1
             var dataPairCount = Reader.ReadInt32();
@@ -66,10 +79,10 @@ internal class Frag14ActorDef : WldFragment
             }
         }
 
-        if (componentCount > 1) GD.PrintErr("Actor: More than one component references");
+        if (fragmentRefCount > 1) GD.PrintErr("Actor: More than one component references");
 
         // Can contain either a skeleton reference (animated), mesh reference (static) or a camera reference
-        for (var i = 0; i < componentCount; ++i)
+        for (var i = 0; i < fragmentRefCount; ++i)
         {
             var fragment = wld.GetFragment(Reader.ReadInt32());
 
@@ -90,7 +103,7 @@ internal class Frag14ActorDef : WldFragment
             if (BlitSprite != null) break;
 
             DMSprite = fragment as Frag2DDMSprite;
-            if (DMSprite != null && DMSprite.Mesh != null)
+            if (DMSprite is { Mesh: not null })
             {
                 DMSprite.Mesh.IsHandled = true;
                 break;

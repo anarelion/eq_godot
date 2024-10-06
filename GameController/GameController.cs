@@ -1,8 +1,9 @@
+using EQGodot.login_server;
+using EQGodot.network_manager.login_server;
+using EQGodot.network_manager.world_server;
 using EQGodot.resource_manager;
-using EQGodot2.login_server;
-using EQGodot2.network_manager.login_server;
-using EQGodot2.network_manager.world_server;
 using Godot;
+using System;
 
 namespace EQGodot.GameController;
 
@@ -17,27 +18,66 @@ public partial class GameController : Node
 
     public ResourceManager Resources;
 
+    enum State
+    {
+        NONE,
+        LOGIN,
+        SERVER_SELECTION,
+        RENDERING,
+    }
+
+    private State state = State.NONE;
 
     public override void _Ready()
     {
-        var packed = ResourceLoader.Load<PackedScene>("res://login_server/login_screen.tscn");
-        ActiveScene = packed.Instantiate<login_screen>();
-        ((login_screen)ActiveScene).DoLogin += OnLoginScreenDoLogin;
-        AddChild(ActiveScene);
-
         Resources = (ResourceManager)ResourceLoader.Load<CSharpScript>("res://resource_manager/ResourceManager.cs")
             .New();
         AddChild(Resources);
+        SwitchState(State.RENDERING);
     }
 
     public override void _Process(double delta)
     {
     }
 
+    private void SwitchState(State newState)
+    {
+        if (state != State.NONE)
+        {
+            ActiveScene.QueueFree();
+        }
+
+        switch (newState)
+        {
+            case State.LOGIN:
+                var loginScene = ResourceLoader.Load<PackedScene>("res://login_server/login_screen.tscn");
+                ActiveScene = loginScene.Instantiate<login_screen>();
+                ((login_screen)ActiveScene).DoLogin += OnLoginScreenDoLogin;
+                AddChild(ActiveScene);
+                break;
+            case State.SERVER_SELECTION:
+                var serverSelectionScene = ResourceLoader.Load<PackedScene>("res://login_server/server_selection.tscn");
+                ActiveScene = serverSelectionScene.Instantiate<login_server.server_selection>();
+                ((login_server.server_selection)ActiveScene).ServerJoinStart += OnServerJoinStart;
+                AddChild(ActiveScene);
+                break;
+            case State.RENDERING:
+                var baseRenderingScene = ResourceLoader.Load<PackedScene>("res://base_scene.tscn");
+                ActiveScene = baseRenderingScene.Instantiate<Node3D>();
+                AddChild(ActiveScene);
+                break;
+            case State.NONE:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+        }
+    }
+
+
     private void OnLoginScreenDoLogin(string username, string password)
     {
         NetworkLoginSession = new LoginSession(username, password);
-        NetworkLoginSession.MessageUpdate += (ActiveScene as login_screen).OnMessageUpdate;
+        NetworkLoginSession.MessageUpdate += ((login_screen)ActiveScene).OnMessageUpdate;
         NetworkLoginSession.ServerListReceived += OnServerListReceived;
         NetworkLoginSession.LoggedIn += OnLoggedIn;
         AddChild(NetworkLoginSession);
@@ -51,12 +91,8 @@ public partial class GameController : Node
 
     private void OnServerListReceived(EQServerDescription[] servers)
     {
-        ActiveScene.QueueFree();
-        var serverSelection = ResourceLoader.Load<PackedScene>("res://login_server/server_selection.tscn");
-        ActiveScene = serverSelection.Instantiate<server_selection>();
-        (ActiveScene as server_selection).LoadServers(servers);
-        (ActiveScene as server_selection).ServerJoinStart += OnServerJoinStart;
-        AddChild(ActiveScene);
+        SwitchState(State.SERVER_SELECTION);
+        ((login_server.server_selection)ActiveScene).LoadServers(servers);
     }
 
     private void OnServerJoinStart(EQServerDescription server)
@@ -68,15 +104,7 @@ public partial class GameController : Node
 
     private void OnServerJoinAccepted()
     {
-        ActiveScene.QueueFree();
-
-        Resources = (ResourceManager)ResourceLoader.Load<CSharpScript>("res://resource_manager/ResourceManager.cs")
-            .New();
-        AddChild(Resources);
-
-        var serverSelection = ResourceLoader.Load<PackedScene>("res://base_scene.tscn");
-        ActiveScene = serverSelection.Instantiate<Node3D>();
-        AddChild(ActiveScene);
+        SwitchState(State.RENDERING);
 
         GD.Print($"Accepted on server {ActiveServer.LongName}, proceeding to join world server");
 

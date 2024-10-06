@@ -1,7 +1,7 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag26BlitSpriteDef : WldFragment
+public partial class Frag26BlitSpriteDef : WldFragment
 {
     public int Flags;
     public Frag05SimpleSprite SimpleSprite;

@@ -18,20 +18,19 @@ public partial class WldFile : Resource
     private const int WldFileIdentifier = 0x54503D02;
     private const int WldFormatOldIdentifier = 0x00015500;
     private const int WldFormatNewIdentifier = 0x1000C800;
+    
     [Export] public Godot.Collections.Dictionary<int, Resource> ActorDefs = [];
     private PFSArchive Archive;
     [Export] public Godot.Collections.Dictionary<int, ActorSkeletonPath> ExtraAnimations = [];
     [Export] public Godot.Collections.Dictionary<int, byte[]> FragmentContents = [];
-    private readonly System.Collections.Generic.Dictionary<string, WldFragment> FragmentNameDictionary = [];
-
-    private readonly List<WldFragment> Fragments = [];
-    private readonly System.Collections.Generic.Dictionary<Type, List<WldFragment>> FragmentTypeDictionary = [];
+    [Export] private Godot.Collections.Dictionary<string, WldFragment> FragmentNameDictionary = [];
+    private readonly List<WldFragment> _fragments = [];
+    private readonly System.Collections.Generic.Dictionary<Type, List<WldFragment>> _fragmentTypeDictionary = [];
     [Export] public Godot.Collections.Dictionary<int, int> FragmentTypes = [];
     [Export] public bool IsNewWldFormat;
     [Export] public Godot.Collections.Dictionary<int, Material> Materials = [];
     [Export] public Godot.Collections.Dictionary<int, ArrayMesh> Meshes = [];
     [Export] public Godot.Collections.Dictionary<string, Array<Resource>> Resources = [];
-
     [Export] public Godot.Collections.Dictionary<int, string> Strings = [];
 
     public WldFile()
@@ -62,9 +61,9 @@ public partial class WldFile : Resource
             return;
         }
 
-        Fragments =
+        _fragments =
         [
-            new FragXXFallback()
+            new fragments.FragXXFallback()
         ];
 
         var version = reader.ReadInt32();
@@ -110,10 +109,6 @@ public partial class WldFile : Resource
         {
             var fragSize = reader.ReadUInt32();
             var fragType = reader.ReadInt32();
-            // if (i % 1000 == 0)
-            // {
-            //     GD.Print($"WldFile {Name}: Fragment {i} type: {fragType:x} size {fragSize}");
-            // }
             var fragmentContents = reader.ReadBytes((int)fragSize);
 
             FragmentTypes[i + 1] = fragType;
@@ -123,10 +118,10 @@ public partial class WldFile : Resource
                 fragType,
                 out var value
             )
-                ? new FragXXFallback()
+                ? new fragments.FragXXFallback()
                 : value();
 
-            if (newFragment is FragXXFallback)
+            if (newFragment is fragments.FragXXFallback)
             {
                 GD.PrintErr($"WldFile {Name}: Unhandled fragment type: {fragType:x}");
                 break;
@@ -134,16 +129,16 @@ public partial class WldFile : Resource
 
             newFragment.Initialize(i, fragType, (int)fragSize, fragmentContents, this);
 
-            Fragments.Add(newFragment);
-            if (!FragmentTypeDictionary.ContainsKey(newFragment.GetType()))
-                FragmentTypeDictionary[newFragment.GetType()] = [];
+            _fragments.Add(newFragment);
+            if (!_fragmentTypeDictionary.ContainsKey(newFragment.GetType()))
+                _fragmentTypeDictionary[newFragment.GetType()] = [];
 
             if (
                 !string.IsNullOrEmpty(newFragment.Name)
             )
                 FragmentNameDictionary.TryAdd(newFragment.Name, newFragment);
 
-            FragmentTypeDictionary[newFragment.GetType()].Add(newFragment);
+            _fragmentTypeDictionary[newFragment.GetType()].Add(newFragment);
         }
 
         BuildMaterials();
@@ -158,9 +153,9 @@ public partial class WldFile : Resource
     private List<T> GetFragmentsOfType<T>()
         where T : WldFragment
     {
-        return !FragmentTypeDictionary.ContainsKey(typeof(T))
+        return !_fragmentTypeDictionary.ContainsKey(typeof(T))
             ? []
-            : FragmentTypeDictionary[typeof(T)].Cast<T>().ToList();
+            : _fragmentTypeDictionary[typeof(T)].Cast<T>().ToList();
     }
 
     public string GetName(int reference)
@@ -176,7 +171,7 @@ public partial class WldFile : Resource
             case 0:
                 return string.Empty;
             default:
-                return Fragments[reference].Name;
+                return _fragments[reference].Name;
         }
     }
 
@@ -191,7 +186,7 @@ public partial class WldFile : Resource
         {
             < 0 => FragmentNameDictionary[Strings[-reference]],
             0 => null,
-            _ => Fragments[reference]
+            _ => _fragments[reference]
         };
     }
 
@@ -232,6 +227,7 @@ public partial class WldFile : Resource
         var actorDefs = GetFragmentsOfType<Frag14ActorDef>();
         foreach (var actorDef in actorDefs)
         {
+            GD.Print($@"WldFile {Name}: {actorDef.Name}");
             var skeleton = actorDef.HierarchicalSprite?.HierarchicalSpriteDef;
             if (skeleton != null)
             {
@@ -248,14 +244,14 @@ public partial class WldFile : Resource
                 var sprite = def?.SimpleSprite;
                 if (sprite != null)
                 {
-                    var godotBlitActor = new BlitActorDefinition
-                    {
-                        ResourceName = actorDef.Name, Texture = sprite.ToGodotTexture(Archive),
-                        Flags = blit.Flags,
-                        Tag = actorDef.Name
-                    };
-                    ActorDefs.Add(actorDef.Index, godotBlitActor);
-                    AddResource(actorDef.Name, godotBlitActor);
+                    // var godotBlitActor = new BlitActorDefinition
+                    // {
+                    //     ResourceName = actorDef.Name, Texture = sprite.ToGodotTexture(Archive),
+                    //     Flags = blit.Flags,
+                    //     Tag = actorDef.Name
+                    // };
+                    // ActorDefs.Add(actorDef.Index, godotBlitActor);
+                    // AddResource(actorDef.Name, godotBlitActor);
                 }
                 else
                 {
@@ -265,13 +261,13 @@ public partial class WldFile : Resource
                 continue;
             }
 
-            // var dm_mesh = actordef.DMSprite?.Mesh;
-            // if (dm_mesh != null)
-            // {
-            //     actor.Meshes.Add(dm_mesh.Name, Meshes[dm_mesh.Index]);
-            //     ActorDefs.Add(actordef.Index, actor);
-            //     continue;
-            // }
+            var dmMesh = actorDef.DMSprite?.Mesh;
+            if (dmMesh != null)
+            {
+                // actor.Meshes.Add(dmMesh.Name, Meshes[dmMesh.Index]);
+                // ActorDefs.Add(actorDef.Index, actor);
+                continue;
+            }
 
             GD.PrintErr(
                 $"WldFile {Name}: Skeleton is null for {actorDef.Name} - Mesh: {actorDef.DMSprite} - Sprite2D: {actorDef.Sprite2D}"
@@ -285,7 +281,7 @@ public partial class WldFile : Resource
         foreach (var animation in animations.Where(animation => !animation.IsProcessed))
             ExtraAnimations.Add(
                 animation.Index,
-                HierarchicalActorBuilder.ConvertTrack(animation)
+                ActorSkeletonPath.FromFrag13Track(animation)
             );
     }
 }

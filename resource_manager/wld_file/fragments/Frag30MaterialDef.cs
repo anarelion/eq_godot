@@ -1,4 +1,5 @@
-﻿using EQGodot.helpers;
+﻿using System.Collections.Generic;
+using System.Linq;
 using EQGodot.resource_manager.pack_file;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
@@ -6,23 +7,14 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag30MaterialDef : WldFragment
+[GlobalClass]
+public partial class Frag30MaterialDef : WldFragment
 {
-    public Frag05SimpleSprite SimpleSprite { get; private set; }
-
-    /// <summary>
-    ///     The shader type that this material uses when rendering
-    /// </summary>
-    public ShaderType ShaderType { get; set; }
-
-    public float Brightness { get; set; }
-    public float ScaledAmbient { get; set; }
-
-    /// <summary>
-    ///     If a material has not been handled, we still need to find the corresponding material list
-    ///     Used for alternate character skins
-    /// </summary>
-    public bool IsHandled { get; set; }
+    [Export] public Frag05SimpleSprite SimpleSprite;
+    [Export] public ShaderType ShaderType;
+    [Export] public float Brightness;
+    [Export] public float ScaledAmbient;
+    public bool IsHandled;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -102,11 +94,43 @@ public class Frag30MaterialDef : WldFragment
 
     public Material ToGodotMaterial(PFSArchive archive)
     {
-        var result = new StandardMaterial3D();
         if (SimpleSprite != null)
-            result.AlbedoTexture = SimpleSprite.ToGodotTexture(archive);
-        else
-            GD.PrintErr($"Material: {Name} doesn't have a texture");
-        return result;
+        {
+            var names = SimpleSprite.GetAllBitmapNames();
+            if (SimpleSprite.SimpleSpriteDef.IsAnimated)
+            {
+                var texture2DArray = new Texture2DArray();
+                Godot.Collections.Array<Image> a = [];
+                foreach (var name in names)
+                {
+                    a.Add((archive.FilesByName[name] as ImageTexture)?.GetImage());
+                }
+
+                texture2DArray.CreateFromImages(a);
+                var material = new ShaderMaterial()
+                {
+                    ResourceName = Name,
+                    Shader = ResourceLoader.Load<Shader>("res://shaders/animated_texture.gdshader"),
+                };
+                material.SetShaderParameter("textures", texture2DArray);
+                material.SetShaderParameter("step_time", SimpleSprite.SimpleSpriteDef.AnimationDelayMs);
+                material.SetShaderParameter("total_time",
+                    SimpleSprite.SimpleSpriteDef.AnimationDelayMs * texture2DArray._Images.Count);
+
+                return material;
+            }
+
+            return new StandardMaterial3D()
+            {
+                ResourceName = Name,
+                AlbedoTexture = archive.FilesByName[names[0]] as ImageTexture
+            };
+        }
+
+        GD.PrintErr($"Material: {Name} doesn't have a texture");
+        return new StandardMaterial3D()
+        {
+            ResourceName = Name
+        };
     }
 }

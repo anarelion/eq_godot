@@ -14,45 +14,39 @@ namespace EQGodot.resource_manager.pack_file;
 [GlobalClass]
 public partial class PFSArchive : Resource
 {
-    [Export] public Array<Resource> Files;
+    [Export] public Array<Resource> Files = [];
 
-    [Export] public Godot.Collections.Dictionary<string, Resource> FilesByName;
+    [Export] public Godot.Collections.Dictionary<string, Resource> FilesByName = [];
 
-    [Export] public Godot.Collections.Dictionary<string, WldFile> WldFiles;
-
-    public PFSArchive()
-    {
-        Files = [];
-        FilesByName = [];
-        WldFiles = [];
-    }
+    [Export] public Godot.Collections.Dictionary<string, WldFile> WldFiles = [];
 
     [Export] public bool IsWldArchive { get; set; }
 
     public void ProcessFiles()
     {
-        List<Task> image_handles = [];
+        GD.Print($"PFSArchive: Processing files {ResourceName}");
+        List<Task> imageHandles = [];
         for (var i = 0; i < Files.Count; i++)
-            if (Files[i] is PFSFile pfsFile && (pfsFile.Name.EndsWith(".dds") || (pfsFile.FileBytes[0] == 'D' &&
+            if (Files[i] is PFSFile pfsFile && ( /* pfsFile.Name.EndsWith(".dds") || */ (pfsFile.FileBytes[0] == 'D' &&
                     pfsFile.FileBytes[1] == 'D' && pfsFile.FileBytes[2] == 'S')))
             {
                 var index = i;
                 var pfs = pfsFile;
-                image_handles.Add(Task.Run(() => ProcessDDSImage(pfs, index)));
+                imageHandles.Add(Task.Run(() => ProcessDDSImage(pfs, index)));
             }
 
         for (var i = 0; i < Files.Count; i++)
             if (Files[i] is PFSFile pfsFile)
-                if (pfsFile.Name.EndsWith(".bmp"))
+                if ( /*pfsFile.Name.EndsWith(".bmp") */ pfsFile.FileBytes[0] == 'B' && pfsFile.FileBytes[1] == 'M')
                 {
                     var index = i;
                     var pfs = pfsFile;
-                    image_handles.Add(Task.Run(() => ProcessBMPImage(pfs, index)));
+                    imageHandles.Add(Task.Run(() => ProcessBMPImage(pfs, index)));
                 }
 
-        Task.WaitAll([.. image_handles]);
+        Task.WaitAll([.. imageHandles]);
 
-        List<Task> wld_handles = [];
+        List<Task> wldHandles = [];
         for (var i = 0; i < Files.Count; i++)
             if (Files[i] is PFSFile pfsFile)
                 if (pfsFile.Name.EndsWith(".wld"))
@@ -61,14 +55,14 @@ public partial class PFSArchive : Resource
                         IsWldArchive = true;
                         var index = i;
                         var pfs = pfsFile;
-                        wld_handles.Add(Task.Run(() => ProcessWldResource(pfs, index)));
+                        wldHandles.Add(Task.Run(() => ProcessWldResource(pfs, index)));
                     }
                     catch (Exception ex)
                     {
                         GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
                     }
 
-        Task.WaitAll([.. wld_handles]);
+        Task.WaitAll([.. wldHandles]);
     }
 
     private void ProcessDDSImage(PFSFile pfsFile, int index)

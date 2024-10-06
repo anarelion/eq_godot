@@ -1,9 +1,9 @@
 using System;
-using EQGodot2.network_manager.network_session;
-using EQGodot2.network_manager.packets;
+using EQGodot.network_manager.network_session;
+using EQGodot.network_manager.packets;
 using static System.Text.Encoding;
 
-namespace EQGodot2.network_manager.login_server;
+namespace EQGodot.network_manager.login_server;
 
 public class CSPlayerLogin(string username, string password) : AppPacket
 {

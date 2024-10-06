@@ -5,7 +5,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag13Track : WldFragment
+public partial class Frag13Track : WldFragment
 {
     public string AnimationName;
 

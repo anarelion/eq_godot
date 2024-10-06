@@ -127,6 +127,7 @@ public class PackFileParser
 
         GD.Print($"PfsArchive: Finished initialization of archive: {path}");
         archive.ProcessFiles();
+        GD.Print($"PfsArchive: Finished processing archive: {path}");
         return archive;
     }
 
@@ -134,47 +135,45 @@ public class PackFileParser
     {
         var output = new byte[inflatedSize];
 
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream();
+        var zlibCodec = new ZlibCodec();
+        zlibCodec.InitializeInflate(true);
+
+        zlibCodec.InputBuffer = deflatedBytes;
+        zlibCodec.AvailableBytesIn = deflatedBytes.Length;
+        zlibCodec.NextIn = 0;
+        zlibCodec.OutputBuffer = output;
+
+        foreach (var f in new[] { FlushType.None, FlushType.Finish })
         {
-            var zlibCodec = new ZlibCodec();
-            zlibCodec.InitializeInflate(true);
+            int bytesToWrite;
 
-            zlibCodec.InputBuffer = deflatedBytes;
-            zlibCodec.AvailableBytesIn = deflatedBytes.Length;
-            zlibCodec.NextIn = 0;
-            zlibCodec.OutputBuffer = output;
-
-            foreach (var f in new[] { FlushType.None, FlushType.Finish })
+            do
             {
-                int bytesToWrite;
-
-                do
+                zlibCodec.AvailableBytesOut = inflatedSize;
+                zlibCodec.NextOut = 0;
+                try
                 {
-                    zlibCodec.AvailableBytesOut = inflatedSize;
-                    zlibCodec.NextOut = 0;
-                    try
-                    {
-                        zlibCodec.Inflate(f);
-                    }
-                    catch (Exception e)
-                    {
-                        inflatedBytes = null;
-                        GD.PrintErr("PfsArchive: Exception caught while inflating bytes: " + e);
-                        throw new Exception($"PfsArchive: Exception caught while inflating bytes: {e}");
-                    }
+                    zlibCodec.Inflate(f);
+                }
+                catch (Exception e)
+                {
+                    inflatedBytes = null;
+                    GD.PrintErr("PfsArchive: Exception caught while inflating bytes: " + e);
+                    throw new Exception($"PfsArchive: Exception caught while inflating bytes: {e}");
+                }
 
-                    bytesToWrite = inflatedSize - zlibCodec.AvailableBytesOut;
-                    if (bytesToWrite > 0)
-                        memoryStream.Write(output, 0, bytesToWrite);
-                } while ((f == FlushType.None &&
-                          (zlibCodec.AvailableBytesIn != 0 || zlibCodec.AvailableBytesOut == 0)) ||
-                         (f == FlushType.Finish && bytesToWrite != 0));
-            }
-
-            zlibCodec.EndInflate();
-
-            inflatedBytes = output;
-            return true;
+                bytesToWrite = inflatedSize - zlibCodec.AvailableBytesOut;
+                if (bytesToWrite > 0)
+                    memoryStream.Write(output, 0, bytesToWrite);
+            } while ((f == FlushType.None &&
+                      (zlibCodec.AvailableBytesIn != 0 || zlibCodec.AvailableBytesOut == 0)) ||
+                     (f == FlushType.Finish && bytesToWrite != 0));
         }
+
+        zlibCodec.EndInflate();
+
+        inflatedBytes = output;
+        return true;
     }
 }

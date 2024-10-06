@@ -4,9 +4,10 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag03BMInfo : WldFragment
+[GlobalClass]
+public partial class Frag03BMInfo : WldFragment
 {
-    public string Filename { get; set; }
+    [Export] public string Filename;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

@@ -1,7 +1,7 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag22Region : WldFragment
+public partial class Frag22Region : WldFragment
 {
     public int Flags;
     public bool ContainsPolygons { get; private set; }

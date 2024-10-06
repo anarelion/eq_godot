@@ -2,9 +2,18 @@ using Godot;
 
 namespace EQGodot.resource_manager.godot_resources;
 
-public partial class BlitActorDefinition : Resource
+[GlobalClass]
+public partial class BlitActorDefinition : ActorDefinition
 {
     [Export] public int Flags;
     [Export] public string Tag;
     [Export] public Texture2D Texture;
+
+    public Node Instantiate(PackedScene.GenEditState editState = (PackedScene.GenEditState)(0))
+    {
+        return new Node3D()
+        {
+            Name = $"Blit: {Tag}",
+        };
+    }
 }

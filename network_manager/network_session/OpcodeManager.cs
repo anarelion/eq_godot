@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using EQGodot2.network_manager.packets;
+using EQGodot.network_manager.packets;
 using Godot;
 
-namespace EQGodot2.network_manager.network_session;
+namespace EQGodot.network_manager.network_session;
 
 public class OpcodeManager
 {

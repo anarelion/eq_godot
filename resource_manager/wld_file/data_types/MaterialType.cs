@@ -1,4 +1,4 @@
-﻿namespace EQGodot.helpers;
+﻿namespace EQGodot.resource_manager.wld_file.data_types;
 
 // Latern Extractor class
 public enum MaterialType

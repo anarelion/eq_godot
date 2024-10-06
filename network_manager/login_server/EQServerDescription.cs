@@ -1,6 +1,6 @@
 using Godot;
 
-namespace EQGodot2.network_manager.login_server;
+namespace EQGodot.network_manager.login_server;
 
 public partial class EQServerDescription : GodotObject
 {

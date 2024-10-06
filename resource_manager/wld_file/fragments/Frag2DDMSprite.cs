@@ -3,7 +3,7 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag2DDMSprite : WldFragment
+public partial class Frag2DDMSprite : WldFragment
 {
     public Frag36DmSpriteDef2 Mesh { get; private set; }
 

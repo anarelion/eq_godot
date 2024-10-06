@@ -1,25 +1,17 @@
 ﻿using System.Collections.Generic;
 using EQGodot.resource_manager.wld_file.helpers;
+using Godot;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag04SimpleSpriteDef : WldFragment
+[GlobalClass]
+public partial class Frag04SimpleSpriteDef : WldFragment
 {
-    /// <summary>
-    ///     Is the texture animated?
-    /// </summary>
-    public bool IsAnimated { get; private set; }
-
-    /// <summary>
-    ///     The bitmap names referenced.
-    /// </summary>
-    public List<Frag03BMInfo> BitmapNames { get; private set; }
-
-    /// <summary>
-    ///     The number of milliseconds before the next texture is swapped.
-    /// </summary>
-    public int AnimationDelayMs { get; private set; }
+    [Export] public bool IsAnimated;
+    [Export] public int AnimationDelayMs;
+    [Export] public Godot.Collections.Array<Frag03BMInfo> BitmapNames;
+    
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

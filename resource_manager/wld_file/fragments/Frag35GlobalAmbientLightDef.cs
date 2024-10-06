@@ -1,9 +1,10 @@
 using System;
 using Godot;
 
-namespace EQGodot.resource_manager.wld_file;
+namespace EQGodot.resource_manager.wld_file.fragments;
 
-public class Frag35GlobalAmbientLightDef : WldFragment
+[GlobalClass]
+public partial class Frag35GlobalAmbientLightDef : WldFragment
 {
     public Color Color { get; private set; }
 

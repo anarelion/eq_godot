@@ -1,7 +1,7 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag33DmRGBTrack : WldFragment
+public partial class Frag33DmRGBTrack : WldFragment
 {
     public Frag32DmRGBTrackDef VertexColors { get; private set; }
 

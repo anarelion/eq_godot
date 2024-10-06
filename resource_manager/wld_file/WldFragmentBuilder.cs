@@ -25,7 +25,7 @@ public static class WldFragmentBuilder
         { 0x12, () => new Frag12TrackDef() },
         { 0x13, () => new Frag13Track() },
         { 0x14, () => new Frag14ActorDef() },
-        { 0x15, () => new Frag15Actor() },
+        { 0x15, () => new Frag15ActorInstance() },
         { 0x16, () => new Frag16Sphere() },
         { 0x17, () => new Frag17PolyhedronDef() },
         { 0x18, () => new Frag18Polyhedron() },
@@ -50,7 +50,7 @@ public static class WldFragmentBuilder
         { 0x32, () => new Frag32DmRGBTrackDef() },
         { 0x33, () => new Frag33DmRGBTrack() },
         { 0x34, () => new Frag34ParticleCloudDef() },
-        { 0x35, () => new Frag35GlobalAmbientLightDef() },
+        { 0x35, () => new fragments.Frag35GlobalAmbientLightDef() },
         { 0x36, () => new Frag36DmSpriteDef2() }
     };
 }

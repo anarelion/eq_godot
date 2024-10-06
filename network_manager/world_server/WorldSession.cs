@@ -1,10 +1,10 @@
 using System;
-using EQGodot2.network_manager.login_server;
-using EQGodot2.network_manager.network_session;
-using EQGodot2.network_manager.packets;
+using EQGodot.network_manager.login_server;
+using EQGodot.network_manager.network_session;
+using EQGodot.network_manager.packets;
 using Godot;
 
-namespace EQGodot2.network_manager.world_server;
+namespace EQGodot.network_manager.world_server;
 
 public partial class WorldSession : Node
 {

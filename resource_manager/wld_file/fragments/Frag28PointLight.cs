@@ -3,7 +3,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag28PointLight : WldFragment
+public partial class Frag28PointLight : WldFragment
 {
     public Frag1CLight LightReference { get; private set; }
 

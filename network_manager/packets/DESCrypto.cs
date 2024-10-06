@@ -24,7 +24,7 @@
 
 using System;
 
-namespace EQGodot2.network_manager.packets;
+namespace EQGodot.network_manager.packets;
 
 internal class DESCrypto
 {

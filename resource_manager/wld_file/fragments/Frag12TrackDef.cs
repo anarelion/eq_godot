@@ -7,7 +7,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag12TrackDef : WldFragment
+public partial class Frag12TrackDef : WldFragment
 {
     public int Flags;
 
@@ -25,7 +25,7 @@ public class Frag12TrackDef : WldFragment
         Reader = new BinaryReader(new MemoryStream(data));
         Name = wld.GetName(Reader.ReadInt32());
 
-        var Flags = Reader.ReadInt32();
+        Flags = Reader.ReadInt32();
 
         // Flags are always 8 when dealing with object animations
         if (Flags != 8)

@@ -7,7 +7,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag29Zone : WldFragment
+public partial class Frag29Zone : WldFragment
 {
     public ZonelineInfo Zoneline;
     public List<RegionType> RegionTypes { get; private set; }

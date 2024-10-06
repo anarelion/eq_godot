@@ -1,7 +1,7 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag1CLight : WldFragment
+public partial class Frag1CLight : WldFragment
 {
     /// <summary>
     ///     The light source (0x1B) fragment reference

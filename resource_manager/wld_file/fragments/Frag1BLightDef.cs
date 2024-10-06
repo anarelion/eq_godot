@@ -4,7 +4,7 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag1BLightDef : WldFragment
+public partial class Frag1BLightDef : WldFragment
 {
     public bool IsPlacedLightSource { get; private set; }
     public bool IsColoredLight { get; private set; }

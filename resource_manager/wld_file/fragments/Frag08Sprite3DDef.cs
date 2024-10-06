@@ -1,6 +1,6 @@
-namespace EQGodot.resource_manager.wld_file;
+namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
-public class Frag08Sprite3DDef : WldFragment
+public partial class Frag08Sprite3DDef : WldFragment
 {
 }
