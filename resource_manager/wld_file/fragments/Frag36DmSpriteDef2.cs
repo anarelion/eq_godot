@@ -10,26 +10,24 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 public partial class Frag36DmSpriteDef2 : WldFragment
 {
-    public bool IsHandled = false;
-    [Export] public int StartTextureIndex;
+    [Export] public int Flags;
+    [Export] public Frag31MaterialPalette MaterialPalette;
+    [Export] public int AnimatedVerticesReference;
     [Export] public Vector3 Center;
     [Export] public float MaxDistance;
-    public Vector3 MinPosition { get; private set; }
-    public Vector3 MaxPosition { get; private set; }
-    public Frag31MaterialPalette MaterialPalette { get; private set; }
-    public Vector3[] Vertices { get; set; }
-    public Vector3[] Normals { get; private set; }
-    public List<Polygon> Indices { get; private set; }
-    public Color[] Colors { get; set; }
-    public Vector2[] TextureUvCoordinates { get; private set; }
-
-    public List<RenderGroup> MaterialGroups { get; private set; }
-
-    // public MeshAnimatedVerticesReference AnimatedVerticesReference {
-    //     get; private set;
-    // }
-    public bool ExportSeparateCollision { get; private set; }
-    public List<MobVertexPiece> MobPieces { get; private set; }
+    [Export] public Vector3 MinPosition;
+    [Export] public Vector3 MaxPosition;
+    
+    public bool IsHandled = false;
+    [Export] public int StartTextureIndex;
+    [Export] public Vector3[] Vertices;
+    [Export] public Vector3[] Normals;
+    [Export] public Godot.Collections.Array<Polygon> Indices;
+    [Export] public Color[] Colors;
+    [Export] public Vector2[] TextureUvCoordinates;
+    [Export] public Godot.Collections.Array<RenderGroup> MaterialGroups;
+    [Export] public bool ExportSeparateCollision;
+    [Export] public Godot.Collections.Array<MobVertexPiece> MobPieces;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -37,19 +35,12 @@ public partial class Frag36DmSpriteDef2 : WldFragment
         Name = wld.GetName(Reader.ReadInt32());
 
         // Zone: 0x00018003, Objects: 0x00014003
-        var flags = Reader.ReadInt32();
+        Flags = Reader.ReadInt32();
 
         MaterialPalette = wld.GetFragment(Reader.ReadInt32()) as Frag31MaterialPalette;
-        var meshAnimation = Reader.ReadInt32();
-
-        // Vertex animation only
-        // if (meshAnimation != 0) {
-        //    AnimatedVerticesReference = fragments[meshAnimation - 1] as MeshAnimatedVerticesReference;
-        // }
+        AnimatedVerticesReference = Reader.ReadInt32();
 
         var unknown1 = Reader.ReadInt32();
-
-        // maybe references the first 0x03 in the WLD - unknown
         var unknown2 = Reader.ReadInt32();
 
         Center = new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
@@ -103,7 +94,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
             var x = Reader.ReadSByte() / 128.0f;
             var y = Reader.ReadSByte() / 128.0f;
             var z = Reader.ReadSByte() / 128.0f;
-            Normals[i] = new Vector3(x, y, z);
+            Normals[i] = new Vector3(x, y, z).Normalized();
         }
 
         for (var i = 0; i < colorsCount; ++i)

@@ -89,12 +89,8 @@ public partial class PFSArchive : Resource
                 var image = Image.CreateFromData(dds.Width, dds.Height, dds.MipMaps.Length > 1, Image.Format.Rgba8,
                     dds.Data);
                 image.FlipY();
-                var texture = ImageTexture.CreateFromImage(image);
-                if (texture != null)
-                {
-                    Files[index] = texture;
-                    FilesByName[pfsFile.Name] = texture;
-                }
+                Files[index] = image;
+                FilesByName[pfsFile.Name] = image;
             }
             catch (Exception ex)
             {
@@ -131,11 +127,14 @@ public partial class PFSArchive : Resource
             try
             {
                 var image = Image.CreateFromData(bitmap.Width, bitmap.Height, false, Image.Format.Rgba8, data);
-                var texture = ImageTexture.CreateFromImage(image);
-                if (texture != null)
+                if (image != null)
                 {
-                    Files[index] = texture;
-                    FilesByName[pfsFile.Name] = texture;
+                    Files[index] = image;
+                    FilesByName[pfsFile.Name] = image;
+                }
+                else
+                {
+                    GD.PrintErr($"No image could be created properly from {pfsFile.Name}");
                 }
             }
             catch (Exception ex)

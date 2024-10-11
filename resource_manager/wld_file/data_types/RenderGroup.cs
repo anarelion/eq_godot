@@ -1,7 +1,10 @@
-﻿namespace EQGodot.resource_manager.wld_file.data_types;
+﻿using Godot;
+
+namespace EQGodot.resource_manager.wld_file.data_types;
 
 // Latern Extractor class
-public class RenderGroup
+[GlobalClass]
+public partial class RenderGroup : Resource
 {
     public int StartPolygon { get; set; }
 

@@ -8,24 +8,36 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 public partial class Frag04SimpleSpriteDef : WldFragment
 {
-    [Export] public bool IsAnimated;
+    [Export] public int Flags;
+    [Export] public bool SkipFrames;
+    [Export] public bool Unknown;
+    [Export] public bool Animated;
+    [Export] public bool Sleep;
+    [Export] public bool CurrentFrameFlag;
     [Export] public int AnimationDelayMs;
+    [Export] public uint CurrentFrame;
     [Export] public Godot.Collections.Array<Frag03BMInfo> BitmapNames;
-    
+
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
         base.Initialize(index, type, size, data, wld);
         Name = wld.GetName(Reader.ReadInt32());
-        var flags = Reader.ReadInt32();
-        var bitAnalyzer = new BitAnalyzer(flags);
-        IsAnimated = bitAnalyzer.IsBitSet(3);
+
+        Flags = Reader.ReadInt32();
+        var bitAnalyzer = new BitAnalyzer(Flags);
+        SkipFrames = bitAnalyzer.IsBitSet(1);
+        Unknown = bitAnalyzer.IsBitSet(2);
+        Animated = bitAnalyzer.IsBitSet(3);
+        Sleep = bitAnalyzer.IsBitSet(4);
+        CurrentFrameFlag = bitAnalyzer.IsBitSet(5);
+
         var bitmapCount = Reader.ReadInt32();
 
+        if (CurrentFrameFlag) CurrentFrame = Reader.ReadUInt32();
+        if (Animated && Sleep) AnimationDelayMs = Reader.ReadInt32();
+
         BitmapNames = [];
-
-        if (IsAnimated) AnimationDelayMs = Reader.ReadInt32();
-
         for (var i = 0; i < bitmapCount; ++i) BitmapNames.Add(wld.GetFragment(Reader.ReadInt32()) as Frag03BMInfo);
     }
 }

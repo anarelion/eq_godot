@@ -97,16 +97,18 @@ public partial class Frag30MaterialDef : WldFragment
         if (SimpleSprite != null)
         {
             var names = SimpleSprite.GetAllBitmapNames();
-            if (SimpleSprite.SimpleSpriteDef.IsAnimated)
+            if (SimpleSprite.SimpleSpriteDef.Animated)
             {
-                var texture2DArray = new Texture2DArray();
                 Godot.Collections.Array<Image> a = [];
                 foreach (var name in names)
                 {
-                    a.Add((archive.FilesByName[name] as ImageTexture)?.GetImage());
+                    var image = (archive.FilesByName[name] as Image);
+                    a.Add(image);
                 }
 
+                var texture2DArray = new Texture2DArray();
                 texture2DArray.CreateFromImages(a);
+
                 var material = new ShaderMaterial()
                 {
                     ResourceName = Name,
@@ -115,7 +117,7 @@ public partial class Frag30MaterialDef : WldFragment
                 material.SetShaderParameter("textures", texture2DArray);
                 material.SetShaderParameter("step_time", SimpleSprite.SimpleSpriteDef.AnimationDelayMs);
                 material.SetShaderParameter("total_time",
-                    SimpleSprite.SimpleSpriteDef.AnimationDelayMs * texture2DArray._Images.Count);
+                    SimpleSprite.SimpleSpriteDef.AnimationDelayMs * names.Count);
 
                 return material;
             }
@@ -123,7 +125,7 @@ public partial class Frag30MaterialDef : WldFragment
             return new StandardMaterial3D()
             {
                 ResourceName = Name,
-                AlbedoTexture = archive.FilesByName[names[0]] as ImageTexture
+                AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[names[0]]),
             };
         }
 

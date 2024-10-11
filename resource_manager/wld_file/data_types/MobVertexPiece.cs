@@ -1,7 +1,10 @@
-﻿namespace EQGodot.resource_manager.wld_file.data_types;
+﻿using Godot;
+
+namespace EQGodot.resource_manager.wld_file.data_types;
 
 // Latern Extractor class
-public class MobVertexPiece
+[GlobalClass]
+public partial class MobVertexPiece : Resource
 {
     public int Start { get; set; }
 
