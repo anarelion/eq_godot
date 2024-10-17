@@ -5,33 +5,21 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag13Track : WldFragment
 {
-    public string AnimationName;
-
-    public bool IsNameParsed;
-
-    public string ModelName;
-    public string PieceName;
-
-    /// <summary>
-    ///     Reference to a skeleton piece
-    /// </summary>
-    public Frag12TrackDef TrackDefFragment { get; set; }
-
-    public bool IsPoseAnimation { get; set; }
-
-    public bool IsProcessed { get; set; }
-
-    public bool IsAnimated { get; set; }
-
-    public bool IsReversed { get; set; }
-
-    public bool InterpolateAllowed { get; set; }
-
-    public int Flags { get; set; }
-
-    public int FrameMs { get; set; }
+    [Export] public int Flags;
+    [Export] public string AnimationName;
+    [Export] public bool IsNameParsed;
+    [Export] public string ModelName;
+    [Export] public string PieceName;
+    [Export] public Frag12TrackDef TrackDefFragment;
+    [Export] public bool IsPoseAnimation;
+    [Export] public bool IsProcessed;
+    [Export] public bool IsAnimated;
+    [Export] public bool IsReversed;
+    [Export] public bool InterpolateAllowed;
+    [Export] public int FrameMs;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

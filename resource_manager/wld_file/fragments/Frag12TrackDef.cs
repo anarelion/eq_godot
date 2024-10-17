@@ -3,20 +3,17 @@ using System.IO;
 using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag12TrackDef : WldFragment
 {
-    public int Flags;
-
-    public bool IsAssigned;
-
-    /// <summary>
-    ///     A list of bone positions for each frame
-    /// </summary>
-    public List<BoneTransform> Frames { get; set; }
+    [Export] public int Flags;
+    [Export] public bool IsAssigned;
+    [Export] public Array<BoneTransform> Frames;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

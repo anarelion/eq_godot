@@ -10,18 +10,17 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 internal partial class Frag14ActorDef : WldFragment
 {
-    public ActorType ActorType;
-    public string CallbackName;
-    public int Flags;
-    public string ReferenceName;
-
-    public Frag07Sprite2D Sprite2D { get; private set; }
-    public Frag09Sprite3D Sprite3D { get; private set; }
-    public Frag11HierarchicalSprite HierarchicalSprite { get; private set; }
-    public Frag27BlitSprite BlitSprite { get; private set; }
-    public Frag2DDMSprite DMSprite { get; private set; }
-    public int BoundsRef;
-    public int CurrentAction;
+    [Export] public ActorType ActorType;
+    [Export] public string CallbackName;
+    [Export] public int Flags;
+    [Export] public string ReferenceName;
+    [Export] public Frag07Sprite2D Sprite2D;
+    [Export] public Frag09Sprite3D Sprite3D;
+    [Export] public Frag11HierarchicalSprite HierarchicalSprite;
+    [Export] public Frag27BlitSprite BlitSprite;
+    [Export] public Frag2DDMSprite DMSprite;
+    [Export] public int BoundsRef;
+    [Export] public int CurrentAction;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

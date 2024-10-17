@@ -6,7 +6,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 public partial class Frag35GlobalAmbientLightDef : WldFragment
 {
-    public Color Color { get; private set; }
+    [Export] public Color Color;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

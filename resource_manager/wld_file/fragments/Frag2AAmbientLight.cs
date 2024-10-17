@@ -1,14 +1,16 @@
 using System.Collections.Generic;
+using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag2AAmbientLight : WldFragment
 {
-    public int Flags;
-    public Frag1CLight LightReference { get; private set; }
-
-    public List<int> Regions { get; private set; }
+    [Export] public int Flags;
+    [Export] public Frag1CLight LightReference;
+    [Export] public Array<int> Regions;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

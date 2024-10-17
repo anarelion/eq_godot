@@ -18,7 +18,7 @@ public partial class WldFile : Resource
     private const int WldFileIdentifier = 0x54503D02;
     private const int WldFormatOldIdentifier = 0x00015500;
     private const int WldFormatNewIdentifier = 0x1000C800;
-    
+
     [Export] public Godot.Collections.Dictionary<int, Resource> ActorDefs = [];
     private PFSArchive Archive;
     [Export] public Godot.Collections.Dictionary<int, ActorSkeletonPath> ExtraAnimations = [];
@@ -32,6 +32,7 @@ public partial class WldFile : Resource
     [Export] public Godot.Collections.Dictionary<int, ArrayMesh> Meshes = [];
     [Export] public Godot.Collections.Dictionary<string, Array<Resource>> Resources = [];
     [Export] public Godot.Collections.Dictionary<int, string> Strings = [];
+    [Export] public Frag21WorldTree WorldTree = null;
 
     public WldFile()
         : this(null, null)
@@ -145,6 +146,7 @@ public partial class WldFile : Resource
         BuildMeshes();
         BuildActorDefs();
         BuildAnimations();
+        BuildWorldTree();
         GD.Print($"WldFile {Name}: completed.");
     }
 
@@ -283,5 +285,23 @@ public partial class WldFile : Resource
                 animation.Index,
                 ActorSkeletonPath.FromFrag13Track(animation)
             );
+    }
+
+    private void BuildWorldTree()
+    {
+        GD.Print("WldFile: Building world tree");
+        var worlds = GetFragmentsOfType<Frag21WorldTree>();
+        switch (worlds.Count)
+        {
+            case 0:
+                return;
+            case > 1:
+                GD.PrintErr($"More than one world tree found for {Name}.");
+                break;
+        }
+
+        WorldTree = worlds[0];
+        var regions = GetFragmentsOfType<Frag22Region>();
+        WorldTree.LinkBspRegions(regions);
     }
 }

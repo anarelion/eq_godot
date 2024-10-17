@@ -1,9 +1,12 @@
+using Godot;
+
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag34ParticleCloudDef : WldFragment
 {
-    private Frag26BlitSpriteDef _particleSprite;
+    [Export] private Frag26BlitSpriteDef _particleSprite;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

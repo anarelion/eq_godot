@@ -3,19 +3,12 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag28PointLight : WldFragment
 {
-    public Frag1CLight LightReference { get; private set; }
-
-    /// <summary>
-    ///     The position of the light
-    /// </summary>
-    public Vector3 Position { get; private set; }
-
-    /// <summary>
-    ///     The radius of the light
-    /// </summary>
-    public float Radius { get; private set; }
+    [Export] public Frag1CLight LightReference;
+    [Export] public Vector3 Position;
+    [Export] public float Radius;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

@@ -1,27 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag31MaterialPalette : WldFragment
 {
-    public List<Frag30MaterialDef> Materials { get; private set; }
-
-    /// <summary>
-    ///     A mapping of slot names to alternate skins
-    /// </summary>
-    public Dictionary<string, Dictionary<int, Frag30MaterialDef>> Slots { get; private set; }
-
-    /// <summary>
-    ///     The number of alternate skins
-    /// </summary>
-    public int VariantCount { get; set; }
-
-    public List<Frag30MaterialDef> AdditionalMaterials { get; set; }
+    [Export] public Array<Frag30MaterialDef> Materials;
+    [Export] public Dictionary<string, Dictionary<int, Frag30MaterialDef>> Slots;
+    [Export] public int VariantCount;
+    [Export] public Array<Frag30MaterialDef> AdditionalMaterials;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -139,9 +131,9 @@ public partial class Frag31MaterialPalette : WldFragment
         AdditionalMaterials.Add(material);
     }
 
-    public List<Frag30MaterialDef> GetMaterialVariants(Frag30MaterialDef material)
+    public Array<Frag30MaterialDef> GetMaterialVariants(Frag30MaterialDef material)
     {
-        List<Frag30MaterialDef> additionalSkins = [];
+        Array<Frag30MaterialDef> additionalSkins = [];
 
         if (Slots == null) return additionalSkins;
 

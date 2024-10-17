@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag29Zone : WldFragment
 {
-    public ZonelineInfo Zoneline;
-    public List<RegionType> RegionTypes { get; private set; }
-
-    public List<int> BspRegionIndices { get; private set; }
-
-    public string RegionString { get; set; }
+    [Export] public ZonelineInfo Zoneline;
+    [Export] public Array<RegionType> RegionTypes;
+    [Export] public Array<int> BspRegionIndices;
+    [Export] public string RegionString;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

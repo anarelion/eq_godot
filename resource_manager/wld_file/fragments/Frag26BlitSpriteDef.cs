@@ -1,10 +1,13 @@
+using Godot;
+
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag26BlitSpriteDef : WldFragment
 {
-    public int Flags;
-    public Frag05SimpleSprite SimpleSprite;
+    [Export] public int Flags;
+    [Export] public Frag05SimpleSprite SimpleSprite;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

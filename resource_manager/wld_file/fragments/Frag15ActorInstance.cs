@@ -3,34 +3,15 @@ using Godot;
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag15ActorInstance : WldFragment
 {
-    /// <summary>
-    ///     The vertex colors lighting data for this instance
-    /// </summary>
-    public Frag32DmRGBTrackDef Colors;
-
-    public string Unknown2;
-
-    /// <summary>
-    ///     The name of the object model
-    /// </summary>
-    public string ObjectName { get; private set; }
-
-    /// <summary>
-    ///     The instance position in the world
-    /// </summary>
-    public Vector3 Position { get; private set; }
-
-    /// <summary>
-    ///     The instance rotation in the world
-    /// </summary>
-    public Vector3 Rotation { get; private set; }
-
-    /// <summary>
-    ///     The instance scale in the world
-    /// </summary>
-    public Vector3 Scale { get; private set; }
+    [Export] public Frag32DmRGBTrackDef Colors;
+    [Export] public string Unknown2;
+    [Export] public string ObjectName;
+    [Export] public Vector3 Position;
+    [Export] public Vector3 Rotation;
+    [Export] public Vector3 Scale;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

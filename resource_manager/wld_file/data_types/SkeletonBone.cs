@@ -1,25 +1,27 @@
-﻿using System.Collections.Generic;
-using EQGodot.resource_manager.wld_file.fragments;
+﻿using EQGodot.resource_manager.wld_file.fragments;
+using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.data_types;
 
 // Latern Extractor class
-public class SkeletonBone
+[GlobalClass]
+public partial class SkeletonBone: Resource
 {
-    public List<int> Children;
-    public string CleanedFullPath;
-    public string CleanedName;
-    public string FullPath;
-    public int Index;
-    public Frag2DDMSprite MeshReference;
-    public string Name;
+    [Export] public Array<int> Children;
+    [Export] public string CleanedFullPath;
+    [Export] public string CleanedName;
+    [Export] public string FullPath;
+    [Export] public int Index;
+    [Export] public Frag2DDMSprite MeshReference;
+    [Export] public string Name;
 
-    public Frag13Track Track;
+    [Export] public Frag13Track Track;
 
     //public ParticleCloud ParticleCloud {
     //    get; set;
     //}
-    public Dictionary<string, Frag13Track> AnimationTracks { get; set; }
+    [Export] public Dictionary<string, Frag13Track> AnimationTracks;
 
-    public SkeletonBone Parent { get; set; }
+    [Export] public SkeletonBone Parent;
 }

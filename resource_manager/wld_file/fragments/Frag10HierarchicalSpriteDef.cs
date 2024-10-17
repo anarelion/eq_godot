@@ -3,40 +3,36 @@ using System.Linq;
 using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
+using Godot.Collections;
 using Animation = EQGodot.resource_manager.wld_file.data_types.Animation;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag10HierarchicalSpriteDef : WldFragment
 {
     //public List<LegacyMesh> SecondaryAlternateMeshes = new List<LegacyMesh>();
 
-    private bool _hasBuiltData;
+    [Export] private bool _hasBuiltData;
 
-    public Dictionary<string, Animation> Animations = [];
-    public Dictionary<int, string> BoneMapping = [];
-
-    public Dictionary<int, string> BoneMappingClean = [];
-
-    public float BoundingRadius;
-
-    public List<Mesh> SecondaryMeshes = [];
-
-    public List<Frag36DmSpriteDef2> Meshes { get; private set; }
+    [Export] public Godot.Collections.Dictionary<string, Animation> Animations = [];
+    [Export] public Godot.Collections.Dictionary<int, string> BoneMapping = [];
+    [Export] public Godot.Collections.Dictionary<int, string> BoneMappingClean = [];
+    [Export] public float BoundingRadius;
+    [Export] public Array<Mesh> SecondaryMeshes = [];
+    [Export] public Array<Frag36DmSpriteDef2> Meshes;
 
     //public List<LegacyMesh> AlternateMeshes {
     //    get; private set;
     //}
-    public List<SkeletonBone> Skeleton { get; set; }
+    [Export] public Array<SkeletonBone> Skeleton;
 
     //private PolyhedronReference _fragment18Reference;
 
-    public string ModelBase { get; set; }
-
-    public bool IsAssigned { get; set; }
-
-    private Dictionary<string, SkeletonBone> SkeletonPieceDictionary { get; set; }
+    [Export] public string ModelBase;
+    [Export] public bool IsAssigned;
+    [Export] public Godot.Collections.Dictionary<string, SkeletonBone> SkeletonPieceDictionary;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -277,7 +273,7 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
         track.IsProcessed = true;
     }
 
-    private void BuildSkeletonTreeData(int index, List<SkeletonBone> treeNodes, SkeletonBone parent,
+    private void BuildSkeletonTreeData(int index, Array<SkeletonBone> treeNodes, SkeletonBone parent,
         string runningName, string runningNameCleaned, string runningIndex, bool stripModelBase)
     {
         var bone = treeNodes[index];
@@ -404,7 +400,7 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
     {
         foreach (var node in Skeleton) node.Name = node.Name.Replace(ModelBase.ToUpper(), newBase.ToUpper());
 
-        var newNameMapping = new Dictionary<int, string>();
+        var newNameMapping = new Godot.Collections.Dictionary<int, string>();
         foreach (var node in BoneMapping)
             newNameMapping[node.Key] = node.Value.Replace(ModelBase.ToUpper(), newBase.ToUpper());
 

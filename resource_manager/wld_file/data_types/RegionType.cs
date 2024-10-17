@@ -1,3 +1,4 @@
+
 namespace EQGodot.resource_manager.wld_file.data_types;
 
 public enum RegionType

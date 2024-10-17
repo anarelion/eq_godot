@@ -24,7 +24,7 @@ public partial class HierarchicalActorDefinition : ActorDefinition
 
         var skeleton = BuildSkeleton();
         // swap Y and Z to get a godot coordinate system
-        skeleton.RotateX((float)(-Math.PI / 2));
+        // skeleton.RotateX((float)(-Math.PI / 2));
         node.AddChild(skeleton);
         foreach (var mesh in Meshes)
         {

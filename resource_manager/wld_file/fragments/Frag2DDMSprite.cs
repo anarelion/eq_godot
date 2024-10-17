@@ -3,11 +3,12 @@
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag2DDMSprite : WldFragment
 {
-    public Frag36DmSpriteDef2 Mesh { get; private set; }
+    [Export] public Frag36DmSpriteDef2 Mesh;
 
-    public Frag2CDMSpriteDef LegacyMesh { get; private set; }
+    [Export] public Frag2CDMSpriteDef LegacyMesh;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

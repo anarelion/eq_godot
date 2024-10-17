@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
-using EQGodot.resource_manager.wld_file.data_types;
+﻿using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
+using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag2CDMSpriteDef : WldFragment
 {
-    public Frag31MaterialPalette MaterialList;
+    [Export] public Frag31MaterialPalette MaterialList;
 
     //public vec3 Center {
     //    get; private set;
@@ -18,10 +20,10 @@ public partial class Frag2CDMSpriteDef : WldFragment
     //public List<Polygon> Polygons = new List<Polygon>();
     //public List<ivec2> VertexTex = new List<ivec2>();
     //public List<Color> Colors = new List<Color>();
-    public List<RenderGroup> RenderGroups = [];
+    [Export] public Array<RenderGroup> RenderGroups = [];
 
     //public PolyhedronReference PolyhedronReference;
-    public Dictionary<int, MobVertexPiece> MobPieces { get; }
+    [Export] public Dictionary<int, MobVertexPiece> MobPieces;
     ///// <summary>
     ///// The animated vertex fragment (0x2E or 0x37) reference
     ///// </summary>
@@ -33,7 +35,7 @@ public partial class Frag2CDMSpriteDef : WldFragment
     ///     Set to true if there are non solid polygons in the mesh
     ///     This means we export collision separately (e.g. trees, fire)
     /// </summary>
-    public bool ExportSeparateCollision { get; }
+    [Export] public bool ExportSeparateCollision;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

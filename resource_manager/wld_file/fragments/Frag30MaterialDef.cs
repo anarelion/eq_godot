@@ -14,7 +14,7 @@ public partial class Frag30MaterialDef : WldFragment
     [Export] public ShaderType ShaderType;
     [Export] public float Brightness;
     [Export] public float ScaledAmbient;
-    public bool IsHandled;
+    [Export] public bool IsHandled;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
@@ -100,9 +100,8 @@ public partial class Frag30MaterialDef : WldFragment
             if (SimpleSprite.SimpleSpriteDef.Animated)
             {
                 Godot.Collections.Array<Image> a = [];
-                foreach (var name in names)
+                foreach (var image in names.Select(name => (archive.FilesByName[name] as Image)))
                 {
-                    var image = (archive.FilesByName[name] as Image);
                     a.Add(image);
                 }
 

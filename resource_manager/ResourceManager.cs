@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using EQGodot.resource_manager.godot_resources;
 using EQGodot.resource_manager.pack_file;
+using EQGodot.resource_manager.wld_file.fragments;
 using Godot;
 
 namespace EQGodot.resource_manager;
@@ -14,8 +15,10 @@ public partial class ResourceManager : Node
     private Godot.Collections.Dictionary<string, BlitActorDefinition> _blitActor = [];
     private Godot.Collections.Dictionary<string, ActorSkeletonPath> _extraAnimations = [];
     private Godot.Collections.Dictionary<string, HierarchicalActorDefinition> _hierarchicalActor = [];
+    private Frag21WorldTree _activeZone = null;
 
     private ResourcePreparer _preparer;
+    private Node3D _sceneRoot;
 
     private ResourceManager()
     {
@@ -25,11 +28,15 @@ public partial class ResourceManager : Node
         _preparer = new ResourcePreparer();
         _preparer.PfsArchiveLoaded += OnPFSArchiveLoaded;
         AddChild(_preparer);
+        
+        _sceneRoot = new Node3D();
+        _sceneRoot.RotateX((float)(-Math.PI / 2));
+        AddChild(_sceneRoot);
 
-        // StartLoading("res://eq_files/gequip.s3d");
+        StartLoading("res://eq_files/gequip.s3d");
         StartLoading("res://eq_files/global_chr.s3d");
-        // StartLoading("res://eq_files/load2_obj.s3d");
-        // StartLoading("res://eq_files/load2.s3d");
+        StartLoading("res://eq_files/load2_obj.s3d");
+        StartLoading("res://eq_files/load2.s3d");
     }
 
     private void StartLoading(string path)
@@ -42,6 +49,12 @@ public partial class ResourceManager : Node
         foreach (var wldFile in pfs.WldFiles)
         {
             GD.Print($"OnPFSArchiveLoaded: Loaded {wldFile.Key}");
+            if (wldFile.Value.WorldTree != null)
+            {
+                GD.Print($"OnPFSArchiveLoaded: activating zone {wldFile.Key}");
+                _activeZone = wldFile.Value.WorldTree;
+            }
+
             foreach (var actorDef in wldFile.Value.ActorDefs)
             {
                 var name = actorDef.Value.ResourceName;
@@ -77,8 +90,15 @@ public partial class ResourceManager : Node
         if (_hierarchicalActor.TryGetValue(tag, out var actor))
         {
             GD.Print($"Instantiating Hierarchical Actor {actor.ResourceName}");
-            AddChild(actor.InstantiateCharacter(this));
+            _sceneRoot.AddChild(actor.InstantiateCharacter(this));
         }
+    }
+
+    public void InstantiateZone()
+    {
+        if (_activeZone == null) return;
+        GD.Print($"Instantiating zone {_activeZone}");
+        _sceneRoot.AddChild(_activeZone.ToGodotZone());
     }
 
     public List<ActorSkeletonPath> GetAnimationsFor(string actorName)

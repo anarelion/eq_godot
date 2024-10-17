@@ -1,16 +1,22 @@
+using System;
 using System.Collections.Generic;
 using EQGodot.resource_manager.wld_file.data_types;
+using Godot;
+using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag21WorldTree : WldFragment
 {
-    public List<BspNode> Nodes { get; private set; }
+    [Export] public Array<BspNode> Nodes;
+    private WldFile _wldFile;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {
         base.Initialize(index, type, size, data, wld);
+        _wldFile = wld;
         Name = wld.GetName(Reader.ReadInt32());
         var nodeCount = Reader.ReadInt32();
         Nodes = [];
@@ -28,11 +34,6 @@ public partial class Frag21WorldTree : WldFragment
             });
     }
 
-    /// <summary>
-    ///     Links BSP nodes to their corresponding BSP Regions
-    ///     The RegionId is not a fragment index but instead an index in a list of BSP Regions
-    /// </summary>
-    /// <param name="fragments">BSP region fragments</param>
     public void LinkBspRegions(List<Frag22Region> fragments)
     {
         foreach (var node in Nodes)
@@ -41,5 +42,40 @@ public partial class Frag21WorldTree : WldFragment
 
             node.Region = fragments[node.RegionId - 1];
         }
+    }
+
+    public Node3D ToGodotZone()
+    {
+        var zone = new Node3D();
+        // zone.RotateX((float)(-Math.PI / 2));
+
+        var queue = new Queue<int>();
+        queue.Enqueue(0);
+        while (queue.TryDequeue(out var index))
+        {
+            var node = Nodes[index];
+            if (node.RegionId != 0)
+            {
+                var mesh = node.Region.Mesh;
+                if (mesh != null)
+                {
+                    var arrayMesh = mesh.ToGodotMesh(_wldFile);
+                    var inst = new MeshInstance3D { Name = mesh.Name, Mesh = arrayMesh, Position = mesh.Centre };
+                    zone.AddChild(inst);
+                }
+            }
+
+            if (node.LeftNode != -1)
+            {
+                queue.Enqueue(node.LeftNode);
+            }
+
+            if (node.RightNode != -1)
+            {
+                queue.Enqueue(node.RightNode);
+            }
+        }
+
+        return zone;
     }
 }

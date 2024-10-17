@@ -1,9 +1,12 @@
+using Godot;
+
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag33DmRGBTrack : WldFragment
 {
-    public Frag32DmRGBTrackDef VertexColors { get; private set; }
+    [Export] public Frag32DmRGBTrackDef VertexColors;
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

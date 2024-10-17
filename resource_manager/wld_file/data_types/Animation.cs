@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using EQGodot.resource_manager.wld_file.fragments;
+using Godot;
 
 namespace EQGodot.resource_manager.wld_file.data_types;
 
 // Latern Extractor class
-public class Animation
+[GlobalClass]
+public partial class Animation : Resource
 {
     public string AnimModelBase;
     public int FrameCount;

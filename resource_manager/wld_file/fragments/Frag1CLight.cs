@@ -1,12 +1,15 @@
+using Godot;
+
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
+[GlobalClass]
 public partial class Frag1CLight : WldFragment
 {
     /// <summary>
     ///     The light source (0x1B) fragment reference
     /// </summary>
-    public Frag1BLightDef LightSource { get; private set; }
+    [Export] public Frag1BLightDef LightSource { get; private set; }
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
     {

@@ -13,12 +13,12 @@ public partial class Frag36DmSpriteDef2 : WldFragment
     [Export] public int Flags;
     [Export] public Frag31MaterialPalette MaterialPalette;
     [Export] public int AnimatedVerticesReference;
-    [Export] public Vector3 Center;
+    [Export] public Vector3 Centre;
     [Export] public float MaxDistance;
     [Export] public Vector3 MinPosition;
     [Export] public Vector3 MaxPosition;
     
-    public bool IsHandled = false;
+    [Export] public bool IsHandled = false;
     [Export] public int StartTextureIndex;
     [Export] public Vector3[] Vertices;
     [Export] public Vector3[] Normals;
@@ -43,7 +43,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
         var unknown1 = Reader.ReadInt32();
         var unknown2 = Reader.ReadInt32();
 
-        Center = new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
+        Centre = new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
 
         // 3 unknown dwords
         var unknownDword1 = Reader.ReadInt32();

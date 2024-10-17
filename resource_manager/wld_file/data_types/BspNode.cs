@@ -1,15 +1,17 @@
 using EQGodot.resource_manager.wld_file.fragments;
+using Godot;
 
 namespace EQGodot.resource_manager.wld_file.data_types;
 
-public class BspNode
+[GlobalClass]
+public partial class BspNode : Resource
 {
-    public float NormalX { get; set; }
-    public float NormalY { get; set; }
-    public float NormalZ { get; set; }
-    public float SplitDistance { get; set; }
-    public int RegionId { get; set; }
-    public int LeftNode { get; set; }
-    public int RightNode { get; set; }
-    public Frag22Region Region { get; set; }
+    [Export] public float NormalX;
+    [Export] public float NormalY;
+    [Export] public float NormalZ;
+    [Export] public float SplitDistance;
+    [Export] public int RegionId;
+    [Export] public int LeftNode;
+    [Export] public int RightNode;
+    [Export] public Frag22Region Region;
 }
