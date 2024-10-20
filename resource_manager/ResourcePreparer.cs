@@ -11,6 +11,9 @@ public partial class ResourcePreparer : Node
     [Signal]
     public delegate void PfsArchiveLoadedEventHandler(string path, PFSArchive pfs);
 
+    [Signal]
+    public delegate void AllFilesLoadedEventHandler();
+
     private readonly HashSet<string> _pendingLoad = [];
 
     public override void _Ready()
@@ -27,6 +30,8 @@ public partial class ResourcePreparer : Node
             _pendingLoad.Remove(path);
             EmitSignal(SignalName.PfsArchiveLoaded, path, ResourceLoader.LoadThreadedGet(path) as PFSArchive);
             GD.Print($"Finished loading {path}");
+            if (_pendingLoad.Count == 0)
+                EmitSignal(SignalName.AllFilesLoaded);
         }
     }
 

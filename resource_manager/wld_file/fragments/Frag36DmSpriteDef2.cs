@@ -17,7 +17,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
     [Export] public float MaxDistance;
     [Export] public Vector3 MinPosition;
     [Export] public Vector3 MaxPosition;
-    
+
     [Export] public bool IsHandled = false;
     [Export] public int StartTextureIndex;
     [Export] public Vector3[] Vertices;
@@ -178,8 +178,8 @@ public partial class Frag36DmSpriteDef2 : WldFragment
                 $"Name {Name} Vertices {Vertices.Length} TextureUvCoordinates {TextureUvCoordinates.Length} = {difference}");
         }
 
-        for (var i = 0; i < difference; ++i)
-            TextureUvCoordinates[TextureUvCoordinates.Length + i] = new Vector2(0.0f, 0.0f);
+        // for (var i = 0; i < difference; ++i)
+        //    TextureUvCoordinates[TextureUvCoordinates.Length + i] = new Vector2(0.0f, 0.0f);
     }
 
     public void ClearCollision()
@@ -205,7 +205,8 @@ public partial class Frag36DmSpriteDef2 : WldFragment
             arrays[(int)Mesh.ArrayType.Color] = Colors;
 
         //GD.Print("texture ", TextureUvCoordinates.Count);
-        arrays[(int)Mesh.ArrayType.TexUV] = TextureUvCoordinates;
+        if (TextureUvCoordinates.Length > 0)
+            arrays[(int)Mesh.ArrayType.TexUV] = TextureUvCoordinates;
 
         var bones = new int[Vertices.Length * 4];
         var weights = new float[Vertices.Length * 4];

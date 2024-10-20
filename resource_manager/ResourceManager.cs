@@ -27,6 +27,7 @@ public partial class ResourceManager : Node
 
         _preparer = new ResourcePreparer();
         _preparer.PfsArchiveLoaded += OnPFSArchiveLoaded;
+        _preparer.AllFilesLoaded += OnAllFilesLoaded;
         AddChild(_preparer);
         
         _sceneRoot = new Node3D();
@@ -38,6 +39,8 @@ public partial class ResourceManager : Node
         StartLoading("res://eq_files/load2_obj.s3d");
         StartLoading("res://eq_files/load2.s3d");
     }
+
+
 
     private void StartLoading(string path)
     {
@@ -79,6 +82,11 @@ public partial class ResourceManager : Node
             }
         }
     }
+    
+    private void OnAllFilesLoaded()
+    {
+        throw new NotImplementedException();
+    }
 
     private static string ConvertAnimationTag(string tagName)
     {
@@ -108,5 +116,30 @@ public partial class ResourceManager : Node
         result.AddRange(_extraAnimations.Values.Where(animation => animation.ActorName == actorName));
         GD.Print($"Got {result.Count} out of {_extraAnimations.Count} animations for {actorName}");
         return result;
+    }
+    
+    // Zone loading orchestration
+    // Notes, the order in which the original client loads files is
+    // - %s_environmentEmitters.txt -> load whatever this points to
+    // - %s_%2s_obj2 -> with second argument being country code for asian countries or us
+    // - %s_obj2 -> load item definitions
+    // - %s_%2s_obj -> with second argument being country code for asian countries or us
+    // - %s_obj -> load item definitions
+    // - %s_%2s_2_obj -> with second argument being country code for asian countries or us
+    // - %s_2_obj -> load item definitions
+    // - %s_chr2 -> load character definitions
+    // - %s2_chr -> load character definitions
+    // - %s_chr -> load character definitions
+    // - %s_chr.txt -> load whatever this points to
+    // - %s_assets.txt -> load whatever this points to
+    // - load main
+    // - process objects.wld
+    // - process lights.wld
+    // - process %s.wld
+    
+    
+    public void LoadZone(string zoneName)
+    {
+        
     }
 }
