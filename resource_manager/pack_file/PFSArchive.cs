@@ -14,38 +14,51 @@ namespace EQGodot.resource_manager.pack_file;
 [GlobalClass]
 public partial class PFSArchive : Resource
 {
+    [Export] public string LoadedPath;
     [Export] public Array<Resource> Files = [];
-
     [Export] public Godot.Collections.Dictionary<string, Resource> FilesByName = [];
-
     [Export] public Godot.Collections.Dictionary<string, WldFile> WldFiles = [];
-
-    [Export] public bool IsWldArchive { get; set; }
-
-    public void ProcessFiles()
+    [Export] public bool IsWldArchive;
+    
+    public void ProcessImages()
     {
-        GD.Print($"PFSArchive: Processing files {ResourceName}");
-        List<Task> imageHandles = [];
+        List<Task> tasks = [];
         for (var i = 0; i < Files.Count; i++)
-            if (Files[i] is PFSFile pfsFile && ( /* pfsFile.Name.EndsWith(".dds") || */ (pfsFile.FileBytes[0] == 'D' &&
-                    pfsFile.FileBytes[1] == 'D' && pfsFile.FileBytes[2] == 'S')))
+        {
+            if (Files[i] is not PFSFile file)
             {
-                var index = i;
-                var pfs = pfsFile;
-                imageHandles.Add(Task.Run(() => ProcessDDSImage(pfs, index)));
+                GD.PrintErr($"File is not PFSFile on index {i}");
+                continue;
             }
 
-        for (var i = 0; i < Files.Count; i++)
-            if (Files[i] is PFSFile pfsFile)
-                if ( /*pfsFile.Name.EndsWith(".bmp") */ pfsFile.FileBytes[0] == 'B' && pfsFile.FileBytes[1] == 'M')
+            if (file.FileBytes[0] == 'D' &&
+                file.FileBytes[1] == 'D' && file.FileBytes[2] == 'S')
+            {
+                var localI = i;
+                var imageTask = Task.Factory.StartNew(() =>
                 {
-                    var index = i;
-                    var pfs = pfsFile;
-                    imageHandles.Add(Task.Run(() => ProcessBMPImage(pfs, index)));
-                }
+                    // GD.Print($"Loading {file.Name} in a thread");
+                    ProcessDdsImage(file, localI);
+                });
+                tasks.Add(imageTask);
+            }
 
-        Task.WaitAll([.. imageHandles]);
+            if (file.FileBytes[0] == 'B' && file.FileBytes[1] == 'M')
+            {
+                var localI = i;
+                var imageTask = Task.Factory.StartNew(() =>
+                {
+                    // GD.Print($"Loading {file.Name} in a thread");
+                    ProcessBmpImage(file, localI);
+                });
+                tasks.Add(imageTask);
+            }
+        }
+        Task.WaitAll([..tasks]);
+    }
 
+    public void ProcessWldFiles()
+    {
         List<Task> wldHandles = [];
         for (var i = 0; i < Files.Count; i++)
             if (Files[i] is PFSFile pfsFile)
@@ -65,7 +78,7 @@ public partial class PFSArchive : Resource
         Task.WaitAll([.. wldHandles]);
     }
 
-    private void ProcessDDSImage(PFSFile pfsFile, int index)
+    private void ProcessDdsImage(PFSFile pfsFile, int index)
     {
         try
         {
@@ -103,7 +116,7 @@ public partial class PFSArchive : Resource
         }
     }
 
-    private void ProcessBMPImage(PFSFile pfsFile, int index)
+    private void ProcessBmpImage(PFSFile pfsFile, int index)
     {
         try
         {

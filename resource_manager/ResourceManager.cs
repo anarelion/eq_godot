@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using EQGodot.resource_manager.godot_resources;
 using EQGodot.resource_manager.pack_file;
 using EQGodot.resource_manager.wld_file.fragments;
@@ -13,76 +14,131 @@ namespace EQGodot.resource_manager;
 public partial class ResourceManager : Node
 {
     private Godot.Collections.Dictionary<string, BlitActorDefinition> _blitActor = [];
-    private Godot.Collections.Dictionary<string, ActorSkeletonPath> _extraAnimations = [];
     private Godot.Collections.Dictionary<string, HierarchicalActorDefinition> _hierarchicalActor = [];
+    private Godot.Collections.Dictionary<string, ActorSkeletonPath> _extraAnimations = [];
+
+    // Active loaded zone
     private Frag21WorldTree _activeZone = null;
 
-    private ResourcePreparer _preparer;
+    // Where instantiation of objects in the zone is going to happen
     private Node3D _sceneRoot;
 
-    private ResourceManager()
+    // Tasks loading stuff
+    private readonly List<Task<PFSArchive>> _s3dDecompressionTasks = [];
+    private readonly List<Task<PFSArchive>> _imageProcessingTasks = [];
+    private readonly List<Task<PFSArchive>> _wldProcessingTasks = [];
+    
+    public override void _Ready()
     {
         GD.Print("Starting Resource Manager!");
         Name = "ResourceManager";
 
-        _preparer = new ResourcePreparer();
-        _preparer.PfsArchiveLoaded += OnPFSArchiveLoaded;
-        _preparer.AllFilesLoaded += OnAllFilesLoaded;
-        AddChild(_preparer);
-        
         _sceneRoot = new Node3D();
         _sceneRoot.RotateX((float)(-Math.PI / 2));
         AddChild(_sceneRoot);
 
-        StartLoading("res://eq_files/gequip.s3d");
-        StartLoading("res://eq_files/global_chr.s3d");
-        StartLoading("res://eq_files/load2_obj.s3d");
-        StartLoading("res://eq_files/load2.s3d");
+        StartLoadingS3D("eq_files/gequip.s3d");
+        StartLoadingS3D("eq_files/global_obj.s3d");
+        StartLoadingS3D("eq_files/global_chr.s3d");
+        StartLoadingS3D("eq_files/global2_chr.s3d");
+        StartLoadingS3D("eq_files/global3_chr.s3d");
+        StartLoadingS3D("eq_files/global4_chr.s3d");
+        StartLoadingS3D("eq_files/global5_chr.s3d");
+        StartLoadingS3D("eq_files/global6_chr.s3d");
+        StartLoadingS3D("eq_files/global7_chr.s3d");
+        StartLoadingS3D("eq_files/load2_obj.s3d");
+        StartLoadingS3D("eq_files/load2.s3d");
     }
 
-
-
-    private void StartLoading(string path)
+    public override void _Process(double delta)
     {
-        _preparer.StartLoading(path);
+        ProcessS3dDecompressionTasks();
+        ProcessImageProcessingTasks();
+        ProcessConvertedWldFiles();
     }
 
-    private void OnPFSArchiveLoaded(string path, PFSArchive pfs)
+    private void StartLoadingS3D(string path)
     {
-        foreach (var wldFile in pfs.WldFiles)
+        _s3dDecompressionTasks.Add(Task.Factory.StartNew(() =>
         {
-            GD.Print($"OnPFSArchiveLoaded: Loaded {wldFile.Key}");
-            if (wldFile.Value.WorldTree != null)
-            {
-                GD.Print($"OnPFSArchiveLoaded: activating zone {wldFile.Key}");
-                _activeZone = wldFile.Value.WorldTree;
-            }
+            GD.Print($"Loading {path} in a thread");
+            return PackFileParser.Load(path);
+        }));
+    }
 
-            foreach (var actorDef in wldFile.Value.ActorDefs)
+    private void ProcessS3dDecompressionTasks()
+    {
+        foreach (var pfsTask in _s3dDecompressionTasks.ToList().Where(task => task.IsCompleted))
+        {
+            var archive = pfsTask.Result;
+            GD.Print($"Completed PFS Decompression {archive.LoadedPath} in a thread");
+            _s3dDecompressionTasks.Remove(pfsTask);
+            _imageProcessingTasks.Add(Task.Factory.StartNew(() =>
             {
-                var name = actorDef.Value.ResourceName;
-                switch (actorDef.Value)
-                {
-                    case HierarchicalActorDefinition hierarchicalActor:
-                        _hierarchicalActor[name] = hierarchicalActor;
-                        GD.Print($"OnPFSArchiveLoaded: Loaded HierarchicalActorDefinition {name}");
-                        break;
-                    case BlitActorDefinition blitActor:
-                        _blitActor[name] = blitActor;
-                        GD.Print($"OnPFSArchiveLoaded: Loaded BlitActorDefinition {name}");
-                        break;
-                }
-            }
-
-            foreach (var animation in wldFile.Value.ExtraAnimations.Values)
-            {
-                // GD.Print($"Loading Animation {animation.Name}");
-                if (_extraAnimations.TryAdd(animation.Name, animation)) continue;
-                GD.Print($"OnPFSArchiveLoaded: {animation.Name} already exists");
-            }
+                archive.ProcessImages();
+                return archive;
+            }));
         }
     }
-    
+
+    private void ProcessImageProcessingTasks()
+    {
+        foreach (var imageTask in _imageProcessingTasks.ToList().Where(task => task.IsCompleted))
+        {
+            var archive = imageTask.Result;
+            GD.Print($"Completed Image Processing {archive.LoadedPath} in a thread");
+            _imageProcessingTasks.Remove(imageTask);
+            _wldProcessingTasks.Add(Task.Factory.StartNew(() =>
+            {
+                archive.ProcessWldFiles();
+                return archive;
+            }));
+        }
+    }
+
+    private void ProcessConvertedWldFiles()
+    {
+        foreach (var wldTask in _wldProcessingTasks.ToList().Where(task => task.IsCompleted))
+        {
+            var archive = wldTask.Result;
+            GD.Print($"Completed Wld Processing {archive.LoadedPath} in a thread");
+            _wldProcessingTasks.Remove(wldTask);
+            
+            foreach (var wldFile in archive.WldFiles)
+            {
+                if (wldFile.Value.WorldTree != null)
+                {
+                    GD.Print($"OnPFSArchiveLoaded: activating zone {wldFile.Key}");
+                    _activeZone = wldFile.Value.WorldTree;
+                }
+
+                foreach (var actorDef in wldFile.Value.ActorDefs)
+                {
+                    var name = actorDef.Value.ResourceName;
+                    switch (actorDef.Value)
+                    {
+                        case HierarchicalActorDefinition hierarchicalActor:
+                            _hierarchicalActor[name] = hierarchicalActor;
+                            GD.Print($"OnPFSArchiveLoaded: Loaded HierarchicalActorDefinition {name}");
+                            break;
+                        case BlitActorDefinition blitActor:
+                            _blitActor[name] = blitActor;
+                            GD.Print($"OnPFSArchiveLoaded: Loaded BlitActorDefinition {name}");
+                            break;
+                    }
+                }
+
+                foreach (var animation in wldFile.Value.ExtraAnimations.Values)
+                {
+                    // GD.Print($"Loading Animation {animation.Name}");
+                    if (_extraAnimations.TryAdd(animation.Name, animation)) continue;
+                    GD.Print($"OnPFSArchiveLoaded: {animation.Name} already exists");
+                }
+            }
+        }
+        
+    }
+
     private void OnAllFilesLoaded()
     {
         throw new NotImplementedException();
@@ -117,7 +173,7 @@ public partial class ResourceManager : Node
         GD.Print($"Got {result.Count} out of {_extraAnimations.Count} animations for {actorName}");
         return result;
     }
-    
+
     // Zone loading orchestration
     // Notes, the order in which the original client loads files is
     // - %s_environmentEmitters.txt -> load whatever this points to
@@ -136,10 +192,9 @@ public partial class ResourceManager : Node
     // - process objects.wld
     // - process lights.wld
     // - process %s.wld
-    
-    
+
+
     public void LoadZone(string zoneName)
     {
-        
     }
 }

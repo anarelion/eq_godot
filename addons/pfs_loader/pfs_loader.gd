@@ -8,8 +8,8 @@ var scene_importer
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
 	print("Initializing pfs_loader")
-	loader = EqPackFileLoader.new() 
-	ResourceLoader.add_resource_format_loader(loader)
+#	loader = EqPackFileResourceLoader.new() 
+#	ResourceLoader.add_resource_format_loader(loader)
 # 	importer = EqPackFileImporter.new()
 # 	add_import_plugin(importer)
 # 	scene_importer = EqEditorSceneImporter.new()

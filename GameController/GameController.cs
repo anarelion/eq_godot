@@ -57,8 +57,8 @@ public partial class GameController : Node
                 break;
             case State.SERVER_SELECTION:
                 var serverSelectionScene = ResourceLoader.Load<PackedScene>("res://login_server/server_selection.tscn");
-                ActiveScene = serverSelectionScene.Instantiate<login_server.server_selection>();
-                ((login_server.server_selection)ActiveScene).ServerJoinStart += OnServerJoinStart;
+                ActiveScene = serverSelectionScene.Instantiate<server_selection>();
+                ((server_selection)ActiveScene).ServerJoinStart += OnServerJoinStart;
                 AddChild(ActiveScene);
                 break;
             case State.RENDERING:

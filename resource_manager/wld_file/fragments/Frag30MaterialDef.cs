@@ -10,6 +10,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 public partial class Frag30MaterialDef : WldFragment
 {
+    [Export] public int Flags;
     [Export] public Frag05SimpleSprite SimpleSprite;
     [Export] public ShaderType ShaderType;
     [Export] public float Brightness;
@@ -20,7 +21,7 @@ public partial class Frag30MaterialDef : WldFragment
     {
         base.Initialize(index, type, size, data, wld);
         Name = wld.GetName(Reader.ReadInt32());
-        var flags = Reader.ReadInt32();
+        Flags = Reader.ReadInt32();
         var parameters = Reader.ReadInt32();
 
         // Unsure what this color is used for
@@ -125,6 +126,7 @@ public partial class Frag30MaterialDef : WldFragment
             {
                 ResourceName = Name,
                 AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[names[0]]),
+                CullMode = (Flags & 0x1) != 0 ? BaseMaterial3D.CullModeEnum.Disabled : BaseMaterial3D.CullModeEnum.Back,
             };
         }
 

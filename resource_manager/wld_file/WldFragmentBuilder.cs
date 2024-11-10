@@ -7,7 +7,7 @@ namespace EQGodot.resource_manager.wld_file;
 // Latern Extractor class
 public static class WldFragmentBuilder
 {
-    public static Dictionary<int, Func<WldFragment>> Fragments = new()
+    public static readonly Dictionary<int, Func<WldFragment>> Fragments = new()
     {
         { 0x00, () => new Frag00Default() },
         { 0x01, () => new Frag01DefaultPaletteFile() },
@@ -44,13 +44,13 @@ public static class WldFragmentBuilder
 
         { 0x2C, () => new Frag2CDMSpriteDef() },
         { 0x2D, () => new Frag2DDMSprite() },
-
+        
         { 0x30, () => new Frag30MaterialDef() },
         { 0x31, () => new Frag31MaterialPalette() },
         { 0x32, () => new Frag32DmRGBTrackDef() },
         { 0x33, () => new Frag33DmRGBTrack() },
         { 0x34, () => new Frag34ParticleCloudDef() },
-        { 0x35, () => new fragments.Frag35GlobalAmbientLightDef() },
+        { 0x35, () => new Frag35GlobalAmbientLightDef() },
         { 0x36, () => new Frag36DmSpriteDef2() }
     };
 }
