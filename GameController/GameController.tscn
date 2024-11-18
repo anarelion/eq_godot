@@ -1,6 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://d3dhtpjlmacg7"]
+[gd_scene load_steps=3 format=3 uid="uid://d3dhtpjlmacg7"]
 
 [ext_resource type="Script" path="res://GameController/GameController.cs" id="1_yhlwj"]
+[ext_resource type="Script" path="res://resource_manager/ResourceManager.cs" id="2_57lqd"]
 
 [node name="GameController" type="Node"]
 script = ExtResource("1_yhlwj")
+
+[node name="ResourceManager" type="Node" parent="."]
+script = ExtResource("2_57lqd")
+
+[node name="SceneRoot" type="Node3D" parent="ResourceManager"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)

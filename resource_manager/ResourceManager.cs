@@ -32,11 +32,7 @@ public partial class ResourceManager : Node
     public override void _Ready()
     {
         GD.Print("Starting Resource Manager!");
-        Name = "ResourceManager";
-
-        _sceneRoot = new Node3D();
-        _sceneRoot.RotateX((float)(-Math.PI / 2));
-        AddChild(_sceneRoot);
+        _sceneRoot = GetNode<Node3D>("SceneRoot");
 
         StartLoadingS3D("eq_files/gequip.s3d");
         StartLoadingS3D("eq_files/global_obj.s3d");
@@ -47,7 +43,6 @@ public partial class ResourceManager : Node
         StartLoadingS3D("eq_files/global5_chr.s3d");
         StartLoadingS3D("eq_files/global6_chr.s3d");
         StartLoadingS3D("eq_files/global7_chr.s3d");
-        StartLoadingS3D("eq_files/gfaydark.s3d");
     }
 
     public override void _Process(double delta)

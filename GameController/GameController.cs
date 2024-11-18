@@ -30,9 +30,7 @@ public partial class GameController : Node
 
     public override void _Ready()
     {
-        Resources = (ResourceManager)ResourceLoader.Load<CSharpScript>("res://resource_manager/ResourceManager.cs")
-            .New();
-        AddChild(Resources);
+        Resources = GetNode<ResourceManager>("ResourceManager");
         SwitchState(State.RENDERING);
     }
 
