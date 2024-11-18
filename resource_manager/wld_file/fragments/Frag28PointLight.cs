@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
@@ -7,6 +8,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 public partial class Frag28PointLight : WldFragment
 {
     [Export] public Frag1CLight LightReference;
+    [Export] public int Flags;
     [Export] public Vector3 Position;
     [Export] public float Radius;
 
@@ -15,8 +17,21 @@ public partial class Frag28PointLight : WldFragment
         base.Initialize(index, type, size, data, wld);
         Name = wld.GetName(Reader.ReadInt32());
         LightReference = wld.GetFragment(Reader.ReadInt32()) as Frag1CLight;
-        var flags = Reader.ReadInt32();
+        Flags = Reader.ReadInt32();
         Position = new Vector3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
         Radius = Reader.ReadSingle();
+    }
+
+    public OmniLight3D ToGodotLight()
+    {
+        return new OmniLight3D()
+        {
+            Name = Name,
+            Position = Position,
+            OmniRange = Radius,
+            OmniAttenuation = 0.25f,
+            LightColor = LightReference.LightSource.Colors.First(),
+            LightEnergy = 1,
+        };
     }
 }

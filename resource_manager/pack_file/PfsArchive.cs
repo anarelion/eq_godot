@@ -12,14 +12,15 @@ using Bitmap = System.Drawing.Bitmap;
 namespace EQGodot.resource_manager.pack_file;
 
 [GlobalClass]
-public partial class PFSArchive : Resource
+public partial class PfsArchive : Resource
 {
     [Export] public string LoadedPath;
     [Export] public Array<Resource> Files = [];
     [Export] public Godot.Collections.Dictionary<string, Resource> FilesByName = [];
     [Export] public Godot.Collections.Dictionary<string, WldFile> WldFiles = [];
     [Export] public bool IsWldArchive;
-    
+    [Export] public PfsArchiveType Type;
+
     public void ProcessImages()
     {
         List<Task> tasks = [];
@@ -35,25 +36,18 @@ public partial class PFSArchive : Resource
                 file.FileBytes[1] == 'D' && file.FileBytes[2] == 'S')
             {
                 var localI = i;
-                var imageTask = Task.Factory.StartNew(() =>
-                {
-                    // GD.Print($"Loading {file.Name} in a thread");
-                    ProcessDdsImage(file, localI);
-                });
+                var imageTask = Task.Factory.StartNew(() => { ProcessDdsImage(file, localI); });
                 tasks.Add(imageTask);
             }
 
             if (file.FileBytes[0] == 'B' && file.FileBytes[1] == 'M')
             {
                 var localI = i;
-                var imageTask = Task.Factory.StartNew(() =>
-                {
-                    // GD.Print($"Loading {file.Name} in a thread");
-                    ProcessBmpImage(file, localI);
-                });
+                var imageTask = Task.Factory.StartNew(() => { ProcessBmpImage(file, localI); });
                 tasks.Add(imageTask);
             }
         }
+
         Task.WaitAll([..tasks]);
     }
 
@@ -76,6 +70,20 @@ public partial class PFSArchive : Resource
                     }
 
         Task.WaitAll([.. wldHandles]);
+
+        if (WldFiles.ContainsKey("lights.wld"))
+        {
+            Type = PfsArchiveType.Zone;
+            return;
+        }
+
+        if (LoadedPath.Contains("_chr"))
+        {
+            Type = PfsArchiveType.Character;
+            return;
+        }
+
+        Type = PfsArchiveType.Equipment;
     }
 
     private void ProcessDdsImage(PFSFile pfsFile, int index)
@@ -101,7 +109,7 @@ public partial class PFSArchive : Resource
             {
                 var image = Image.CreateFromData(dds.Width, dds.Height, dds.MipMaps.Length > 1, Image.Format.Rgba8,
                     dds.Data);
-                image.FlipY();
+                // image.FlipY();
                 Files[index] = image;
                 FilesByName[pfsFile.Name] = image;
             }

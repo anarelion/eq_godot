@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using EQGodot.resource_manager.pack_file;
 using Godot;
 
@@ -23,14 +24,6 @@ public partial class Frag05SimpleSprite : WldFragment
     
     public List<string> GetAllBitmapNames()
     {
-        var bitmapNames = new List<string>();
-
-        foreach (var bitmapName in SimpleSpriteDef.BitmapNames)
-        {
-            var filename = bitmapName.Filename;
-            bitmapNames.Add(filename);
-        }
-
-        return bitmapNames;
+        return SimpleSpriteDef.BitmapNames.Select(bitmapName => bitmapName.Filename).ToList();
     }
 }

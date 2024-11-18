@@ -20,7 +20,7 @@ public partial class WldFile : Resource
     private const int WldFormatNewIdentifier = 0x1000C800;
 
     [Export] public Godot.Collections.Dictionary<int, Resource> ActorDefs = [];
-    private PFSArchive Archive;
+    private PfsArchive Archive;
     [Export] public Godot.Collections.Dictionary<int, ActorSkeletonPath> ExtraAnimations = [];
     [Export] public Godot.Collections.Dictionary<int, byte[]> FragmentContents = [];
     [Export] private Godot.Collections.Dictionary<string, WldFragment> FragmentNameDictionary = [];
@@ -33,13 +33,14 @@ public partial class WldFile : Resource
     [Export] public Godot.Collections.Dictionary<string, Array<Resource>> Resources = [];
     [Export] public Godot.Collections.Dictionary<int, string> Strings = [];
     [Export] public Frag21WorldTree WorldTree = null;
+    public List<Frag28PointLight> ZoneLights;
 
     public WldFile()
         : this(null, null)
     {
     }
 
-    public WldFile(PFSFile pfsFile, PFSArchive archive)
+    public WldFile(PFSFile pfsFile, PfsArchive archive)
     {
         if (pfsFile == null)
         {
@@ -147,6 +148,7 @@ public partial class WldFile : Resource
         BuildActorDefs();
         BuildAnimations();
         BuildWorldTree();
+        BuildLights();
         GD.Print($"WldFile {Name}: completed.");
     }
 
@@ -303,5 +305,10 @@ public partial class WldFile : Resource
         WorldTree = worlds[0];
         var regions = GetFragmentsOfType<Frag22Region>();
         WorldTree.LinkBspRegions(regions);
+    }
+
+    private void BuildLights()
+    {
+        ZoneLights = GetFragmentsOfType<Frag28PointLight>();
     }
 }

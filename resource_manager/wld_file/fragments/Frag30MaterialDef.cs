@@ -93,15 +93,38 @@ public partial class Frag30MaterialDef : WldFragment
         }
     }
 
-    public Material ToGodotMaterial(PFSArchive archive)
+    public Material ToGodotMaterial(PfsArchive archive)
     {
+        if (ShaderType is ShaderType.Boundary or ShaderType.Invisible)
+        {
+            return new StandardMaterial3D
+            {
+                ResourceName = Name,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                AlbedoColor = new Color(1, 1, 1, 0),
+            };
+        }
+
         if (SimpleSprite != null)
         {
-            var names = SimpleSprite.GetAllBitmapNames();
+            var bitmapNames = SimpleSprite.GetAllBitmapNames();
+            if (ShaderType is ShaderType.TransparentMasked)
+            {
+                return new StandardMaterial3D
+                {
+                    ResourceName = Name,
+                    Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass,
+                    AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[bitmapNames[0]]),
+                    CullMode = (Flags & 0x1) != 0
+                        ? BaseMaterial3D.CullModeEnum.Disabled
+                        : BaseMaterial3D.CullModeEnum.Back,
+                };
+            }
+
             if (SimpleSprite.SimpleSpriteDef.Animated)
             {
                 Godot.Collections.Array<Image> a = [];
-                foreach (var image in names.Select(name => (archive.FilesByName[name] as Image)))
+                foreach (var image in bitmapNames.Select(name => (archive.FilesByName[name] as Image)))
                 {
                     a.Add(image);
                 }
@@ -117,17 +140,19 @@ public partial class Frag30MaterialDef : WldFragment
                 material.SetShaderParameter("textures", texture2DArray);
                 material.SetShaderParameter("step_time", SimpleSprite.SimpleSpriteDef.AnimationDelayMs);
                 material.SetShaderParameter("total_time",
-                    SimpleSprite.SimpleSpriteDef.AnimationDelayMs * names.Count);
+                    SimpleSprite.SimpleSpriteDef.AnimationDelayMs * bitmapNames.Count);
 
                 return material;
             }
 
-            return new StandardMaterial3D()
+            var fallbackMaterial = new StandardMaterial3D()
             {
                 ResourceName = Name,
-                AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[names[0]]),
+                AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[bitmapNames[0]]),
                 CullMode = (Flags & 0x1) != 0 ? BaseMaterial3D.CullModeEnum.Disabled : BaseMaterial3D.CullModeEnum.Back,
             };
+            fallbackMaterial.SetMeta("ShaderType", ShaderType.ToString());
+            return fallbackMaterial;
         }
 
         GD.PrintErr($"Material: {Name} doesn't have a texture");

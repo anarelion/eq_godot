@@ -11,5 +11,5 @@ using System.Diagnostics.CodeAnalysis;
     Justification = "",
     Scope = "member",
     Target =
-        "~M:EQGodot2.resource_manager.pack_file.PFSArchive.ProcessBMPImage(EQGodot2.resource_manager.pack_file.PFSFile)~Godot.ImageTexture"
+        "~M:EQGodot2.resource_manager.pack_file.PfsArchive.ProcessBMPImage(EQGodot2.resource_manager.pack_file.PFSFile)~Godot.ImageTexture"
 )]

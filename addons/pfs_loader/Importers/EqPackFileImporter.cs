@@ -31,7 +31,7 @@ public partial class EqPackFileImporter : EditorImportPlugin
 
     public override string _GetResourceType()
     {
-        return "PFSArchive";
+        return "PfsArchive";
     }
 
     public override int _GetPresetCount()

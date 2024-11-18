@@ -6,9 +6,6 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 public partial class Frag1CLight : WldFragment
 {
-    /// <summary>
-    ///     The light source (0x1B) fragment reference
-    /// </summary>
     [Export] public Frag1BLightDef LightSource { get; private set; }
 
     public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)

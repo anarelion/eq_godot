@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using EQGodot.resource_manager.godot_resources;
 using EQGodot.resource_manager.pack_file;
+using EQGodot.resource_manager.wld_file;
 using EQGodot.resource_manager.wld_file.fragments;
 using Godot;
 
@@ -19,15 +19,16 @@ public partial class ResourceManager : Node
 
     // Active loaded zone
     private Frag21WorldTree _activeZone = null;
+    private List<Frag28PointLight> _activeZoneLights;
 
     // Where instantiation of objects in the zone is going to happen
     private Node3D _sceneRoot;
 
     // Tasks loading stuff
-    private readonly List<Task<PFSArchive>> _s3dDecompressionTasks = [];
-    private readonly List<Task<PFSArchive>> _imageProcessingTasks = [];
-    private readonly List<Task<PFSArchive>> _wldProcessingTasks = [];
-    
+    private readonly List<Task<PfsArchive>> _s3dDecompressionTasks = [];
+    private readonly List<Task<PfsArchive>> _imageProcessingTasks = [];
+    private readonly List<Task<PfsArchive>> _wldProcessingTasks = [];
+
     public override void _Ready()
     {
         GD.Print("Starting Resource Manager!");
@@ -46,8 +47,7 @@ public partial class ResourceManager : Node
         StartLoadingS3D("eq_files/global5_chr.s3d");
         StartLoadingS3D("eq_files/global6_chr.s3d");
         StartLoadingS3D("eq_files/global7_chr.s3d");
-        StartLoadingS3D("eq_files/load2_obj.s3d");
-        StartLoadingS3D("eq_files/load2.s3d");
+        StartLoadingS3D("eq_files/gfaydark.s3d");
     }
 
     public override void _Process(double delta)
@@ -103,45 +103,79 @@ public partial class ResourceManager : Node
             var archive = wldTask.Result;
             GD.Print($"Completed Wld Processing {archive.LoadedPath} in a thread");
             _wldProcessingTasks.Remove(wldTask);
-            
-            foreach (var wldFile in archive.WldFiles)
+
+            switch (archive.Type)
             {
-                if (wldFile.Value.WorldTree != null)
-                {
-                    GD.Print($"OnPFSArchiveLoaded: activating zone {wldFile.Key}");
-                    _activeZone = wldFile.Value.WorldTree;
-                }
-
-                foreach (var actorDef in wldFile.Value.ActorDefs)
-                {
-                    var name = actorDef.Value.ResourceName;
-                    switch (actorDef.Value)
+                case PfsArchiveType.Character:
+                case PfsArchiveType.Equipment:
+                    foreach (var wldFile in archive.WldFiles.Values)
                     {
-                        case HierarchicalActorDefinition hierarchicalActor:
-                            _hierarchicalActor[name] = hierarchicalActor;
-                            GD.Print($"OnPFSArchiveLoaded: Loaded HierarchicalActorDefinition {name}");
-                            break;
-                        case BlitActorDefinition blitActor:
-                            _blitActor[name] = blitActor;
-                            GD.Print($"OnPFSArchiveLoaded: Loaded BlitActorDefinition {name}");
-                            break;
+                        GD.Print($"Processing Wld Actors {wldFile}");
+                        ProcessWldActors(wldFile);
                     }
-                }
 
-                foreach (var animation in wldFile.Value.ExtraAnimations.Values)
-                {
-                    // GD.Print($"Loading Animation {animation.Name}");
-                    if (_extraAnimations.TryAdd(animation.Name, animation)) continue;
-                    GD.Print($"OnPFSArchiveLoaded: {animation.Name} already exists");
-                }
+                    break;
+
+                case PfsArchiveType.Zone:
+                    var lights = archive.WldFiles.GetValueOrDefault("lights.wld");
+                    if (lights == null)
+                    {
+                        GD.PrintErr("No lights.wld found");
+                        continue;
+                    }
+                    GD.Print($"Processing lights");
+                    _activeZoneLights = lights.ZoneLights;
+                    
+                    var objects = archive.WldFiles.GetValueOrDefault("objects.wld");
+                    if (objects == null)
+                    {
+                        GD.PrintErr("No objects.wld found");
+                        continue;
+                    }
+                    GD.Print($"Processing objects");
+                    // TODO: Process objects.wld
+                    
+                    foreach (var wldFile in archive.WldFiles)
+                    {
+                        if (wldFile.Value.WorldTree != null)
+                        {
+                            GD.Print($"OnPFSArchiveLoaded: activating zone {wldFile.Key}");
+                            _activeZone = wldFile.Value.WorldTree;
+                        }
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-        
     }
 
-    private void OnAllFilesLoaded()
+
+    private void ProcessWldActors(WldFile file)
     {
-        throw new NotImplementedException();
+        foreach (var actorDef in file.ActorDefs)
+        {
+            var name = actorDef.Value.ResourceName;
+            switch (actorDef.Value)
+            {
+                case HierarchicalActorDefinition hierarchicalActor:
+                    _hierarchicalActor[name] = hierarchicalActor;
+                    // GD.Print($"OnPFSArchiveLoaded: Loaded HierarchicalActorDefinition {name}");
+                    break;
+                case BlitActorDefinition blitActor:
+                    _blitActor[name] = blitActor;
+                    // GD.Print($"OnPFSArchiveLoaded: Loaded BlitActorDefinition {name}");
+                    break;
+            }
+        }
+
+        foreach (var animation in file.ExtraAnimations.Values)
+        {
+            // GD.Print($"Loading Animation {animation.Name}");
+            if (_extraAnimations.TryAdd(animation.Name, animation)) continue;
+            // GD.Print($"OnPFSArchiveLoaded: {animation.Name} already exists");
+        }
     }
 
     private static string ConvertAnimationTag(string tagName)
@@ -163,6 +197,10 @@ public partial class ResourceManager : Node
         if (_activeZone == null) return;
         GD.Print($"Instantiating zone {_activeZone}");
         _sceneRoot.AddChild(_activeZone.ToGodotZone());
+        foreach (var l in _activeZoneLights)
+        {
+            _sceneRoot.AddChild(l.ToGodotLight());
+        }
     }
 
     public List<ActorSkeletonPath> GetAnimationsFor(string actorName)

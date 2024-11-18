@@ -8,7 +8,7 @@ namespace EQGodot.resource_manager.pack_file;
 
 public static class PackFileParser
 {
-    public static PFSArchive Load(string path)
+    public static PfsArchive Load(string path)
     {
         var content = File.ReadAllBytes(path);
         var fileLength = content.Length;
@@ -88,7 +88,7 @@ public static class PackFileParser
 
         files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
-        var archive = new PFSArchive() {LoadedPath = path};
+        var archive = new PfsArchive() {LoadedPath = path};
         foreach (var x in files) archive.Files.Add(x);
 
         for (var i = 0; i < files.Count; ++i)

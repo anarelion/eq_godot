@@ -172,7 +172,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
         if (Vertices.Length == TextureUvCoordinates.Length) return;
 
         var difference = Vertices.Length - TextureUvCoordinates.Length;
-        if (difference > 0)
+        if (difference > 0 && TextureUvCoordinates.Length > 0)
         {
             GD.PrintErr(
                 $"Name {Name} Vertices {Vertices.Length} TextureUvCoordinates {TextureUvCoordinates.Length} = {difference}");

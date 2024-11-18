@@ -17,7 +17,7 @@ public partial class EqPackFileResourceLoader : ResourceFormatLoader
     public override string _GetResourceScriptClass(string path)
     {
         // GD.Print($"_GetResourceScriptClass({path})");
-        return "PFSArchive.cs";
+        return "PfsArchive.cs";
     }
 
     public override string _GetResourceType(string path)
@@ -34,13 +34,13 @@ public partial class EqPackFileResourceLoader : ResourceFormatLoader
 
         var directoryOffset = file.Get32();
         var magicNumber = file.Get32();
-        return magicNumber is 0x20534650 or 0x50465320 ? "PFSArchive" : "";
+        return magicNumber is 0x20534650 or 0x50465320 ? "PfsArchive" : "";
     }
 
     public override bool _HandlesType(StringName type)
     {
         // GD.Print($"_HandlesType({type})");
-        return type == "PFSArchive";
+        return type == "PfsArchive";
     }
 
     public override Variant _Load(string path, string originalPath, bool useSubThreads, int cacheMode)
