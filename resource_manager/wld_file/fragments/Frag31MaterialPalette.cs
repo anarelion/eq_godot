@@ -79,33 +79,33 @@ public partial class Frag31MaterialPalette : WldFragment
         partName = materialName.Substring(3, 2) + materialName.Substring(7, 2);
     }
 
-    public static string GetMaterialPrefix(ShaderType shaderType)
+    public static string GetMaterialPrefix(ShaderTypeEnumType shaderType)
     {
         switch (shaderType)
         {
-            case ShaderType.Diffuse:
+            case ShaderTypeEnumType.Diffuse:
                 return "d_";
-            case ShaderType.Invisible:
+            case ShaderTypeEnumType.Invisible:
                 return "i_";
-            case ShaderType.Boundary:
+            case ShaderTypeEnumType.Boundary:
                 return "b_";
-            case ShaderType.Transparent25:
+            case ShaderTypeEnumType.Transparent25:
                 return "t25_";
-            case ShaderType.Transparent50:
+            case ShaderTypeEnumType.Transparent50:
                 return "t50_";
-            case ShaderType.Transparent75:
+            case ShaderTypeEnumType.Transparent75:
                 return "t75_";
-            case ShaderType.TransparentAdditive:
+            case ShaderTypeEnumType.TransparentAdditive:
                 return "ta_";
-            case ShaderType.TransparentAdditiveUnlit:
+            case ShaderTypeEnumType.TransparentAdditiveUnlit:
                 return "tau_";
-            case ShaderType.TransparentMasked:
+            case ShaderTypeEnumType.TransparentMasked:
                 return "tm_";
-            case ShaderType.DiffuseSkydome:
+            case ShaderTypeEnumType.DiffuseSkydome:
                 return "ds_";
-            case ShaderType.TransparentSkydome:
+            case ShaderTypeEnumType.TransparentSkydome:
                 return "ts_";
-            case ShaderType.TransparentAdditiveUnlitSkydome:
+            case ShaderTypeEnumType.TransparentAdditiveUnlitSkydome:
                 return "taus_";
             default:
                 return "d_";

@@ -12,7 +12,7 @@ public partial class Frag30MaterialDef : WldFragment
 {
     [Export] public int Flags;
     [Export] public Frag05SimpleSprite SimpleSprite;
-    [Export] public ShaderType ShaderType;
+    [Export] public ShaderTypeEnumType ShaderType;
     [Export] public float Brightness;
     [Export] public float ScaledAmbient;
     [Export] public bool IsHandled;
@@ -41,12 +41,12 @@ public partial class Frag30MaterialDef : WldFragment
         switch (materialType)
         {
             case MaterialType.Boundary:
-                ShaderType = ShaderType.Boundary;
+                ShaderType = ShaderTypeEnumType.Boundary;
                 break;
             case MaterialType.InvisibleUnknown:
             case MaterialType.InvisibleUnknown2:
             case MaterialType.InvisibleUnknown3:
-                ShaderType = ShaderType.Invisible;
+                ShaderType = ShaderTypeEnumType.Invisible;
                 break;
             case MaterialType.Diffuse:
             case MaterialType.Diffuse3:
@@ -57,45 +57,45 @@ public partial class Frag30MaterialDef : WldFragment
             case MaterialType.Diffuse2:
             case MaterialType.CompleteUnknown:
             case MaterialType.TransparentMaskedPassable:
-                ShaderType = ShaderType.Diffuse;
+                ShaderType = ShaderTypeEnumType.Diffuse;
                 break;
             case MaterialType.Transparent25:
-                ShaderType = ShaderType.Transparent25;
+                ShaderType = ShaderTypeEnumType.Transparent25;
                 break;
             case MaterialType.Transparent50:
-                ShaderType = ShaderType.Transparent50;
+                ShaderType = ShaderTypeEnumType.Transparent50;
                 break;
             case MaterialType.Transparent75:
-                ShaderType = ShaderType.Transparent75;
+                ShaderType = ShaderTypeEnumType.Transparent75;
                 break;
             case MaterialType.TransparentAdditive:
-                ShaderType = ShaderType.TransparentAdditive;
+                ShaderType = ShaderTypeEnumType.TransparentAdditive;
                 break;
             case MaterialType.TransparentAdditiveUnlit:
-                ShaderType = ShaderType.TransparentAdditiveUnlit;
+                ShaderType = ShaderTypeEnumType.TransparentAdditiveUnlit;
                 break;
             case MaterialType.TransparentMasked:
             case MaterialType.Diffuse5:
-                ShaderType = ShaderType.TransparentMasked;
+                ShaderType = ShaderTypeEnumType.TransparentMasked;
                 break;
             case MaterialType.DiffuseSkydome:
-                ShaderType = ShaderType.DiffuseSkydome;
+                ShaderType = ShaderTypeEnumType.DiffuseSkydome;
                 break;
             case MaterialType.TransparentSkydome:
-                ShaderType = ShaderType.TransparentSkydome;
+                ShaderType = ShaderTypeEnumType.TransparentSkydome;
                 break;
             case MaterialType.TransparentAdditiveUnlitSkydome:
-                ShaderType = ShaderType.TransparentAdditiveUnlitSkydome;
+                ShaderType = ShaderTypeEnumType.TransparentAdditiveUnlitSkydome;
                 break;
             default:
-                ShaderType = SimpleSprite == null ? ShaderType.Invisible : ShaderType.Diffuse;
+                ShaderType = SimpleSprite == null ? ShaderTypeEnumType.Invisible : ShaderTypeEnumType.Diffuse;
                 break;
         }
     }
 
     public Material ToGodotMaterial(PfsArchive archive)
     {
-        if (ShaderType is ShaderType.Boundary or ShaderType.Invisible)
+        if (ShaderType is ShaderTypeEnumType.Boundary or ShaderTypeEnumType.Invisible)
         {
             return new StandardMaterial3D
             {
@@ -108,17 +108,22 @@ public partial class Frag30MaterialDef : WldFragment
         if (SimpleSprite != null)
         {
             var bitmapNames = SimpleSprite.GetAllBitmapNames();
-            if (ShaderType is ShaderType.TransparentMasked)
+            var firstImage = (Image)archive.FilesByName[bitmapNames[0]];
+            if (ShaderType is ShaderTypeEnumType.TransparentMasked)
             {
-                return new StandardMaterial3D
+                var transparentMasked = new StandardMaterial3D
                 {
                     ResourceName = Name,
                     Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass,
-                    AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[bitmapNames[0]]),
+                    AlbedoTexture = ImageTexture.CreateFromImage(firstImage),
                     CullMode = (Flags & 0x1) != 0
                         ? BaseMaterial3D.CullModeEnum.Disabled
                         : BaseMaterial3D.CullModeEnum.Back,
                 };
+                transparentMasked.SetMeta("pfs_file_name", firstImage.GetMeta("pfs_file_name"));
+                transparentMasked.SetMeta("original_file_name", firstImage.GetMeta("original_file_name"));
+                transparentMasked.SetMeta("original_file_type", firstImage.GetMeta("original_file_type"));
+                return transparentMasked;
             }
 
             if (SimpleSprite.SimpleSpriteDef.Animated)
@@ -148,10 +153,13 @@ public partial class Frag30MaterialDef : WldFragment
             var fallbackMaterial = new StandardMaterial3D()
             {
                 ResourceName = Name,
-                AlbedoTexture = ImageTexture.CreateFromImage((Image)archive.FilesByName[bitmapNames[0]]),
+                AlbedoTexture = ImageTexture.CreateFromImage(firstImage),
                 CullMode = (Flags & 0x1) != 0 ? BaseMaterial3D.CullModeEnum.Disabled : BaseMaterial3D.CullModeEnum.Back,
             };
             fallbackMaterial.SetMeta("ShaderType", ShaderType.ToString());
+            fallbackMaterial.SetMeta("pfs_file_name", firstImage.GetMeta("pfs_file_name"));
+            fallbackMaterial.SetMeta("original_file_name", firstImage.GetMeta("original_file_name"));
+            fallbackMaterial.SetMeta("original_file_type", firstImage.GetMeta("original_file_type"));
             return fallbackMaterial;
         }
 

@@ -109,6 +109,9 @@ public partial class PfsArchive : Resource
             {
                 var image = Image.CreateFromData(dds.Width, dds.Height, dds.MipMaps.Length > 1, Image.Format.Rgba8,
                     dds.Data);
+                image.SetMeta("pfs_file_name", pfsFile.ArchiveName);
+                image.SetMeta("original_file_name", pfsFile.Name);
+                image.SetMeta("original_file_type", "DDS");
                 // image.FlipY();
                 Files[index] = image;
                 FilesByName[pfsFile.Name] = image;
@@ -132,7 +135,7 @@ public partial class PfsArchive : Resource
             // GD.Print(pfsFile.FileBytes.HexEncode());
             var bitmap = new Bitmap(new MemoryStream(pfsFile.FileBytes));
             var data = new byte[bitmap.Width * bitmap.Height * 4];
-            var offset = data.Length - 4;
+            var offset = 0;
             for (var y = 0; y < bitmap.Height; y++)
             for (var x = 0; x < bitmap.Width; x++)
             {
@@ -142,12 +145,16 @@ public partial class PfsArchive : Resource
                 data[offset + 1] = color.G;
                 data[offset + 2] = color.B;
                 data[offset + 3] = color.A;
-                offset -= 4;
+                offset += 4;
             }
 
             try
             {
                 var image = Image.CreateFromData(bitmap.Width, bitmap.Height, false, Image.Format.Rgba8, data);
+                image.FlipY();
+                image.SetMeta("pfs_file_name", pfsFile.ArchiveName);
+                image.SetMeta("original_file_name", pfsFile.Name);
+                image.SetMeta("original_file_type", "BMP");
                 if (image != null)
                 {
                     Files[index] = image;

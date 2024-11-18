@@ -82,7 +82,7 @@ public static class PackFileParser
                 continue;
             }
 
-            files.Add(new PFSFile(crc, size, offset, fileBytes));
+            files.Add(new PFSFile(path, crc, size, offset, fileBytes));
             reader.BaseStream.Position = cachedOffset;
         }
 
