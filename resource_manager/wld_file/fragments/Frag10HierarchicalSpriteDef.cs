@@ -12,7 +12,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 [GlobalClass]
 public partial class Frag10HierarchicalSpriteDef : WldFragment
 {
-    //public List<LegacyMesh> SecondaryAlternateMeshes = new List<LegacyMesh>();
+    //public List<OldMesh> SecondaryAlternateMeshes = new List<OldMesh>();
 
     [Export] private bool _hasBuiltData;
 
@@ -20,10 +20,10 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
     [Export] public Godot.Collections.Dictionary<int, string> BoneMapping = [];
     [Export] public Godot.Collections.Dictionary<int, string> BoneMappingClean = [];
     [Export] public float BoundingRadius;
-    [Export] public Array<Mesh> SecondaryMeshes = [];
-    [Export] public Array<Frag36DmSpriteDef2> Meshes;
+    [Export] public Array<Frag36DmSpriteDef2> NewMeshes = [];
+    [Export] public Godot.Collections.Dictionary<int, Frag36DmSpriteDef2> NewMeshesByBone = [];
 
-    //public List<LegacyMesh> AlternateMeshes {
+    //public List<OldMesh> AlternateMeshes {
     //    get; private set;
     //}
     [Export] public Array<SkeletonBone> Skeleton;
@@ -39,8 +39,8 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
         base.Initialize(index, type, size, data, wld);
 
         Skeleton = [];
-        Meshes = [];
-        //AlternateMeshes = new List<LegacyMesh>();
+        NewMeshes = [];
+        //AlternateMeshes = new List<OldMesh>();
         SkeletonPieceDictionary = [];
 
         Name = wld.GetName(Reader.ReadInt32());
@@ -95,7 +95,7 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
                 Name = boneName
             };
 
-            pieceNew.Track.IsPoseAnimation = true;
+            pieceNew.Track!.IsPoseAnimation = true;
             pieceNew.AnimationTracks = [];
 
             BoneMappingClean[i] = Animation.CleanBoneAndStripBase(boneName, ModelBase);
@@ -103,19 +103,28 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
 
             if (pieceNew.Track == null) GD.PrintErr("Unable to link track reference!");
 
-            var meshName = wld.GetName(Reader.ReadInt32());
-            pieceNew.MeshReference = wld.GetFragmentByName(meshName) as Frag2DDMSprite;
+            var meshReference = Reader.ReadInt32();
+            // var meshName = wld.GetName(meshReference);
+            var meshBoneRef = wld.GetFragment(meshReference) as Frag2DDmSprite;
+
+            if (meshBoneRef?.NewMesh != null)
+            {
+                GD.Print($"Found bone {boneName}({i}) with Mesh {meshBoneRef.NewMesh.Name} and ref {meshReference}");
+                meshBoneRef.NewMesh.AttachedBoneId = i;
+                pieceNew.NewMesh = meshBoneRef.NewMesh;
+                NewMeshesByBone.Add(i, meshBoneRef.NewMesh);
+                meshBoneRef.NewMesh.IsHandled = true;
+            }
 
             //if (pieceNew.MeshReference == null) {
             //    pieceNew.ParticleCloud = fragments[meshReferenceIndex] as ParticleCloud;
             //}
 
-            if (pieceNew.Name == "root") pieceNew.Name = FragmentNameCleaner.CleanName(pieceNew.MeshReference.Mesh);
+            if (pieceNew.Name == "root") pieceNew.Name = FragmentNameCleaner.CleanName(meshBoneRef.NewMesh);
 
             var childCount = Reader.ReadInt32();
 
             pieceNew.Children = [];
-
             for (var j = 0; j < childCount; ++j) pieceNew.Children.Add(Reader.ReadInt32());
 
             Skeleton.Add(pieceNew);
@@ -131,28 +140,27 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
 
             for (var i = 0; i < size2; ++i)
             {
-                var meshRef = wld.GetFragment(Reader.ReadInt32()) as Frag2DDMSprite;
+                var meshRef = wld.GetFragment(Reader.ReadInt32()) as Frag2DDmSprite;
 
-                if (meshRef?.Mesh != null)
-                    if (Meshes.All(x => x.Name != meshRef.Mesh.Name))
+                if (meshRef?.NewMesh != null)
+                    if (NewMeshes.All(x => x.Name != meshRef.NewMesh.Name))
                     {
-                        Meshes.Add(meshRef.Mesh);
-                        meshRef.Mesh.IsHandled = true;
+                        NewMeshes.Add(meshRef.NewMesh);
+                        meshRef.NewMesh.IsHandled = true;
                     }
 
-                //if (meshRef?.LegacyMesh != null) {
-                //    if (AlternateMeshes.All(x => x.Name != meshRef.LegacyMesh.Name)) {
-                //        AlternateMeshes.Add(meshRef.LegacyMesh);
+                //if (meshRef?.OldMesh != null) {
+                //    if (AlternateMeshes.All(x => x.Name != meshRef.OldMesh.Name)) {
+                //        AlternateMeshes.Add(meshRef.OldMesh);
                 //    }
                 //}
             }
-
-            Meshes = [.. Meshes.OrderBy(x => x.Name)];
-
+            
+            // ReSharper disable once CollectionNeverQueried.Local
             List<int> unknown = [];
-
             for (var i = 0; i < size2; ++i) unknown.Add(Reader.ReadInt32());
         }
+        NewMeshes = [.. NewMeshes.OrderBy(x => x.Name)];
     }
 
     public void BuildSkeletonData(bool stripModelBase)
@@ -175,103 +183,6 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
         track.IsPoseAnimation = true;
     }
 
-    public void AddTrackDataEquipment(Frag13Track track, string boneName, bool isDefault = false)
-    {
-        var animationName = string.Empty;
-        var modelName = string.Empty;
-        var pieceName = string.Empty;
-
-        var cleanedName = FragmentNameCleaner.CleanName(track);
-
-        if (isDefault)
-        {
-            animationName = "pos";
-            modelName = ModelBase;
-            cleanedName = cleanedName.Replace(ModelBase, string.Empty);
-            pieceName = cleanedName == string.Empty ? "root" : cleanedName;
-        }
-        else
-        {
-            if (cleanedName.Length <= 3) return;
-
-            animationName = cleanedName.Substring(0, 3);
-            cleanedName = cleanedName.Remove(0, 3);
-
-            if (cleanedName.Length < 3) return;
-
-            modelName = ModelBase;
-            pieceName = boneName;
-
-            if (pieceName == string.Empty) pieceName = "root";
-        }
-
-        track.SetTrackData(modelName, animationName, pieceName);
-
-        if (Animations.ContainsKey(track.AnimationName))
-        {
-            if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase)
-                Animations.Remove(animationName);
-
-            if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase) return;
-        }
-
-        if (!Animations.ContainsKey(track.AnimationName)) Animations[track.AnimationName] = new Animation();
-
-        Animations[track.AnimationName].AddTrack(track, track.PieceName, Animation.CleanBoneName(track.PieceName),
-            Animation.CleanBoneAndStripBase(track.PieceName, ModelBase));
-        track.TrackDefFragment.IsAssigned = true;
-        track.IsProcessed = true;
-    }
-
-    public void AddTrackData(Frag13Track track, bool isDefault = false)
-    {
-        var animationName = string.Empty;
-        var modelName = string.Empty;
-        var pieceName = string.Empty;
-
-        var cleanedName = FragmentNameCleaner.CleanName(track);
-
-        if (isDefault)
-        {
-            animationName = "pos";
-            modelName = ModelBase;
-            cleanedName = cleanedName.Replace(ModelBase, string.Empty);
-            pieceName = cleanedName == string.Empty ? "root" : cleanedName;
-        }
-        else
-        {
-            if (cleanedName.Length <= 3) return;
-
-            animationName = cleanedName.Substring(0, 3);
-            cleanedName = cleanedName.Remove(0, 3);
-
-            if (cleanedName.Length < 3) return;
-
-            modelName = cleanedName.Substring(0, 3);
-            cleanedName = cleanedName.Remove(0, 3);
-            pieceName = cleanedName;
-
-            if (pieceName == string.Empty) pieceName = "root";
-        }
-
-        track.SetTrackData(modelName, animationName, pieceName);
-
-        if (Animations.ContainsKey(track.AnimationName))
-        {
-            if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase)
-                Animations.Remove(animationName);
-
-            if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase) return;
-        }
-
-        if (!Animations.ContainsKey(track.AnimationName)) Animations[track.AnimationName] = new Animation();
-
-        Animations[track.AnimationName]
-            .AddTrack(track, track.Name, Animation.CleanBoneName(track.PieceName),
-                Animation.CleanBoneAndStripBase(track.PieceName, ModelBase));
-        track.TrackDefFragment.IsAssigned = true;
-        track.IsProcessed = true;
-    }
 
     private void BuildSkeletonTreeData(int index, Array<SkeletonBone> treeNodes, SkeletonBone parent,
         string runningName, string runningNameCleaned, string runningIndex, bool stripModelBase)
@@ -307,105 +218,5 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
 
         nodeName += nodeName.Length == 0 ? "root" : string.Empty;
         return nodeName;
-    }
-
-    public void AddAdditionalMesh(Frag36DmSpriteDef2 mesh)
-    {
-        if (Meshes.Any(x => x.Name == mesh.Name)
-            /* || SecondaryMeshes.Any(x => x.Name == mesh.Name) */)
-            return;
-
-        if (mesh.MobPieces.Count == 0) return;
-
-        //SecondaryMeshes.Add(mesh);
-        //SecondaryMeshes = SecondaryMeshes.OrderBy(x => x.Name).ToList();
-    }
-
-    //public void AddAdditionalAlternateMesh(LegacyMesh mesh)
-    //{
-    //    if (AlternateMeshes.Any(x => x.Name == mesh.Name)
-    //        || SecondaryAlternateMeshes.Any(x => x.Name == mesh.Name)) {
-    //        return;
-    //    }
-
-    //    if (mesh.MobPieces.Count == 0) {
-    //        return;
-    //    }
-
-    //    SecondaryAlternateMeshes.Add(mesh);
-    //    SecondaryAlternateMeshes = SecondaryAlternateMeshes.OrderBy(x => x.Name).ToList();
-    //}
-
-    public bool IsValidSkeleton(string trackName, out string boneName)
-    {
-        var track = trackName.Substring(3);
-
-        if (trackName == ModelBase)
-        {
-            boneName = ModelBase;
-            return true;
-        }
-
-        foreach (var bone in Skeleton)
-        {
-            var cleanBoneName = bone.Name.Replace("_DAG", string.Empty).ToLower();
-            if (cleanBoneName == track)
-            {
-                boneName = bone.Name.ToLower();
-                return true;
-            }
-        }
-
-        boneName = string.Empty;
-        return false;
-    }
-
-    public Transform3D GetBoneMatrix(int boneIndex, string animName, int frame)
-    {
-        if (!Animations.ContainsKey(animName)) return Transform3D.Identity;
-
-        if (frame < 0 || frame >= Animations[animName].FrameCount) return Transform3D.Identity;
-
-        var currentBone = Skeleton[boneIndex];
-
-        var boneMatrix = Transform3D.Identity;
-
-        while (currentBone != null)
-        {
-            if (!Animations[animName].TracksCleanedStripped.ContainsKey(currentBone.CleanedName)) break;
-
-            var track = Animations[animName].TracksCleanedStripped[currentBone.CleanedName].TrackDefFragment;
-            var realFrame = frame >= track.Frames.Count ? 0 : frame;
-            currentBone = Skeleton[boneIndex].Parent;
-
-            var modelTransform = Transform3D.Identity;
-
-            modelTransform.Translated(track.Frames[realFrame].Translation);
-            var rotationQuat = track.Frames[realFrame].Rotation;
-            modelTransform.Rotated(rotationQuat.GetAxis(), rotationQuat.GetAngle());
-
-            var scaleValue = track.Frames[realFrame].Scale;
-            var scaleMat = new Vector3(scaleValue, scaleValue, scaleValue);
-            modelTransform.Scaled(scaleMat);
-
-            boneMatrix = modelTransform * boneMatrix;
-
-            if (currentBone != null) boneIndex = currentBone.Index;
-        }
-
-        return boneMatrix;
-    }
-
-    public void RenameNodeBase(string newBase)
-    {
-        foreach (var node in Skeleton) node.Name = node.Name.Replace(ModelBase.ToUpper(), newBase.ToUpper());
-
-        var newNameMapping = new Godot.Collections.Dictionary<int, string>();
-        foreach (var node in BoneMapping)
-            newNameMapping[node.Key] = node.Value.Replace(ModelBase.ToUpper(), newBase.ToUpper());
-
-        BoneMapping = newNameMapping;
-
-        ModelBase = newBase;
     }
 }

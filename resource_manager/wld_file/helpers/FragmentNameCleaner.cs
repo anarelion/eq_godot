@@ -13,7 +13,7 @@ public static class FragmentNameCleaner
         { typeof(Frag31MaterialPalette), "_MP" },
         { typeof(Frag30MaterialDef), "_MDF" },
         { typeof(Frag36DmSpriteDef2), "_DMSPRITEDEF" },
-        { typeof(Frag2CDMSpriteDef), "_DMSPRITEDEF" },
+        { typeof(Frag2CDmSpriteDef), "_DMSPRITEDEF" },
         { typeof(Frag14ActorDef), "_ACTORDEF" },
         { typeof(Frag10HierarchicalSpriteDef), "_HS_DEF" },
         { typeof(Frag12TrackDef), "_TRACKDEF" },

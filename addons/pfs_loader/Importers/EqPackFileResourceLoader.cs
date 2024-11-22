@@ -22,7 +22,7 @@ public partial class EqPackFileResourceLoader : ResourceFormatLoader
 
     public override string _GetResourceType(string path)
     {
-        GD.Print($"_GetResourceType({path})");
+        // GD.Print($"_GetResourceType({path})");
         using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
         if (file.GetError() != Error.Ok)
         {
@@ -45,7 +45,8 @@ public partial class EqPackFileResourceLoader : ResourceFormatLoader
 
     public override Variant _Load(string path, string originalPath, bool useSubThreads, int cacheMode)
     {
-        GD.Print($"_Load({path}, {originalPath}, {useSubThreads}, {cacheMode})");
-        return PackFileParser.Load(path);
+        // GD.Print($"_Load({path}, {originalPath}, {useSubThreads}, {cacheMode})");
+        // return PackFileParser.Load(path);
+        return false;
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Diagnostics;
 using Godot;
 using Godot.Collections;
 
@@ -9,24 +8,19 @@ namespace EQGodot.resource_manager.godot_resources;
 public partial class HierarchicalActorDefinition : ActorDefinition
 {
     [Export] public int Flags;
-
     [Export] public string Tag;
-
-    [Export] public Array<ActorSkeletonBone> Bones { get; set; }
-
-    [Export] public Dictionary<string, ActorSkeletonBone> BonesByName { get; set; }
-
-    [Export] public Dictionary<string, ArrayMesh> Meshes { get; set; }
+    [Export] public Array<ActorSkeletonBone> Bones = [];
+    [Export] public Dictionary<string, ActorSkeletonBone> BonesByName = [];
+    [Export] public Dictionary<string, ArrayMesh> NewMeshes = [];
+    [Export] public Dictionary<int, ArrayMesh> NewMeshesByBone = [];
 
     public HierarchicalActorInstance InstantiateCharacter(ResourceManager resourceManager)
     {
         var node = new HierarchicalActorInstance { Name = ResourceName };
 
         var skeleton = BuildSkeleton();
-        // swap Y and Z to get a godot coordinate system
-        // skeleton.RotateX((float)(-Math.PI / 2));
         node.AddChild(skeleton);
-        foreach (var mesh in Meshes)
+        foreach (var mesh in NewMeshes)
         {
             var inst = new MeshInstance3D { Name = mesh.Key, Mesh = mesh.Value };
             skeleton.AddChild(inst);
@@ -34,26 +28,26 @@ public partial class HierarchicalActorDefinition : ActorDefinition
 
         var animationPlayer = new AnimationPlayer { Name = Tag + "_anim_player" };
         var animationLibrary = new AnimationLibrary();
-        
-        var animations = resourceManager.GetAnimationsFor(Tag).GroupBy(r => r.AnimationName)
-            .ToDictionary(g => g.Key, g => g.ToList());
 
-        foreach (var group in animations)
-        {
-            var animation = new Animation();
-            animation.ResourceName = group.Key;
-            animation.LoopMode = Animation.LoopModeEnum.Linear;
-            foreach (var bone in group.Value)
-            {
-                bone.ApplyToAnimation(animation);
-            }
+        // var animations = resourceManager.GetAnimationsFor(Tag).GroupBy(r => r.AnimationName)
+        //     .ToDictionary(g => g.Key, g => g.ToList());
 
-            animationLibrary.AddAnimation(group.Key, animation);
-        }
-        
+        // foreach (var group in animations)
+        // {
+        //     var animation = new Animation();
+        //     animation.ResourceName = group.Key;
+        //     animation.LoopMode = Animation.LoopModeEnum.Linear;
+        //     foreach (var bone in group.Value)
+        //     {
+        //         bone.ApplyToAnimation(animation);
+        //     }
+        //
+        //     animationLibrary.AddAnimation(group.Key, animation);
+        // }
+
         animationPlayer.AddAnimationLibrary($"{Tag}_library", animationLibrary);
         skeleton.AddChild(animationPlayer);
-        animationPlayer.Play($"{Tag}_library/l01");
+        // animationPlayer.Play($"{Tag}_library/l01");
         return node;
     }
 
@@ -67,10 +61,29 @@ public partial class HierarchicalActorDefinition : ActorDefinition
         foreach (var bone in Bones)
         {
             skeleton.AddBone(bone.Name);
-            if (bone.Parent == null) continue;
-            skeleton.SetBoneParent(bone.Index, bone.Parent.Index);
             skeleton.SetBonePosePosition(bone.Index, bone.BasePosition.Translation[0]);
             skeleton.SetBonePoseRotation(bone.Index, bone.BasePosition.Rotation[0]);
+            var scale = bone.BasePosition.Scale[0];
+            skeleton.SetBonePoseScale(bone.Index, new Vector3(scale, scale, scale));
+
+            GD.Print(
+                $"Instantiating {bone.Name}({bone.Index}) at {bone.BasePosition.Translation[0]} rotation = {bone.BasePosition.Rotation[0]} scale = {scale}");
+
+            if (bone.Parent != null)
+                skeleton.SetBoneParent(bone.Index, bone.Parent.Index);
+
+            var attachment = new BoneAttachment3D()
+            {
+                Name = $"{bone.Name}_attachment",
+                BoneIdx = bone.Index,
+                BoneName = bone.Name,
+            };
+            skeleton.AddChild(attachment);
+            // if (bone.Mesh != null)
+            // {
+            //     attachment.AddChild(new MeshInstance3D
+            //         { Name = bone.Mesh.ResourceName, Mesh = bone.Mesh, Scale = bone.SkeletonTrack.Scale[0] });
+            // }
         }
 
         return skeleton;

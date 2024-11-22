@@ -1,15 +1,17 @@
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Diagnostics;
+using EQGodot.resource_manager.wld_file;
 using EQGodot.resource_manager.wld_file.fragments;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
-using Godot.Collections;
 
 namespace EQGodot.resource_manager.godot_resources.converters;
 
-internal partial class HierarchicalActorBuilder
+internal static class HierarchicalActorBuilder
 {
-    public static HierarchicalActorDefinition Convert(Frag14ActorDef actordef, Frag10HierarchicalSpriteDef skeleton,
-        Dictionary<int, ArrayMesh> meshes)
+    public static HierarchicalActorDefinition Convert(Frag14ActorDef actordef,
+        Frag10HierarchicalSpriteDef hierarchicalSpriteDef,
+        WldFile wld)
     {
         var name = FragmentNameCleaner.CleanName(actordef);
         GD.Print($"HierarchicalActorBuilder::Convert: {name}");
@@ -19,31 +21,38 @@ internal partial class HierarchicalActorBuilder
             ResourceName = name,
             Tag = name,
             Flags = actordef.Flags,
-            Bones = [],
-            BonesByName = [],
-            Meshes = []
         };
 
-        skeleton.BuildSkeletonData(false);
-        foreach (var skel_mesh in skeleton.Meshes) actor.Meshes.Add(skel_mesh.Name, meshes[skel_mesh.Index]);
-
-        foreach (var bone in skeleton.Skeleton)
+        hierarchicalSpriteDef.BuildSkeletonData(false);
+        foreach (var hdDefMesh in hierarchicalSpriteDef.NewMeshes)
+            actor.NewMeshes.Add(hdDefMesh.Name, wld.GetMesh(hdDefMesh.Index));
+        foreach (var boneMesh in hierarchicalSpriteDef.NewMeshesByBone)
         {
-            var meshref = bone.MeshReference;
-            var bone_mesh = meshref is { Mesh: not null } ? meshes[meshref.Mesh.Index] : null;
+            actor.NewMeshes.Add(boneMesh.Value.Name, wld.GetMesh(boneMesh.Value.Index));
+        }
+        
+        HashSet<string> createdBones = [];
+
+        foreach (var bone in hierarchicalSpriteDef.Skeleton)
+        {
             var boneName = bone.Name[3..].ToLower().Replace("_dag", "");
             if (boneName == "") boneName = "root";
+            while (createdBones.Contains(boneName))
+            {
+                boneName += "_dup";
+            }
             var rbone = new ActorSkeletonBone
             {
-                ResourceName = bone.Name,
+                ResourceName = boneName,
                 Index = bone.Index,
                 Name = boneName,
                 FullPath = bone.FullPath,
                 CleanedName = bone.CleanedName,
                 CleanedFullPath = bone.CleanedFullPath,
-                ReferencedMesh = bone_mesh,
+                NewMesh = bone.NewMesh,
                 Parent = bone.Parent != null ? actor.Bones[bone.Parent.Index] : null
             };
+            createdBones.Add(boneName);
             var track = bone.Track;
             if (track != null)
             {
@@ -59,6 +68,4 @@ internal partial class HierarchicalActorBuilder
 
         return actor;
     }
-
- 
 }

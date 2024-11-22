@@ -16,9 +16,9 @@ public partial class GameController : Node
     private byte[] PlayerKey;
     private uint PlayerLSID;
 
-    public ResourceManager Resources;
+    private ResourceManager _resources;
 
-    enum State
+    private enum State
     {
         NONE,
         LOGIN,
@@ -26,11 +26,11 @@ public partial class GameController : Node
         RENDERING,
     }
 
-    private State state = State.NONE;
+    private State _state = State.NONE;
 
     public override void _Ready()
     {
-        Resources = GetNode<ResourceManager>("ResourceManager");
+        _resources = GetNode<ResourceManager>("ResourceManager");
         SwitchState(State.RENDERING);
     }
 
@@ -40,7 +40,7 @@ public partial class GameController : Node
 
     private void SwitchState(State newState)
     {
-        if (state != State.NONE)
+        if (_state != State.NONE)
         {
             ActiveScene.QueueFree();
         }
@@ -90,7 +90,7 @@ public partial class GameController : Node
     private void OnServerListReceived(EQServerDescription[] servers)
     {
         SwitchState(State.SERVER_SELECTION);
-        ((login_server.server_selection)ActiveScene).LoadServers(servers);
+        ((server_selection)ActiveScene).LoadServers(servers);
     }
 
     private void OnServerJoinStart(EQServerDescription server)

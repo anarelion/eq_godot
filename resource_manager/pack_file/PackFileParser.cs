@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Godot;
 using Ionic.Zlib;
 
@@ -8,9 +9,9 @@ namespace EQGodot.resource_manager.pack_file;
 
 public static class PackFileParser
 {
-    public static PfsArchive Load(string path)
+    public static async Task<PfsArchive> Load(string path)
     {
-        var content = File.ReadAllBytes(path);
+        var content = await File.ReadAllBytesAsync(path);
         var fileLength = content.Length;
         var reader = new BinaryReader(new MemoryStream(content));
 
@@ -101,9 +102,6 @@ public static class PackFileParser
                     break;
                 case 0x20000:
                     files[i].Name = fileNames[i];
-                    archive.FilesByName[fileNames[i]] = files[i];
-
-                    if (fileNames[i].EndsWith(".wld")) archive.IsWldArchive = true;
                     break;
                 default:
                     GD.PrintErr("PfsArchive: Unexpected pfs version: ", fileNames[i]);
@@ -112,10 +110,7 @@ public static class PackFileParser
 
             files[i].ResourceName = files[i].Name;
         }
-
-        GD.Print($"PfsArchive: Finished initialization of archive: {path}");
-        // archive.ProcessFiles();
-        // GD.Print($"PfsArchive: Finished processing archive: {path}");
+        
         return archive;
     }
     

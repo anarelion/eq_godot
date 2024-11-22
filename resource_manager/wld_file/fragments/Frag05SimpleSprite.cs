@@ -21,7 +21,7 @@ public partial class Frag05SimpleSprite : WldFragment
         // Either 0 or 80 - unknown
         Flags = Reader.ReadInt32();
     }
-    
+
     public List<string> GetAllBitmapNames()
     {
         return SimpleSpriteDef.BitmapNames.Select(bitmapName => bitmapName.Filename).ToList();

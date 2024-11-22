@@ -7,7 +7,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
 [GlobalClass]
-public partial class Frag2CDMSpriteDef : WldFragment
+public partial class Frag2CDmSpriteDef : WldFragment
 {
     [Export] public Frag31MaterialPalette MaterialList;
 

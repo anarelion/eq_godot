@@ -18,7 +18,7 @@ internal partial class Frag14ActorDef : WldFragment
     [Export] public Frag09Sprite3D Sprite3D;
     [Export] public Frag11HierarchicalSprite HierarchicalSprite;
     [Export] public Frag27BlitSprite BlitSprite;
-    [Export] public Frag2DDMSprite DMSprite;
+    [Export] public Frag2DDmSprite DmSprite;
     [Export] public int BoundsRef;
     [Export] public int CurrentAction;
 
@@ -101,10 +101,10 @@ internal partial class Frag14ActorDef : WldFragment
             BlitSprite = fragment as Frag27BlitSprite;
             if (BlitSprite != null) break;
 
-            DMSprite = fragment as Frag2DDMSprite;
-            if (DMSprite is { Mesh: not null })
+            DmSprite = fragment as Frag2DDmSprite;
+            if (DmSprite is { NewMesh: not null })
             {
-                DMSprite.Mesh.IsHandled = true;
+                DmSprite.NewMesh.IsHandled = true;
                 break;
             }
 
@@ -129,10 +129,10 @@ internal partial class Frag14ActorDef : WldFragment
             ActorType = ActorType.Skeletal;
             ReferenceName = HierarchicalSprite.Name;
         }
-        else if (DMSprite != null)
+        else if (DmSprite != null)
         {
             ActorType = ActorType.Static;
-            ReferenceName = DMSprite.Name;
+            ReferenceName = DmSprite.Name;
         }
         else if (BlitSprite != null)
         {

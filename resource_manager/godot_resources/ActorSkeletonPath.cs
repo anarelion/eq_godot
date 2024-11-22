@@ -10,7 +10,7 @@ public partial class ActorSkeletonPath : Resource
 {
     [GeneratedRegex(@"^[A-Z][0-9][0-9]")]
     private static partial Regex AnimatedTrackRegex();
-    
+
     [Export] public string AnimationName;
     [Export] public int DefFlags;
     [Export] public int Flags;
@@ -18,9 +18,11 @@ public partial class ActorSkeletonPath : Resource
     [Export] public string Name;
     [Export] public string BoneName;
     [Export] public int FrameMs;
+
     [Export] public Array<Vector3> Translation;
     [Export] public Array<Quaternion> Rotation;
-    
+    [Export] public Array<float> Scale;
+
     public static ActorSkeletonPath FromFrag13Track(Frag13Track track)
     {
         string animationName = null;
@@ -44,13 +46,15 @@ public partial class ActorSkeletonPath : Resource
             Flags = track.Flags,
             DefFlags = track.TrackDefFragment.Flags,
             Translation = [],
-            Rotation = []
+            Rotation = [],
+            Scale = []
         };
-        
+
         foreach (var frame in track.TrackDefFragment.Frames)
         {
             result.Translation.Add(frame.Translation);
             result.Rotation.Add(frame.Rotation);
+            result.Scale.Add(frame.Scale);
         }
 
         return result;

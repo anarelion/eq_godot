@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using Array = Godot.Collections.Array;
@@ -19,6 +20,8 @@ public partial class Frag36DmSpriteDef2 : WldFragment
     [Export] public Vector3 MaxPosition;
 
     [Export] public bool IsHandled = false;
+    [Export] public int AttachedBoneId = -1;
+
     [Export] public int StartTextureIndex;
     [Export] public Vector3[] Vertices;
     [Export] public Vector3[] Normals;
@@ -80,7 +83,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
             var x = Reader.ReadInt16() * scale;
             var y = Reader.ReadInt16() * scale;
             var z = Reader.ReadInt16() * scale;
-            Vertices[i] = new Vector3(x, y, z);
+            Vertices[i] = new Vector3(x, y, z) + Centre;
         }
 
         for (var i = 0; i < textureCoordinateCount; ++i)
@@ -194,33 +197,47 @@ public partial class Frag36DmSpriteDef2 : WldFragment
         var arrays = new Array();
         arrays.Resize((int)Mesh.ArrayType.Max);
 
-        //GD.Print("vertices ", Vertices.Count);
         arrays[(int)Mesh.ArrayType.Vertex] = Vertices;
-
-        //GD.Print("normals ", Normals.Count);
         arrays[(int)Mesh.ArrayType.Normal] = Normals;
 
         if (Colors.Length > 0)
-            //GD.Print("colors ", Colors.Count);
             arrays[(int)Mesh.ArrayType.Color] = Colors;
 
-        //GD.Print("texture ", TextureUvCoordinates.Count);
         if (TextureUvCoordinates.Length > 0)
             arrays[(int)Mesh.ArrayType.TexUV] = TextureUvCoordinates;
 
-        var bones = new int[Vertices.Length * 4];
-        var weights = new float[Vertices.Length * 4];
+        if (AttachedBoneId >= 0)
+        {
+            GD.Print($"Attaching {Name} to {AttachedBoneId}");
+            var bones = new int[Vertices.Length * 4];
+            var weights = new float[Vertices.Length * 4];
+            for (var j = 0; j < Vertices.Length; j++)
+            {
+                bones[j * 4 + 0] = AttachedBoneId;
+                bones[j * 4 + 1] = 0;
+                bones[j * 4 + 2] = 0;
+                bones[j * 4 + 3] = 0;
+                weights[j * 4 + 0] = 1.0f;
+                weights[j * 4 + 1] = 0.0f;
+                weights[j * 4 + 2] = 0.0f;
+                weights[j * 4 + 3] = 0.0f;
+            }
 
-        //GD.Print("bones ", MobPieces.Count);
+            arrays[(int)Mesh.ArrayType.Bones] = bones;
+            arrays[(int)Mesh.ArrayType.Weights] = weights;
+        }
+
         if (MobPieces.Count > 0)
         {
-            for (var i = 0; i < MobPieces.Count; i++)
+            var bones = new int[Vertices.Length * 4];
+            var weights = new float[Vertices.Length * 4];
+
+            foreach (var t in MobPieces)
             {
-                var piece = MobPieces[i];
-                for (var j = 0; j < piece.Count; j++)
+                for (var j = 0; j < t.Count; j++)
                 {
-                    var startIndex = piece.Start + j;
-                    bones[startIndex * 4 + 0] = MobPieces[i].Bone;
+                    var startIndex = t.Start + j;
+                    bones[startIndex * 4 + 0] = t.Bone;
                     bones[startIndex * 4 + 1] = 0;
                     bones[startIndex * 4 + 2] = 0;
                     bones[startIndex * 4 + 3] = 0;
@@ -251,6 +268,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
 
             mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
             mesh.SurfaceSetMaterial(j, wld.Materials[MaterialPalette.Materials[group.MaterialIndex].Index]);
+            mesh.SurfaceSetName(j, wld.Materials[MaterialPalette.Materials[group.MaterialIndex].Index].GetName());
         }
 
         mesh.ResourceName = Name;

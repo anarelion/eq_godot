@@ -1,6 +1,5 @@
 extends Button
 
 func _on_button_pressed():
-	get_tree().current_scene.Resources.InstantiateActor("bam")
-	get_tree().current_scene.Resources.InstantiateZone()
-	print("Instantiating bam")
+	get_tree().current_scene._resources.InstantiateCharacter("it149")
+	# get_tree().current_scene.Resources.InstantiateZone()

@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Linq;
-using EQGodot.resource_manager.pack_file;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 
@@ -12,6 +11,7 @@ public partial class Frag30MaterialDef : WldFragment
 {
     [Export] public int Flags;
     [Export] public Frag05SimpleSprite SimpleSprite;
+    [Export] public uint RenderMethod;
     [Export] public ShaderTypeEnumType ShaderType;
     [Export] public float Brightness;
     [Export] public float ScaledAmbient;
@@ -22,7 +22,7 @@ public partial class Frag30MaterialDef : WldFragment
         base.Initialize(index, type, size, data, wld);
         Name = wld.GetName(Reader.ReadInt32());
         Flags = Reader.ReadInt32();
-        var parameters = Reader.ReadInt32();
+        RenderMethod = Reader.ReadUInt32();
 
         // Unsure what this color is used for
         // Referred to as the RGB pen
@@ -36,7 +36,7 @@ public partial class Frag30MaterialDef : WldFragment
         SimpleSprite = wld.GetFragment(Reader.ReadInt32()) as Frag05SimpleSprite;
 
         // Thanks to PixelBound for figuring this out
-        var materialType = (MaterialType)(parameters & ~0x80000000);
+        var materialType = (MaterialType)(RenderMethod & ~0x80000000);
 
         switch (materialType)
         {
@@ -93,7 +93,7 @@ public partial class Frag30MaterialDef : WldFragment
         }
     }
 
-    public Material ToGodotMaterial(PfsArchive archive)
+    public Material ToGodotMaterial(EqResourceLoader loader)
     {
         if (ShaderType is ShaderTypeEnumType.Boundary or ShaderTypeEnumType.Invisible)
         {
@@ -108,59 +108,77 @@ public partial class Frag30MaterialDef : WldFragment
         if (SimpleSprite != null)
         {
             var bitmapNames = SimpleSprite.GetAllBitmapNames();
-            var firstImage = (Image)archive.FilesByName[bitmapNames[0]];
-            if (ShaderType is ShaderTypeEnumType.TransparentMasked)
-            {
-                var transparentMasked = new StandardMaterial3D
-                {
-                    ResourceName = Name,
-                    Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass,
-                    AlbedoTexture = ImageTexture.CreateFromImage(firstImage),
-                    CullMode = (Flags & 0x1) != 0
-                        ? BaseMaterial3D.CullModeEnum.Disabled
-                        : BaseMaterial3D.CullModeEnum.Back,
-                };
-                transparentMasked.SetMeta("pfs_file_name", firstImage.GetMeta("pfs_file_name"));
-                transparentMasked.SetMeta("original_file_name", firstImage.GetMeta("original_file_name"));
-                transparentMasked.SetMeta("original_file_type", firstImage.GetMeta("original_file_type"));
-                return transparentMasked;
-            }
 
             if (SimpleSprite.SimpleSpriteDef.Animated)
             {
                 Godot.Collections.Array<Image> a = [];
-                foreach (var image in bitmapNames.Select(name => (archive.FilesByName[name] as Image)))
+                foreach (var image in bitmapNames.Select(loader.GetImage))
                 {
-                    a.Add(image);
+                    a.Add(ApplyBmpTransparency(image));
+                }
+                
+                var texture2DArray = new Texture2DArray();
+                texture2DArray.CreateFromImages(ExpandTextureArray(a));
+
+                var code = "shader_type spatial;\n\n";
+
+                if (ShaderType is ShaderTypeEnumType.TransparentAdditive)
+                {
+                    code += "render_mode blend_add;\n";
                 }
 
-                var texture2DArray = new Texture2DArray();
-                texture2DArray.CreateFromImages(a);
+                code += @"
+                    uniform sampler2DArray textures;
+                    uniform int step_time;
+                    uniform int total_time;
 
-                var material = new ShaderMaterial()
+                    void fragment() {
+	                    int texture_number = (int(TIME * 1000.0) % total_time) / step_time;
+	                    vec4 texture_color = texture(textures, vec3(UV, float(texture_number)));
+	                    ALBEDO.rgb = texture_color.rgb;
+                    }
+                ";
+
+                var shader = new Shader()
+                {
+                    Code = code,
+                };
+
+                var animatedMaterial = new ShaderMaterial()
                 {
                     ResourceName = Name,
-                    Shader = ResourceLoader.Load<Shader>("res://shaders/animated_texture.gdshader"),
+                    Shader = shader,
                 };
-                material.SetShaderParameter("textures", texture2DArray);
-                material.SetShaderParameter("step_time", SimpleSprite.SimpleSpriteDef.AnimationDelayMs);
-                material.SetShaderParameter("total_time",
+                animatedMaterial.SetShaderParameter("textures", texture2DArray);
+                animatedMaterial.SetShaderParameter("step_time", SimpleSprite.SimpleSpriteDef.AnimationDelayMs);
+                animatedMaterial.SetShaderParameter("total_time",
                     SimpleSprite.SimpleSpriteDef.AnimationDelayMs * bitmapNames.Count);
+                animatedMaterial.SetShaderParameter("render_method", RenderMethod);
+                animatedMaterial.SetMeta("render_method", $"0x{RenderMethod:x}");
 
-                return material;
+                return animatedMaterial;
             }
 
-            var fallbackMaterial = new StandardMaterial3D()
+            var firstImage = loader.GetImage(bitmapNames[0]);
+            var transparentMasked = new StandardMaterial3D
             {
                 ResourceName = Name,
-                AlbedoTexture = ImageTexture.CreateFromImage(firstImage),
-                CullMode = (Flags & 0x1) != 0 ? BaseMaterial3D.CullModeEnum.Disabled : BaseMaterial3D.CullModeEnum.Back,
+                Transparency = ApplyTransparency()
+                    ? BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass
+                    : BaseMaterial3D.TransparencyEnum.Disabled,
+                BlendMode = ShaderType is ShaderTypeEnumType.TransparentAdditive
+                    ? BaseMaterial3D.BlendModeEnum.Add
+                    : BaseMaterial3D.BlendModeEnum.Mix,
+                AlbedoTexture = ImageToTexture(ApplyBmpTransparency(firstImage)),
+                CullMode = (Flags & 0x1) != 0
+                    ? BaseMaterial3D.CullModeEnum.Disabled
+                    : BaseMaterial3D.CullModeEnum.Back,
             };
-            fallbackMaterial.SetMeta("ShaderType", ShaderType.ToString());
-            fallbackMaterial.SetMeta("pfs_file_name", firstImage.GetMeta("pfs_file_name"));
-            fallbackMaterial.SetMeta("original_file_name", firstImage.GetMeta("original_file_name"));
-            fallbackMaterial.SetMeta("original_file_type", firstImage.GetMeta("original_file_type"));
-            return fallbackMaterial;
+            transparentMasked.SetMeta("pfs_file_name", firstImage.GetMeta("pfs_file_name"));
+            transparentMasked.SetMeta("original_file_name", firstImage.GetMeta("original_file_name"));
+            transparentMasked.SetMeta("original_file_type", firstImage.GetMeta("original_file_type"));
+            transparentMasked.SetMeta("render_method", $"0x{RenderMethod:x}");
+            return transparentMasked;
         }
 
         GD.PrintErr($"Material: {Name} doesn't have a texture");
@@ -168,5 +186,95 @@ public partial class Frag30MaterialDef : WldFragment
         {
             ResourceName = Name
         };
+    }
+
+    private bool ApplyTransparency()
+    {
+        return ShaderType is ShaderTypeEnumType.TransparentMasked or ShaderTypeEnumType.TransparentAdditive;
+    }
+
+    private Image ApplyBmpTransparency(Image image)
+    {
+        if (!ApplyTransparency() || (bool)image.GetMeta("palette_present") == false)
+            return image;
+
+        if ((string)image.GetMeta("original_file_type") != "BMP") return image;
+        var a = (int)image.GetMeta("transparent_a");
+        var r = (int)image.GetMeta("transparent_r");
+        var g = (int)image.GetMeta("transparent_g");
+        var b = (int)image.GetMeta("transparent_b");
+
+        var data = image.GetData();
+        for (var i = 0; i < data.Length; i += 4)
+        {
+            if (data[i] != r || data[i + 1] != g || data[i + 2] != b || data[i + 3] != a) continue;
+            data[i + 0] = 0;
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+            data[i + 3] = 0;
+        }
+
+        var result = Image.CreateFromData(image.GetWidth(), image.GetHeight(), false, Image.Format.Rgba8, data);
+        result.ResourceName = image.ResourceName;
+        foreach (var metaName in image.GetMetaList())
+        {
+            result.SetMeta(metaName, image.GetMeta(metaName));
+        }
+
+        return result;
+    }
+
+    private static ImageTexture ImageToTexture(Image image)
+    {
+        var texture = ImageTexture.CreateFromImage(image);
+        texture.ResourceName = image.ResourceName;
+        foreach (var metaName in image.GetMetaList())
+        {
+            texture.SetMeta(metaName, image.GetMeta(metaName));
+        }
+
+        return texture;
+    }
+
+    private static Godot.Collections.Array<Image> ExpandTextureArray(Godot.Collections.Array<Image> list)
+    {
+        var maxWidth = 0;
+        var maxHeight = 0;
+        foreach (var image in list)
+        {
+            if (image.GetHeight() > maxHeight) maxHeight = image.GetHeight();
+            if (image.GetWidth() > maxWidth) maxWidth = image.GetWidth();
+        }
+
+        foreach (var image in list)
+        {
+            var originalWidth = image.GetWidth();
+            if (image.GetWidth() < maxWidth)
+            {
+                image.Crop(maxWidth, image.GetHeight());
+                for (var i = 1;
+                     i < (maxWidth / originalWidth) + 1;
+                     i++)
+                {
+                    image.BlitRect(image, new Rect2I(0, 0, originalWidth, image.GetHeight()),
+                        new Vector2I(i * originalWidth, 0));
+                }
+            }
+
+            var originalHeight = image.GetHeight();
+            if (image.GetHeight() >= maxHeight) continue;
+            {
+                image.Crop(image.GetWidth(), maxHeight);
+                for (var i = 1;
+                     i < (maxHeight / originalHeight) + 1;
+                     i++)
+                {
+                    image.BlitRect(image, new Rect2I(0, 0, image.GetWidth(), originalHeight),
+                        new Vector2I(0, i * originalHeight));
+                }
+            }
+        }
+
+        return list;
     }
 }

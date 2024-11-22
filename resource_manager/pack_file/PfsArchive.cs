@@ -8,6 +8,7 @@ using Godot;
 using Godot.Collections;
 using Pfim;
 using Bitmap = System.Drawing.Bitmap;
+using Color = System.Drawing.Color;
 
 namespace EQGodot.resource_manager.pack_file;
 
@@ -16,14 +17,12 @@ public partial class PfsArchive : Resource
 {
     [Export] public string LoadedPath;
     [Export] public Array<Resource> Files = [];
-    [Export] public Godot.Collections.Dictionary<string, Resource> FilesByName = [];
     [Export] public Godot.Collections.Dictionary<string, WldFile> WldFiles = [];
-    [Export] public bool IsWldArchive;
     [Export] public PfsArchiveType Type;
 
-    public void ProcessImages()
+    public async Task<Godot.Collections.Dictionary<string, Image>> ProcessImages()
     {
-        List<Task> tasks = [];
+        List<Task<(string, Image)>> tasks = [];
         for (var i = 0; i < Files.Count; i++)
         {
             if (Files[i] is not PFSFile file)
@@ -35,58 +34,28 @@ public partial class PfsArchive : Resource
             if (file.FileBytes[0] == 'D' &&
                 file.FileBytes[1] == 'D' && file.FileBytes[2] == 'S')
             {
-                var localI = i;
-                var imageTask = Task.Factory.StartNew(() => { ProcessDdsImage(file, localI); });
-                tasks.Add(imageTask);
+                var ddsTask = Task.Run(async () => await ProcessDdsImage(file));
+                tasks.Add(ddsTask);
             }
 
             if (file.FileBytes[0] == 'B' && file.FileBytes[1] == 'M')
             {
-                var localI = i;
-                var imageTask = Task.Factory.StartNew(() => { ProcessBmpImage(file, localI); });
-                tasks.Add(imageTask);
+                var bmpTask = Task.Run(async () => await ProcessBmpImage(file));
+                tasks.Add(bmpTask);
             }
         }
 
-        Task.WaitAll([..tasks]);
-    }
-
-    public void ProcessWldFiles()
-    {
-        List<Task> wldHandles = [];
-        for (var i = 0; i < Files.Count; i++)
-            if (Files[i] is PFSFile pfsFile)
-                if (pfsFile.Name.EndsWith(".wld"))
-                    try
-                    {
-                        IsWldArchive = true;
-                        var index = i;
-                        var pfs = pfsFile;
-                        wldHandles.Add(Task.Run(() => ProcessWldResource(pfs, index)));
-                    }
-                    catch (Exception ex)
-                    {
-                        GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
-                    }
-
-        Task.WaitAll([.. wldHandles]);
-
-        if (WldFiles.ContainsKey("lights.wld"))
+        var images = await Task.WhenAll([..tasks]);
+        Godot.Collections.Dictionary<string, Image> result = [];
+        foreach (var im in images)
         {
-            Type = PfsArchiveType.Zone;
-            return;
+            result.Add(im.Item1, im.Item2);
         }
 
-        if (LoadedPath.Contains("_chr"))
-        {
-            Type = PfsArchiveType.Character;
-            return;
-        }
-
-        Type = PfsArchiveType.Equipment;
+        return result;
     }
 
-    private void ProcessDdsImage(PFSFile pfsFile, int index)
+    private async Task<(string, Image)> ProcessDdsImage(PFSFile pfsFile)
     {
         try
         {
@@ -112,9 +81,7 @@ public partial class PfsArchive : Resource
                 image.SetMeta("pfs_file_name", pfsFile.ArchiveName);
                 image.SetMeta("original_file_name", pfsFile.Name);
                 image.SetMeta("original_file_type", "DDS");
-                // image.FlipY();
-                Files[index] = image;
-                FilesByName[pfsFile.Name] = image;
+                return (pfsFile.Name, image);
             }
             catch (Exception ex)
             {
@@ -125,9 +92,11 @@ public partial class PfsArchive : Resource
         {
             GD.PrintErr($"ProcessDDSImage: Exception while processing image from {pfsFile.Name}: {ex}");
         }
+
+        return (pfsFile.Name, null);
     }
 
-    private void ProcessBmpImage(PFSFile pfsFile, int index)
+    private async Task<(string, Image)> ProcessBmpImage(PFSFile pfsFile)
     {
         try
         {
@@ -155,15 +124,22 @@ public partial class PfsArchive : Resource
                 image.SetMeta("pfs_file_name", pfsFile.ArchiveName);
                 image.SetMeta("original_file_name", pfsFile.Name);
                 image.SetMeta("original_file_type", "BMP");
-                if (image != null)
+                if (bitmap.Palette.Entries.Length > 0)
                 {
-                    Files[index] = image;
-                    FilesByName[pfsFile.Name] = image;
+                    Color transparent = (Color)bitmap.Palette.Entries.GetValue(0);
+                    image.SetMeta("palette_present", true);
+                    image.SetMeta("transparent_r", transparent.R);
+                    image.SetMeta("transparent_g", transparent.G);
+                    image.SetMeta("transparent_b", transparent.B);
+                    image.SetMeta("transparent_a", transparent.A);
                 }
                 else
                 {
-                    GD.PrintErr($"No image could be created properly from {pfsFile.Name}");
+                    image.SetMeta("palette_present", false);
                 }
+
+                image.ResourceName = pfsFile.Name;
+                return (pfsFile.Name, image);
             }
             catch (Exception ex)
             {
@@ -174,13 +150,36 @@ public partial class PfsArchive : Resource
         {
             GD.PrintErr($"ProcessBMPImage: Exception while processing image from {pfsFile.Name}: {ex}");
         }
+
+        return (pfsFile.Name, null);
     }
 
-    private void ProcessWldResource(PFSFile pfsFile, int index)
+    public Godot.Collections.Dictionary<string, WldFile> ProcessWldFiles(EqResourceLoader loader)
     {
-        var wld = new WldFile(pfsFile, this);
+        List<Task> wldHandles = [];
+        for (var i = 0; i < Files.Count; i++)
+            if (Files[i] is PFSFile pfsFile)
+                if (pfsFile.Name.EndsWith(".wld"))
+                    try
+                    {
+                        var index = i;
+                        var pfs = pfsFile;
+                        wldHandles.Add(Task.Run(() => ProcessWldResource(pfs, index, loader)));
+                    }
+                    catch (Exception ex)
+                    {
+                        GD.PrintErr("Exception while processing ", pfsFile.Name, " ", ex);
+                    }
+
+        Task.WaitAll([.. wldHandles]);
+
+        return WldFiles;
+    }
+
+    private void ProcessWldResource(PFSFile pfsFile, int index, EqResourceLoader loader)
+    {
+        var wld = new WldFile(pfsFile, loader);
         Files[index] = wld;
-        FilesByName[pfsFile.Name] = wld;
         WldFiles[pfsFile.Name] = wld;
     }
 }
