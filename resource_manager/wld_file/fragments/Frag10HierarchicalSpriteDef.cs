@@ -109,7 +109,7 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
 
             if (meshBoneRef?.NewMesh != null)
             {
-                GD.Print($"Found bone {boneName}({i}) with Mesh {meshBoneRef.NewMesh.Name} and ref {meshReference}");
+                // GD.Print($"Found bone {boneName}({i}) with Mesh {meshBoneRef.NewMesh.Name} and ref {meshReference}");
                 meshBoneRef.NewMesh.AttachedBoneId = i;
                 pieceNew.NewMesh = meshBoneRef.NewMesh;
                 NewMeshesByBone.Add(i, meshBoneRef.NewMesh);

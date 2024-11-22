@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://d3dhtpjlmacg7"]
+[gd_scene load_steps=5 format=3 uid="uid://d3dhtpjlmacg7"]
 
 [ext_resource type="Script" path="res://GameController/GameController.cs" id="1_yhlwj"]
 [ext_resource type="Script" path="res://resource_manager/ResourceManager.cs" id="2_57lqd"]
-[ext_resource type="Script" path="res://resource_manager/EqResources.cs" id="3_re2rf"]
+[ext_resource type="Script" path="res://resource_manager/EqGlobalResources.cs" id="3_74vw4"]
+[ext_resource type="Script" path="res://resource_manager/EqZoneResources.cs" id="4_nswmo"]
 
 [node name="GameController" type="Node"]
 script = ExtResource("1_yhlwj")
@@ -20,10 +21,10 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 
 process_thread_group = 2
 process_thread_group_order = 0
 process_thread_messages = 1
-script = ExtResource("3_re2rf")
+script = ExtResource("3_74vw4")
 
 [node name="ZoneResources" type="Node" parent="ResourceManager"]
 process_thread_group = 2
 process_thread_group_order = 0
 process_thread_messages = 0
-script = ExtResource("3_re2rf")
+script = ExtResource("4_nswmo")

@@ -116,7 +116,7 @@ public partial class Frag30MaterialDef : WldFragment
                 {
                     a.Add(ApplyBmpTransparency(image));
                 }
-                
+
                 var texture2DArray = new Texture2DArray();
                 texture2DArray.CreateFromImages(ExpandTextureArray(a));
 
@@ -163,7 +163,7 @@ public partial class Frag30MaterialDef : WldFragment
             var transparentMasked = new StandardMaterial3D
             {
                 ResourceName = Name,
-                Transparency = ApplyTransparency()
+                Transparency = ShouldApplyTransparency()
                     ? BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass
                     : BaseMaterial3D.TransparencyEnum.Disabled,
                 BlendMode = ShaderType is ShaderTypeEnumType.TransparentAdditive
@@ -188,14 +188,15 @@ public partial class Frag30MaterialDef : WldFragment
         };
     }
 
-    private bool ApplyTransparency()
+    private bool ShouldApplyTransparency()
     {
         return ShaderType is ShaderTypeEnumType.TransparentMasked or ShaderTypeEnumType.TransparentAdditive;
     }
 
     private Image ApplyBmpTransparency(Image image)
     {
-        if (!ApplyTransparency() || (bool)image.GetMeta("palette_present") == false)
+        if (!ShouldApplyTransparency() ||
+            (image.HasMeta("palette_present") && (bool)image.GetMeta("palette_present") == false))
             return image;
 
         if ((string)image.GetMeta("original_file_type") != "BMP") return image;

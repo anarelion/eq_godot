@@ -14,7 +14,7 @@ internal static class HierarchicalActorBuilder
         WldFile wld)
     {
         var name = FragmentNameCleaner.CleanName(actordef);
-        GD.Print($"HierarchicalActorBuilder::Convert: {name}");
+        // GD.Print($"HierarchicalActorBuilder::Convert: {name}");
 
         HierarchicalActorDefinition actor = new()
         {

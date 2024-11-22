@@ -1,12 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using EQGodot.resource_manager.godot_resources;
 using EQGodot.resource_manager.pack_file;
-using EQGodot.resource_manager.wld_file;
-using EQGodot.resource_manager.wld_file.fragments;
 using Godot;
 
 namespace EQGodot.resource_manager;
@@ -19,21 +14,12 @@ public partial class ResourceManager : Node
     private EqResources _globalResources;
     private EqResources _zoneResources;
 
-    // Tasks loading stuff
-    private readonly List<Task<PfsArchive>> _s3dDecompressionTasks = [];
-    private readonly List<Task<PfsArchive>> _imageProcessingTasks = [];
-    private readonly List<Task<PfsArchive>> _wldProcessingTasks = [];
-
     public override void _Ready()
     {
         GD.Print("Starting Resource Manager!");
         _sceneRoot = GetNode<Node3D>("SceneRoot");
-        _globalResources = GetNode<EqResources>("GlobalResources");
-        _zoneResources = GetNode<EqResources>("ZoneResources");
-
-        _globalResources.CallThreadSafe("StartEqResourceLoad", "gequip");
-        _globalResources.CallThreadSafe("StartEqResourceLoad", "global_chr");
-        _zoneResources.CallThreadSafe("StartEqResourceLoad", "gfaydark");
+        _globalResources = GetNode<EqGlobalResources>("GlobalResources");
+        _zoneResources = GetNode<EqZoneResources>("ZoneResources");
     }
 
     public override void _Process(double delta)

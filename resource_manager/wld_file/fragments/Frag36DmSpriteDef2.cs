@@ -208,7 +208,6 @@ public partial class Frag36DmSpriteDef2 : WldFragment
 
         if (AttachedBoneId >= 0)
         {
-            GD.Print($"Attaching {Name} to {AttachedBoneId}");
             var bones = new int[Vertices.Length * 4];
             var weights = new float[Vertices.Length * 4];
             for (var j = 0; j < Vertices.Length; j++)

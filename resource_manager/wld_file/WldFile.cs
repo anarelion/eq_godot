@@ -54,7 +54,7 @@ public partial class WldFile : Resource
         Name = pfsFile.Name;
         var content = pfsFile.FileBytes;
 
-        GD.Print($"WldFile {Name}: extracting WLD archive of length {content.Length}");
+        // GD.Print($"WldFile {Name}: extracting WLD archive of length {content.Length}");
         var reader = new BinaryReader(new MemoryStream(content));
 
         var identifier = reader.ReadInt32();
@@ -140,14 +140,14 @@ public partial class WldFile : Resource
             _fragmentTypeDictionary[newFragment.GetType()].Add(newFragment);
         }
 
-        GD.Print($"WldFile {Name}: finished loading.");
+        // GD.Print($"WldFile {Name}: finished loading.");
         BuildMaterials(loader);
         // BuildNewMeshes();
         BuildActorDefs();
         BuildAnimations();
         BuildWorldTree();
         BuildLights();
-        GD.Print($"WldFile {Name}: completed.");
+        // GD.Print($"WldFile {Name}: completed.");
     }
 
     [Export] public string Name { get; set; }
@@ -230,7 +230,7 @@ public partial class WldFile : Resource
             var hsDef = actorDef.HierarchicalSprite?.HierarchicalSpriteDef;
             if (hsDef != null)
             {
-                GD.Print($@"WldFile {Name}: {actorDef.Name}");
+                // GD.Print($@"WldFile {Name}: {actorDef.Name}");
                 var godotHierarchicalActor = HierarchicalActorBuilder.Convert(actorDef, hsDef, this);
                 ActorDefs.Add(godotHierarchicalActor.ResourceName, godotHierarchicalActor);
                 AddResource(actorDef.Name, godotHierarchicalActor);
@@ -287,7 +287,6 @@ public partial class WldFile : Resource
 
     private void BuildWorldTree()
     {
-        GD.Print("WldFile: Building world tree");
         var worlds = GetFragmentsOfType<Frag21WorldTree>();
         switch (worlds.Count)
         {
@@ -297,7 +296,7 @@ public partial class WldFile : Resource
                 GD.PrintErr($"More than one world tree found for {Name}.");
                 break;
         }
-
+        GD.Print("WldFile: Building world tree");
         WorldTree = worlds[0];
         var regions = GetFragmentsOfType<Frag22Region>();
         WorldTree.LinkBspRegions(regions);
