@@ -1,5 +1,9 @@
 extends Button
 
 func _on_button_pressed():
-	get_tree().current_scene._resources.InstantiateCharacter("it149")
+	var resources = get_tree().current_scene._resources
+	var character = resources.InstantiateCharacter("elm")
+	character.AttachItem("it149", "r_point", resources)
+	
+	
 	# get_tree().current_scene.Resources.InstantiateZone()

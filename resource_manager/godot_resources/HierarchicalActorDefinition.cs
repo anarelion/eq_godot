@@ -55,9 +55,8 @@ public partial class HierarchicalActorDefinition : ActorDefinition
     {
         var skeleton = new Skeleton3D
         {
-            Name = $"{Tag}_Skeleton"
+            Name = $"{Tag}_skeleton"
         };
-        GD.Print($"Building {skeleton.Name} skeleton");
         foreach (var bone in Bones)
         {
             skeleton.AddBone(bone.Name);
@@ -65,10 +64,7 @@ public partial class HierarchicalActorDefinition : ActorDefinition
             skeleton.SetBonePoseRotation(bone.Index, bone.BasePosition.Rotation[0]);
             var scale = bone.BasePosition.Scale[0];
             skeleton.SetBonePoseScale(bone.Index, new Vector3(scale, scale, scale));
-
-            GD.Print(
-                $"Instantiating {bone.Name}({bone.Index}) at {bone.BasePosition.Translation[0]} rotation = {bone.BasePosition.Rotation[0]} scale = {scale}");
-
+            
             if (bone.Parent != null)
                 skeleton.SetBoneParent(bone.Index, bone.Parent.Index);
 
@@ -79,11 +75,6 @@ public partial class HierarchicalActorDefinition : ActorDefinition
                 BoneName = bone.Name,
             };
             skeleton.AddChild(attachment);
-            // if (bone.Mesh != null)
-            // {
-            //     attachment.AddChild(new MeshInstance3D
-            //         { Name = bone.Mesh.ResourceName, Mesh = bone.Mesh, Scale = bone.SkeletonTrack.Scale[0] });
-            // }
         }
 
         return skeleton;

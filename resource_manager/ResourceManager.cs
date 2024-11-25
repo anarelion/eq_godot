@@ -31,14 +31,21 @@ public partial class ResourceManager : Node
         return _zoneResources.GetImage(imageName) ?? _globalResources.GetImage(imageName);
     }
 
-    public void InstantiateCharacter(string tag)
+    public HierarchicalActorInstance InstantiateCharacter(string tag)
+    {
+        return InstantiateHierarchicalInto(tag, _sceneRoot);
+    }
+    
+    public HierarchicalActorInstance InstantiateHierarchicalInto(string tag, Node where)
     {
         GD.Print($"Instantiating character: {tag}");
         var actor = _zoneResources.GetActor(tag) ?? _globalResources.GetActor(tag);
         if (actor == null) GD.Print($"Instantiating character: {tag} not found");
-        if (actor is not HierarchicalActorDefinition hierarchicalActor) return;
-        GD.Print($"Instantiating Hierarchical Actor {hierarchicalActor.ResourceName}");
-        _sceneRoot.AddChild(hierarchicalActor.InstantiateCharacter(this));
+        if (actor is not HierarchicalActorDefinition hierarchicalActor) return null;
+        GD.Print($"Instantiating Hierarchical Actor {hierarchicalActor.ResourceName} on {where.Name}");
+        var character = hierarchicalActor.InstantiateCharacter(this);
+        where.AddChild(character);
+        return character;
     }
 
     // private void ProcessConvertedWldFiles()
