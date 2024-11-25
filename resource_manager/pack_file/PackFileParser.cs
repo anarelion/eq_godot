@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.IO.Compression;
 using Godot;
-using Ionic.Zlib;
 
 namespace EQGodot.resource_manager.pack_file;
 
@@ -89,7 +89,7 @@ public static class PackFileParser
 
         files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
-        var archive = new PfsArchive() {LoadedPath = path};
+        var archive = new PfsArchive() { LoadedPath = path };
         foreach (var x in files) archive.Files.Add(x);
 
         for (var i = 0; i < files.Count; ++i)
@@ -110,54 +110,19 @@ public static class PackFileParser
 
             files[i].ResourceName = files[i].Name;
         }
-        
+
         return archive;
     }
-    
+
 
     private static bool InflateBlock(byte[] deflatedBytes, int inflatedSize, out byte[] inflatedBytes)
     {
-        var output = new byte[inflatedSize];
+        using var inputStream = new MemoryStream(deflatedBytes);
+        using var decompressStream = new ZLibStream(inputStream, CompressionMode.Decompress);
+        using var outputStream = new MemoryStream();
 
-        using var memoryStream = new MemoryStream();
-        var zlibCodec = new ZlibCodec();
-        zlibCodec.InitializeInflate(true);
-
-        zlibCodec.InputBuffer = deflatedBytes;
-        zlibCodec.AvailableBytesIn = deflatedBytes.Length;
-        zlibCodec.NextIn = 0;
-        zlibCodec.OutputBuffer = output;
-
-        foreach (var f in new[] { FlushType.None, FlushType.Finish })
-        {
-            int bytesToWrite;
-
-            do
-            {
-                zlibCodec.AvailableBytesOut = inflatedSize;
-                zlibCodec.NextOut = 0;
-                try
-                {
-                    zlibCodec.Inflate(f);
-                }
-                catch (Exception e)
-                {
-                    inflatedBytes = null;
-                    GD.PrintErr("PfsArchive: Exception caught while inflating bytes: " + e);
-                    throw new Exception($"PfsArchive: Exception caught while inflating bytes: {e}");
-                }
-
-                bytesToWrite = inflatedSize - zlibCodec.AvailableBytesOut;
-                if (bytesToWrite > 0)
-                    memoryStream.Write(output, 0, bytesToWrite);
-            } while ((f == FlushType.None &&
-                      (zlibCodec.AvailableBytesIn != 0 || zlibCodec.AvailableBytesOut == 0)) ||
-                     (f == FlushType.Finish && bytesToWrite != 0));
-        }
-
-        zlibCodec.EndInflate();
-
-        inflatedBytes = output;
+        decompressStream.CopyTo(outputStream);
+        inflatedBytes = outputStream.ToArray();
         return true;
     }
 }

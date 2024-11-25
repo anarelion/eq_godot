@@ -6,9 +6,8 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="DotNetZip" Version="1.16.0"/>
-        <PackageReference Include="Nito.HashAlgorithms.CRC" Version="1.0.1"/>
-        <PackageReference Include="Pfim" Version="0.11.2"/>
-        <PackageReference Include="System.Drawing.Common" Version="8.0.5"/>
+        <PackageReference Include="Nito.HashAlgorithms.CRC" Version="1.0.1" />
+        <PackageReference Include="Pfim" Version="0.11.3" />
+        <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
     </ItemGroup>
 </Project>
