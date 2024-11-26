@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
@@ -29,21 +30,21 @@ public partial class HierarchicalActorDefinition : ActorDefinition
         var animationPlayer = new AnimationPlayer { Name = Tag + "_anim_player" };
         var animationLibrary = new AnimationLibrary();
 
-        // var animations = resourceManager.GetAnimationsFor(Tag).GroupBy(r => r.AnimationName)
-        //     .ToDictionary(g => g.Key, g => g.ToList());
+        var animations = resourceManager.GetAnimationsFor(Tag).GroupBy(r => r.AnimationName)
+            .ToDictionary(g => g.Key, g => g.ToList());
 
-        // foreach (var group in animations)
-        // {
-        //     var animation = new Animation();
-        //     animation.ResourceName = group.Key;
-        //     animation.LoopMode = Animation.LoopModeEnum.Linear;
-        //     foreach (var bone in group.Value)
-        //     {
-        //         bone.ApplyToAnimation(animation);
-        //     }
-        //
-        //     animationLibrary.AddAnimation(group.Key, animation);
-        // }
+        foreach (var group in animations)
+        {
+            var animation = new Animation();
+            animation.ResourceName = group.Key;
+            animation.LoopMode = Animation.LoopModeEnum.Linear;
+            foreach (var bone in group.Value)
+            {
+                bone.ApplyToAnimation(animation);
+            }
+
+            animationLibrary.AddAnimation(group.Key, animation);
+        }
 
         animationPlayer.AddAnimationLibrary($"{Tag}_library", animationLibrary);
         skeleton.AddChild(animationPlayer);
@@ -64,7 +65,7 @@ public partial class HierarchicalActorDefinition : ActorDefinition
             skeleton.SetBonePoseRotation(bone.Index, bone.BasePosition.Rotation[0]);
             var scale = bone.BasePosition.Scale[0];
             skeleton.SetBonePoseScale(bone.Index, new Vector3(scale, scale, scale));
-            
+
             if (bone.Parent != null)
                 skeleton.SetBoneParent(bone.Index, bone.Parent.Index);
 

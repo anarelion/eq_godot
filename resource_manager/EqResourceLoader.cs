@@ -48,6 +48,18 @@ public partial class EqResourceLoader : Node
         return ActorDefs.GetValueOrDefault(tag);
     }
 
+    public Dictionary<(string, string), ActorSkeletonPath> GetAnimationsFor(string tag)
+    {
+        Dictionary<(string, string), ActorSkeletonPath> result = [];
+        foreach (var animation in ExtraAnimations.Values)
+        {
+            if (animation.ActorName != tag) continue;
+            result[(animation.AnimationName, animation.BoneName)] = animation;
+        }
+
+        return result;
+    }
+
     private async Task<bool> LoadFile(string name)
     {
         GD.Print($"EqResourceLoader: requesting {name} at age {AgeCounter}");
@@ -97,6 +109,7 @@ public partial class EqResourceLoader : Node
         if (wldFiles.TryGetValue($"{Name}.wld", out var mainWld))
         {
             ActorDefs = mainWld.ActorDefs;
+            ExtraAnimations = mainWld.ExtraAnimations;
         }
 
         return true;

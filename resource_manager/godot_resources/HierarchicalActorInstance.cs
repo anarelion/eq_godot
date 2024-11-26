@@ -15,6 +15,14 @@ public partial class HierarchicalActorInstance : Node3D
 
     public void AttachItem(string tag, string bone, ResourceManager resourceManager)
     {
-        resourceManager.InstantiateHierarchicalInto(tag, this.GetNode($"{Name}_skeleton/{bone}_attachment"));
+        NodePath wherePath = $"{Name}_skeleton/{bone}_attachment";
+        if (!HasNode(wherePath))
+        {
+            GD.PrintErr($"No attachment point found for {wherePath}");
+            return;
+        }
+
+        var where = GetNode<BoneAttachment3D>(wherePath);
+        resourceManager.InstantiateHierarchicalInto(tag, where);
     }
 }

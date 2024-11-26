@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
 using EQGodot.resource_manager.godot_resources;
-using EQGodot.resource_manager.pack_file;
 using Godot;
 
 namespace EQGodot.resource_manager;
@@ -35,7 +34,7 @@ public partial class ResourceManager : Node
     {
         return InstantiateHierarchicalInto(tag, _sceneRoot);
     }
-    
+
     public HierarchicalActorInstance InstantiateHierarchicalInto(string tag, Node where)
     {
         GD.Print($"Instantiating character: {tag}");
@@ -48,26 +47,19 @@ public partial class ResourceManager : Node
         return character;
     }
 
-    // private void ProcessConvertedWldFiles()
-    // {
-    //     foreach (var wldTask in _wldProcessingTasks.ToList().Where(task => task.IsCompleted))
-    //     {
-    //         var archive = wldTask.Result;
-    //         GD.Print($"Completed Wld Processing {archive.LoadedPath} in a thread");
-    //         _wldProcessingTasks.Remove(wldTask);
-    //
-    //         switch (archive.Type)
-    //         {
-    //             case PfsArchiveType.Character:
-    //             case PfsArchiveType.Equipment:
-    //                 foreach (var wldFile in archive.WldFiles.Values)
-    //                 {
-    //                     GD.Print($"Processing Wld Actors {wldFile}");
-    //                     ProcessWldActors(wldFile);
-    //                 }
-    //
-    //                 break;
-    //
+    public List<ActorSkeletonPath> GetAnimationsFor(string actorName)
+    {
+        GD.Print($"Getting animations for {actorName}");
+        var result = _zoneResources.GetAnimationsFor(actorName);
+        foreach (var animation in _globalResources.GetAnimationsFor(actorName).Values)
+        {
+            result[(animation.AnimationName, animation.BoneName)] = animation;
+        }
+        
+        GD.Print($"Got {result.Count} for {actorName}");
+        return result.Values.ToList();
+    }
+
     //             case PfsArchiveType.Zone:
     //                 var lights = archive.WldFiles.GetValueOrDefault("lights.wld");
     //                 if (lights == null)
@@ -96,28 +88,6 @@ public partial class ResourceManager : Node
     //                     }
     //                 }
     //
-    //                 break;
-    //             default:
-    //                 throw new ArgumentOutOfRangeException();
-    //         }
-    //     }
-    // }
-    //
-    //
-    //
-    // private static string ConvertAnimationTag(string tagName)
-    // {
-    //     return tagName;
-    // }
-    //
-    // public void InstantiateActor(string tag)
-    // {
-    //     if (_hierarchicalActor.TryGetValue(tag, out var actor))
-    //     {
-    //         GD.Print($"Instantiating Hierarchical Actor {actor.ResourceName}");
-    //         _sceneRoot.AddChild(actor.InstantiateCharacter(this));
-    //     }
-    // }
     //
     // public void InstantiateZone()
     // {
@@ -130,14 +100,7 @@ public partial class ResourceManager : Node
     //     }
     // }
     //
-    // public List<ActorSkeletonPath> GetAnimationsFor(string actorName)
-    // {
-    //     GD.Print($"Getting animations for {actorName}");
-    //     List<ActorSkeletonPath> result = [];
-    //     result.AddRange(_extraAnimations.Values.Where(animation => animation.ActorName == actorName));
-    //     GD.Print($"Got {result.Count} out of {_extraAnimations.Count} animations for {actorName}");
-    //     return result;
-    // }
+
 
     // Zone loading orchestration
     // Notes, the order in which the original client loads files is

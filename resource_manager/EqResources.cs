@@ -60,4 +60,21 @@ public partial class EqResources : Node
 
         return null;
     }
+
+    public Dictionary<(string, string), ActorSkeletonPath> GetAnimationsFor(string tag)
+    {
+        Dictionary<(string, string), ActorSkeletonPath> result = [];
+        var children = GetChildren();
+        children.Reverse();
+        foreach (var node in children)
+        {
+            if (node is not EqResourceLoader loader) continue;
+            foreach (var animation in loader.GetAnimationsFor(tag).Values)
+            {
+                result[(animation.AnimationName, animation.BoneName)] = animation;
+            }
+        }
+
+        return result;
+    }
 }
