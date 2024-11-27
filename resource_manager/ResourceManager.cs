@@ -51,9 +51,9 @@ public partial class ResourceManager : Node
     {
         GD.Print($"Getting animations for {actorName}");
         var result = _zoneResources.GetAnimationsFor(actorName);
-        foreach (var animation in _globalResources.GetAnimationsFor(actorName).Values)
+        foreach (var animation in _globalResources.GetAnimationsFor(actorName))
         {
-            result[(animation.AnimationName, animation.BoneName)] = animation;
+            result[animation.Key] = animation.Value;
         }
         
         GD.Print($"Got {result.Count} for {actorName}");
