@@ -13,6 +13,7 @@ public partial class EqResourceLoader : Node
 {
     [Export] public string FileName;
     [Export] public bool Loaded;
+    [Export] public bool Failed;
     [Export] public int AgeCounter;
 
     [Export] public Godot.Collections.Dictionary<string, Image> Images = [];
@@ -31,26 +32,33 @@ public partial class EqResourceLoader : Node
 
     public override void _Process(double delta)
     {
-        if (_task == null || Loaded || !_task.IsCompleted) return;
+        if (Loaded || _task == null || !_task.IsCompleted) return;
 
-        GD.Print($"EqResourceLoader: completed processing {Name} age {AgeCounter}");
+        if (_task.IsFaulted || _task.Result == false)
+        {
+            Failed = true;
+        }
+
         Loaded = true;
         _task = null;
+
+        GD.Print($"EqResourceLoader: completed processing {Name} age {AgeCounter} failed {Failed}");
     }
 
     public Image GetImage(string imageName)
     {
-        return Images.GetValueOrDefault(imageName);
+        return Failed ? null : Images.GetValueOrDefault(imageName);
     }
 
     public Resource GetActor(string tag)
     {
-        return ActorDefs.GetValueOrDefault(tag);
+        return Failed ? null : ActorDefs.GetValueOrDefault(tag);
     }
 
     public Dictionary<(string, string), ActorSkeletonPath> GetAnimationsFor(string tag)
     {
         Dictionary<(string, string), ActorSkeletonPath> result = [];
+        if (Failed) return result;
         foreach (var animation in ExtraAnimations.Values)
         {
             if (animation.ActorName != tag) continue;
