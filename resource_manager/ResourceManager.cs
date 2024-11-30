@@ -55,7 +55,7 @@ public partial class ResourceManager : Node
         {
             result[animation.Key] = animation.Value;
         }
-        
+
         GD.Print($"Got {result.Count} for {actorName}");
         return result.Values.ToList();
     }
@@ -100,11 +100,7 @@ public partial class ResourceManager : Node
     //     }
     // }
     //
-
-
-
-
-
+    
     public void LoadZone(string zoneName)
     {
     }

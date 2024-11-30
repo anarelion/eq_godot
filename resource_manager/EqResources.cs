@@ -5,13 +5,14 @@ using Godot;
 namespace EQGodot.resource_manager;
 
 [GlobalClass]
-public partial class EqResources : Node
+public abstract partial class EqResources : Node
 {
     private Godot.Collections.Dictionary<string, BlitActorDefinition> _blitActor = [];
     private Godot.Collections.Dictionary<string, HierarchicalActorDefinition> _hierarchicalActor = [];
     private Godot.Collections.Dictionary<string, ActorSkeletonPath> _extraAnimations = [];
 
     private int _ageCounter = 0;
+    private bool _flaggedFinished = false;
 
     public override void _Ready()
     {
@@ -19,9 +20,30 @@ public partial class EqResources : Node
 
     public override void _Process(double delta)
     {
+        if (_flaggedFinished)
+        {
+            return;
+        }
+
+        var children = GetChildren();
+        var allDone = true;
+        foreach (var child in children)
+        {
+            if (child is EqResourceLoader { Loaded: false })
+            {
+                allDone = false;
+            }
+        }
+
+        if (!allDone || _flaggedFinished) return;
+
+        _flaggedFinished = true;
+        OnLoadCompleted();
     }
 
-    public void StartEqResourceLoad(string name)
+    protected abstract void OnLoadCompleted();
+
+    protected void StartEqResourceLoad(string name)
     {
         var loader = new EqResourceLoader()
         {

@@ -30,4 +30,8 @@ public partial class EqZoneResources : EqResources
     // - process objects.wld
     // - process lights.wld
     // - process %s.wld
+    protected override void OnLoadCompleted()
+    {
+        GD.Print($"EqZoneResources finished in {Time.GetTicksMsec()}ms since game started");
+    }
 }

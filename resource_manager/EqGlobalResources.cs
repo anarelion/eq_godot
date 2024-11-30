@@ -7,7 +7,7 @@ namespace EQGodot.resource_manager;
 
 public partial class EqGlobalResources : EqResources
 {
-    private bool _flaggedFinished = false;
+    
     public override void _Ready()
     {
         Debugger.Break();
@@ -19,25 +19,8 @@ public partial class EqGlobalResources : EqResources
         }
     }
 
-    public override void _Process(double delta)
+    protected override void OnLoadCompleted()
     {
-        var children = GetChildren();
-        var allDone = true;
-        foreach (var child in children)
-        {
-            if (child is EqResourceLoader resourceLoader)
-            {
-                if (resourceLoader.Loaded == false)
-                {
-                    allDone = false;
-                }
-            }
-        }
-
-        if (allDone && !_flaggedFinished)
-        {
-            GD.Print($"EqGlobalResources finished in {Time.GetTicksMsec()}ms since game started");
-            _flaggedFinished = true;
-        }
+        GD.Print($"EqGlobalResources finished in {Time.GetTicksMsec()}ms since game started");
     }
 }
