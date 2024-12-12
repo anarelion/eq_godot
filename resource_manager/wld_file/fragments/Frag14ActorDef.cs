@@ -2,7 +2,6 @@
 using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;
-using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 

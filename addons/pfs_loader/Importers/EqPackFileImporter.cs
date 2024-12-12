@@ -1,5 +1,4 @@
 ﻿using System;
-using EQGodot.resource_manager.pack_file;
 using Godot;
 using Godot.Collections;
 

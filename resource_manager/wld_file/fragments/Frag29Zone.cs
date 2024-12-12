@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using EQGodot.resource_manager.wld_file.data_types;
 using EQGodot.resource_manager.wld_file.helpers;
 using Godot;

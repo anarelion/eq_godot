@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using EQGodot.resource_manager.pack_file;
 using Godot;
 
 namespace EQGodot.resource_manager.wld_file.fragments;

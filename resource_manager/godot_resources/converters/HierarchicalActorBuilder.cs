@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using EQGodot.resource_manager.wld_file;
 using EQGodot.resource_manager.wld_file.fragments;
 using EQGodot.resource_manager.wld_file.helpers;
-using Godot;
 
 namespace EQGodot.resource_manager.godot_resources.converters;
 

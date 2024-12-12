@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using EQGodot.resource_manager.godot_resources;
@@ -145,6 +144,7 @@ public partial class WldFile : Resource
         // BuildNewMeshes();
         BuildActorDefs();
         BuildAnimations();
+        
         BuildWorldTree();
         BuildLights();
         // GD.Print($"WldFile {Name}: completed.");

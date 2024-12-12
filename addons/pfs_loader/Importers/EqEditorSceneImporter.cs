@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using EQGodot.resource_manager;
-using EQGodot.resource_manager.godot_resources;
-using EQGodot.resource_manager.pack_file;
-using Godot;
+﻿using Godot;
 
 namespace EQGodot.addons.pfs_loader.Importers;
 

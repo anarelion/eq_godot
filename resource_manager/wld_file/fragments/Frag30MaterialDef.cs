@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 
