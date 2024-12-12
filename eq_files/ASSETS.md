@@ -1,0 +1,1 @@
+﻿This directory holds the EverQuest assets, you can copy your files into this folder.
