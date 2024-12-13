@@ -12,7 +12,7 @@ using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file;
 
-// Latern Extractor class
+// Lantern Extractor class
 public partial class WldFile : Resource
 {
     private const int WldFileIdentifier = 0x54503D02;

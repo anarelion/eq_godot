@@ -4,7 +4,7 @@ using EQGodot.resource_manager.wld_file.fragments;
 
 namespace EQGodot.resource_manager.wld_file;
 
-// Latern Extractor class
+// Lantern Extractor class
 public static class WldFragmentBuilder
 {
     public static readonly Dictionary<int, Func<WldFragment>> Fragments = new()

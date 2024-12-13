@@ -6,7 +6,7 @@ using Godot.Collections;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
-// Latern Extractor class
+// Lantern Extractor class
 [GlobalClass]
 public partial class Frag21WorldTree : WldFragment, IIntoGodotZone
 {

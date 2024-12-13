@@ -8,7 +8,7 @@ using Animation = EQGodot.resource_manager.wld_file.data_types.Animation;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
-// Latern Extractor class
+// Lantern Extractor class
 [GlobalClass]
 public partial class Frag10HierarchicalSpriteDef : WldFragment
 {

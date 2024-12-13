@@ -2,7 +2,7 @@
 
 namespace EQGodot.resource_manager.wld_file.helpers;
 
-// Latern Extractor class
+// Lantern Extractor class
 internal class WldStringDecoder
 {
     public static readonly byte[] StringHashKey = { 0x95, 0x3a, 0xc5, 0x2a, 0x95, 0x7a, 0x95, 0x6a };

@@ -3,7 +3,7 @@ using Godot;
 
 namespace EQGodot.resource_manager.wld_file;
 
-// Latern Extractor class
+// Lantern Extractor class
 [GlobalClass]
 public abstract partial class WldFragment : Resource
 {

@@ -1,6 +1,6 @@
 ﻿namespace EQGodot.resource_manager.wld_file.data_types;
 
-// Latern Extractor class
+// Lantern Extractor class
 public enum ActorType
 {
     Camera = 0,

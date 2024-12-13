@@ -4,7 +4,7 @@ using EQGodot.resource_manager.wld_file.fragments;
 
 namespace EQGodot.resource_manager.wld_file.helpers;
 
-// Latern Extractor class
+// Lantern Extractor class
 public static class FragmentNameCleaner
 {
     private static readonly Dictionary<Type, string> _prefixes = new()

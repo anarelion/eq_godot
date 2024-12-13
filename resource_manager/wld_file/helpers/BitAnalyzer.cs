@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace EQGodot.resource_manager.wld_file.helpers;
 
-// Latern Extractor class
+// Lantern Extractor class
 public class BitAnalyzer
 {
     /// <summary>

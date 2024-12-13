@@ -3,7 +3,7 @@ using Godot;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
-// Latern Extractor class
+// Lantern Extractor class
 [GlobalClass]
 internal partial class Frag11HierarchicalSprite : WldFragment
 {
