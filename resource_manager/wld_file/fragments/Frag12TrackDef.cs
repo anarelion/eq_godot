@@ -14,9 +14,9 @@ public partial class Frag12TrackDef : WldFragment
     [Export] public bool IsAssigned;
     [Export] public Array<BoneTransform> Frames;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
 
         Reader = new BinaryReader(new MemoryStream(data));
         Name = wld.GetName(Reader.ReadInt32());

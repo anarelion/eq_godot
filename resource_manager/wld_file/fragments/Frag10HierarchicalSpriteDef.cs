@@ -34,9 +34,9 @@ public partial class Frag10HierarchicalSpriteDef : WldFragment
     [Export] public bool IsAssigned;
     [Export] public Godot.Collections.Dictionary<string, SkeletonBone> SkeletonPieceDictionary;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
 
         Skeleton = [];
         NewMeshes = [];

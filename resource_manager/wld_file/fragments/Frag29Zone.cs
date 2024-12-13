@@ -15,9 +15,9 @@ public partial class Frag29Zone : WldFragment
     [Export] public Array<int> BspRegionIndices;
     [Export] public string RegionString;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
         var flags = Reader.ReadInt32();
         var regionCount = Reader.ReadInt32();

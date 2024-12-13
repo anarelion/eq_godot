@@ -1,4 +1,5 @@
 ﻿using System;
+using EQGodot.resource_manager.interfaces;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using Array = Godot.Collections.Array;
@@ -7,7 +8,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Lantern Extractor class adapted for Godot
 [GlobalClass]
-public partial class Frag36DmSpriteDef2 : WldFragment
+public partial class Frag36DmSpriteDef2 : WldFragment, IIntoGodotMesh
 {
     [Export] public int Flags;
     [Export] public Frag31MaterialPalette MaterialPalette;
@@ -30,9 +31,9 @@ public partial class Frag36DmSpriteDef2 : WldFragment
     [Export] public bool ExportSeparateCollision;
     [Export] public Godot.Collections.Array<MobVertexPiece> MobPieces;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
 
         // Zone: 0x00018003, Objects: 0x00014003
@@ -190,7 +191,7 @@ public partial class Frag36DmSpriteDef2 : WldFragment
         ExportSeparateCollision = true;
     }
 
-    public ArrayMesh ToGodotMesh(WldFile wld)
+    public ArrayMesh ToGodotMesh()
     {
         var arrays = new Array();
         arrays.Resize((int)Mesh.ArrayType.Max);
@@ -264,8 +265,8 @@ public partial class Frag36DmSpriteDef2 : WldFragment
             arrays[(int)Mesh.ArrayType.Index] = indices;
 
             mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
-            mesh.SurfaceSetMaterial(j, wld.Materials[MaterialPalette.Materials[group.MaterialIndex].Index]);
-            mesh.SurfaceSetName(j, wld.Materials[MaterialPalette.Materials[group.MaterialIndex].Index].GetName());
+            mesh.SurfaceSetMaterial(j, Wld.Materials[MaterialPalette.Materials[group.MaterialIndex].Index]);
+            mesh.SurfaceSetName(j, Wld.Materials[MaterialPalette.Materials[group.MaterialIndex].Index].GetName());
         }
 
         mesh.ResourceName = Name;

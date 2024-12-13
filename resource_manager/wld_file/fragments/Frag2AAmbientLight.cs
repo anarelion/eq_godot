@@ -11,9 +11,9 @@ public partial class Frag2AAmbientLight : WldFragment
     [Export] public Frag1CLight LightReference;
     [Export] public Array<int> Regions;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
         LightReference = wld.GetFragment(Reader.ReadInt32()) as Frag1CLight;
         Flags = Reader.ReadInt32();

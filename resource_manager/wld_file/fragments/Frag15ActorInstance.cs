@@ -13,9 +13,9 @@ public partial class Frag15ActorInstance : WldFragment
     [Export] public Vector3 Rotation;
     [Export] public Vector3 Scale;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
 
         // in main zone, points to 0x16, in object wld, it contains the object name

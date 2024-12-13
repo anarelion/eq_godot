@@ -37,9 +37,9 @@ public partial class Frag2CDmSpriteDef : WldFragment
     /// </summary>
     [Export] public bool ExportSeparateCollision;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
 
         // TODO: investigate flags further

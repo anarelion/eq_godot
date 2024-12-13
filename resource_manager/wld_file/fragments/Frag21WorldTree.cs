@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using EQGodot.resource_manager.interfaces;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 using Godot.Collections;
@@ -7,15 +8,13 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
 [GlobalClass]
-public partial class Frag21WorldTree : WldFragment
+public partial class Frag21WorldTree : WldFragment, IIntoGodotZone
 {
     [Export] public Array<BspNode> Nodes;
-    private WldFile _wldFile;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
-        _wldFile = wld;
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
         var nodeCount = Reader.ReadInt32();
         Nodes = [];
@@ -58,7 +57,7 @@ public partial class Frag21WorldTree : WldFragment
                 var mesh = node.Region.Mesh;
                 if (mesh != null)
                 {
-                    var arrayMesh = mesh.ToGodotMesh(_wldFile);
+                    var arrayMesh = mesh.ToGodotMesh();
                     var inst = new MeshInstance3D { Name = mesh.Name, Mesh = arrayMesh, Position = mesh.Centre };
                     zone.AddChild(inst);
                 }

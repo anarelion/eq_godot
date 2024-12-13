@@ -10,9 +10,9 @@ public partial class Frag2DDmSprite : WldFragment
     [Export] public Frag36DmSpriteDef2 NewMesh;
     [Export] public Frag2CDmSpriteDef OldMesh;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
         Reference = Reader.ReadInt32();
         var fragment = wld.GetFragment(Reference);

@@ -19,9 +19,9 @@ public partial class Frag04SimpleSpriteDef : WldFragment
     [Export] public Godot.Collections.Array<Frag03BMInfo> BitmapNames;
 
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
 
         Flags = Reader.ReadInt32();

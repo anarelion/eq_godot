@@ -125,7 +125,7 @@ public partial class WldFile : Resource
                 break;
             }
 
-            newFragment.Initialize(i, fragType, (int)fragSize, fragmentContents, this);
+            newFragment.Initialize(i, fragType, (int)fragSize, fragmentContents, this, loader);
 
             _fragments.Add(newFragment);
             if (!_fragmentTypeDictionary.ContainsKey(newFragment.GetType()))
@@ -140,7 +140,7 @@ public partial class WldFile : Resource
         }
 
         // GD.Print($"WldFile {Name}: finished loading.");
-        BuildMaterials(loader);
+        BuildMaterials();
         // BuildNewMeshes();
         BuildActorDefs();
         BuildAnimations();
@@ -199,12 +199,12 @@ public partial class WldFile : Resource
         Resources[name].Add(resource);
     }
 
-    private void BuildMaterials(EqResourceLoader loader)
+    private void BuildMaterials()
     {
         var materials = GetFragmentsOfType<Frag30MaterialDef>();
         foreach (var material in materials)
         {
-            var godotMaterial = material.ToGodotMaterial(loader);
+            var godotMaterial = material.ToGodotMaterial();
             if (godotMaterial == null) continue;
 
             Materials.Add(material.Index, godotMaterial);
@@ -217,7 +217,7 @@ public partial class WldFile : Resource
         if (_newMeshes.TryGetValue(reference, out var existing)) return existing;
         var dmSpriteDef2 = GetFragment(reference) as Frag36DmSpriteDef2;
         if (dmSpriteDef2 == null) return null;
-        var mesh = dmSpriteDef2.ToGodotMesh(this);
+        var mesh = dmSpriteDef2.ToGodotMesh();
         _newMeshes.Add(reference, mesh);
         return mesh;
     }

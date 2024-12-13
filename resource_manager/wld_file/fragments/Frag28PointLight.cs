@@ -1,20 +1,21 @@
 using System.Linq;
+using EQGodot.resource_manager.interfaces;
 using Godot;
 
 namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
 [GlobalClass]
-public partial class Frag28PointLight : WldFragment
+public partial class Frag28PointLight : WldFragment, IIntoGodotLight
 {
     [Export] public Frag1CLight LightReference;
     [Export] public int Flags;
     [Export] public Vector3 Position;
     [Export] public float Radius;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
         LightReference = wld.GetFragment(Reader.ReadInt32()) as Frag1CLight;
         Flags = Reader.ReadInt32();
@@ -22,7 +23,7 @@ public partial class Frag28PointLight : WldFragment
         Radius = Reader.ReadSingle();
     }
 
-    public OmniLight3D ToGodotLight()
+    public Light3D ToGodotLight()
     {
         return new OmniLight3D()
         {

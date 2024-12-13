@@ -8,9 +8,9 @@ public partial class Frag35GlobalAmbientLightDef : WldFragment
 {
     [Export] public Color Color;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
 
         // Color is in BGRA format. A is always 255.
         var colorBytes = BitConverter.GetBytes(Reader.ReadInt32());

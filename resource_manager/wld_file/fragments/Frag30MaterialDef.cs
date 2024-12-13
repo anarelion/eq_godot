@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using EQGodot.resource_manager.interfaces;
 using EQGodot.resource_manager.wld_file.data_types;
 using Godot;
 
@@ -6,7 +7,7 @@ namespace EQGodot.resource_manager.wld_file.fragments;
 
 // Latern Extractor class
 [GlobalClass]
-public partial class Frag30MaterialDef : WldFragment
+public partial class Frag30MaterialDef : WldFragment, IIntoGodotMaterial
 {
     [Export] public int Flags;
     [Export] public Frag05SimpleSprite SimpleSprite;
@@ -16,9 +17,9 @@ public partial class Frag30MaterialDef : WldFragment
     [Export] public float ScaledAmbient;
     [Export] public bool IsHandled;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
         Flags = Reader.ReadInt32();
         RenderMethod = Reader.ReadUInt32();
@@ -92,7 +93,7 @@ public partial class Frag30MaterialDef : WldFragment
         }
     }
 
-    public Material ToGodotMaterial(EqResourceLoader loader)
+    public Material ToGodotMaterial()
     {
         if (ShaderType is ShaderTypeEnumType.Boundary or ShaderTypeEnumType.Invisible)
         {
@@ -111,7 +112,7 @@ public partial class Frag30MaterialDef : WldFragment
             if (SimpleSprite.SimpleSpriteDef.Animated)
             {
                 Godot.Collections.Array<Image> a = [];
-                foreach (var image in bitmapNames.Select(loader.GetImage))
+                foreach (var image in bitmapNames.Select(Loader.GetImage))
                 {
                     a.Add(ApplyBmpTransparency(image));
                 }
@@ -158,7 +159,7 @@ public partial class Frag30MaterialDef : WldFragment
                 return animatedMaterial;
             }
 
-            var firstImage = loader.GetImage(bitmapNames[0]);
+            var firstImage = Loader.GetImage(bitmapNames[0]);
             var transparentMasked = new StandardMaterial3D
             {
                 ResourceName = Name,

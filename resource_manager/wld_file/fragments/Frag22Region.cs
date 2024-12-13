@@ -11,9 +11,9 @@ public partial class Frag22Region : WldFragment
     [Export] public Frag36DmSpriteDef2 Mesh;
     [Export] public Frag29Zone RegionType;
 
-    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld)
+    public override void Initialize(int index, int type, int size, byte[] data, WldFile wld, EqResourceLoader loader)
     {
-        base.Initialize(index, type, size, data, wld);
+        base.Initialize(index, type, size, data, wld, loader);
         Name = wld.GetName(Reader.ReadInt32());
 
         // Flags
