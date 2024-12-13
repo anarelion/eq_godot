@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EQGodot.GameController;
 using EQGodot.resource_manager.godot_resources;
 using EQGodot.resource_manager.pack_file;
 using Godot;
@@ -71,7 +72,8 @@ public partial class EqResourceLoader : Node
     private async Task<bool> LoadFile(string name)
     {
         GD.Print($"EqResourceLoader: requesting {name} at age {AgeCounter}");
-        FileName = await TestFiles([$"eq_files/{name}", $"eq_files/{name}.eqg", $"eq_files/{name}.s3d"]);
+        var assetPath = GameConfig.Instance.AssetPath;
+        FileName = await TestFiles([$"{assetPath}/{name}", $"{assetPath}/{name}.eqg", $"{assetPath}/{name}.s3d"]);
         if (FileName == null)
         {
             GD.PrintErr($"EqResourceLoader: {name} doesn't exist!");

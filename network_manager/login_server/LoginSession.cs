@@ -1,4 +1,5 @@
 using System;
+using EQGodot.GameController;
 using EQGodot.network_manager.network_session;
 using EQGodot.network_manager.packets;
 using Godot;
@@ -40,7 +41,7 @@ public partial class LoginSession : Node
         OpcodeManager.Register<SCSetGameFeatures>(0x31);
         Network = new NetworkSession();
         Network.SessionEstablished += OnConnectionEstablished;
-        Network.ConnectToHost("100.89.24.52", 5999);
+        Network.ConnectToHost(GameConfig.Instance.LoginServerHostname, GameConfig.Instance.LoginServerPort);
         Name = "LoginSession";
     }
 

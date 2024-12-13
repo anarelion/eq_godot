@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using EQGodot.GameController;
 using Godot;
 
 namespace EQGodot.resource_manager;
@@ -9,8 +10,8 @@ public partial class EqGlobalResources : EqResources
     
     public override void _Ready()
     {
-        Debugger.Break();
-        using var reader = new StreamReader("eq_files/Resources/GlobalLoad.txt");
+        var assetPath = GameConfig.Instance.AssetPath;
+        using var reader = new StreamReader($"{assetPath}/Resources/GlobalLoad.txt");
         while (reader.ReadLine() is { } line)
         {
             var values = line.Split(',');
